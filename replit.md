@@ -1,44 +1,55 @@
-# [Project name]
+# HackathonOS
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+HackathonOS is a private, personal command center for organizing hackathons, building deadline-aware plans, and keeping verification evidence honest.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/api-server run dev` — run the API server on its configured port
+- `pnpm --filter @workspace/hackathon-os run dev` — run the web app on its configured port
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- Required runtime env: `DATABASE_URL`; Clerk is managed through the workspace Auth setup
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
+- Web: React, Vite, Wouter, TanStack Query
+- API: Express 5, Clerk session authentication
 - DB: PostgreSQL + Drizzle ORM
 - Validation: Zod (`zod/v4`), `drizzle-zod`
 - API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- API build: esbuild
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/hackathon-os/src/` — public landing page, private workspace, competition forms, overview, and planner
+- `artifacts/api-server/src/routes/competitions.ts` — owner-scoped competition, plan, and task endpoints
+- `artifacts/api-server/src/lib/planner.ts` — deadline-aware plan generation
+- `artifacts/api-server/src/middlewares/auth.ts` — Clerk session to authenticated user boundary
+- `lib/api-spec/openapi.yaml` — source API contract
+- `lib/api-client-react/src/generated/` and `lib/api-zod/src/generated/` — generated client hooks and validators
+- `lib/db/src/schema/` — PostgreSQL tables and Drizzle schema
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The server derives the owner from the Clerk session; never accept an owner ID from the browser.
+- Earlier plan versions remain reviewable and read-only; task status changes apply only to the latest version.
+- Quality checks stay `not_run` until a real result is recorded. Task completion is not evidence that a build, test, review, or submission passed.
+- The planner reserves time for testing, the demo, submission, and an explicit schedule buffer; warnings make missing rules or deliverables visible.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
-
-## User preferences
-
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Users can create and update competition workspaces with deadlines, source links, requirements, tracks, and team context.
+- Each workspace can keep versioned plans and task progress in PostgreSQL, available across refreshes.
+- Research automation, agent control, app verification, deployment, pitch support, and external integrations are planned but not yet available; do not present them as working features.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Regenerate API code after editing `lib/api-spec/openapi.yaml`.
+- `pnpm --filter @workspace/db run push` applies development database schema changes; do not use it as a production migration.
+- The Clerk proxy is production-only. Leave `VITE_CLERK_PROXY_URL` unset in the local preview so Clerk uses its development flow.
 
 ## Pointers
 

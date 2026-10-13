@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "HackathonOS"
+description = "A private, evidence-conscious command center to organize hackathons, turn deadlines into realistic plans, and track the work needed to build and submit a competitive project."
+version = "1.0.0"
+id = "artifacts/hackathon-os"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19678
+
+[services.development]
+run = "pnpm --filter @workspace/hackathon-os run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/hackathon-os", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/hackathon-os/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19678"
+BASE_PATH = "/"

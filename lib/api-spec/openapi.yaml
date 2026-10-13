@@ -1,15 +1,18 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Authenticated HackathonOS competition planning API.
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: competitions
+    description: Competition workspaces and plans
+security:
+  - clerkSession: []
 paths:
   /healthz:
     get:
@@ -17,6 +20,7 @@ paths:
       tags: [health]
       summary: Health check
       description: Returns server health status
+      security: []
       responses:
         "200":
           description: Healthy
@@ -24,13 +28,709 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /overview:
+    get:
+      operationId: getOverview
+      tags: [competitions]
+      summary: Get the workspace overview
+      responses:
+        "200":
+          description: Overview of the owner's competitions and next action
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OverviewResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /competitions:
+    get:
+      operationId: listCompetitions
+      tags: [competitions]
+      summary: List the owner's competitions
+      responses:
+        "200":
+          description: Competitions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Competition"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      operationId: createCompetition
+      tags: [competitions]
+      summary: Create a competition workspace
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompetitionInput"
+      responses:
+        "201":
+          description: Created competition
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Competition"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /competitions/{competitionId}:
+    parameters:
+      - name: competitionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: getCompetition
+      tags: [competitions]
+      summary: Get a competition workspace
+      responses:
+        "200":
+          description: Competition
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Competition"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      operationId: updateCompetition
+      tags: [competitions]
+      summary: Update competition details
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompetitionUpdate"
+      responses:
+        "200":
+          description: Updated competition
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Competition"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /competitions/{competitionId}/plans:
+    parameters:
+      - name: competitionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: listPlanVersions
+      tags: [competitions]
+      summary: List saved plan versions
+      responses:
+        "200":
+          description: Plan versions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WorkflowPlanSummary"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      operationId: generatePlan
+      tags: [competitions]
+      summary: Generate a deadline-aware plan and save a new version
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlanRequest"
+      responses:
+        "201":
+          description: Generated plan version and its tasks
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkflowPlan"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /competitions/{competitionId}/plans/{planId}:
+    parameters:
+      - name: competitionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: planId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: getPlan
+      tags: [competitions]
+      summary: Get a saved plan version and its tasks
+      responses:
+        "200":
+          description: Plan version
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkflowPlan"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /competitions/{competitionId}/tasks/{taskId}:
+    parameters:
+      - name: competitionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: taskId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    patch:
+      operationId: updateTask
+      tags: [competitions]
+      summary: Update a task's status
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskUpdate"
+      responses:
+        "200":
+          description: Updated task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlanTask"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
 components:
+  securitySchemes:
+    clerkSession:
+      type: apiKey
+      in: cookie
+      name: __session
+  responses:
+    Unauthorized:
+      description: A valid authenticated session is required
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    NotFound:
+      description: The requested resource does not exist
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    BadRequest:
+      description: The request did not pass validation
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
   schemas:
     HealthStatus:
       type: object
+      additionalProperties: false
       properties:
         status:
           type: string
       required:
         - status
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        error:
+          type: string
+      required: [error]
+    CompetitionInput:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 160
+        organizer:
+          type: ["string", "null"]
+          maxLength: 160
+        competitionType:
+          type: string
+          enum: [online, in_person, hybrid, unknown]
+        startAt:
+          type: ["string", "null"]
+          format: date-time
+        deadline:
+          type: string
+          format: date-time
+        teamSize:
+          type: integer
+          minimum: 1
+          maximum: 100
+        trackMode:
+          type: string
+          enum: [assigned, choose]
+        currentTrack:
+          type: ["string", "null"]
+          maxLength: 200
+        problemStatement:
+          type: ["string", "null"]
+          maxLength: 20000
+        officialUrl:
+          type: ["string", "null"]
+          format: uri
+        rulesUrl:
+          type: ["string", "null"]
+          format: uri
+        mandatoryDeliverables:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 500
+          maxItems: 50
+        teamSkills:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 100
+          maxItems: 30
+        ideaComplexity:
+          type: integer
+          minimum: 1
+          maximum: 5
+        status:
+          type: string
+          enum: [preparing, active, submitted, completed]
+      required: [name, deadline]
+    CompetitionUpdate:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 160
+        organizer:
+          type: ["string", "null"]
+          maxLength: 160
+        competitionType:
+          type: string
+          enum: [online, in_person, hybrid, unknown]
+        startAt:
+          type: ["string", "null"]
+          format: date-time
+        deadline:
+          type: string
+          format: date-time
+        teamSize:
+          type: integer
+          minimum: 1
+          maximum: 100
+        trackMode:
+          type: string
+          enum: [assigned, choose]
+        currentTrack:
+          type: ["string", "null"]
+          maxLength: 200
+        problemStatement:
+          type: ["string", "null"]
+          maxLength: 20000
+        officialUrl:
+          type: ["string", "null"]
+          format: uri
+        rulesUrl:
+          type: ["string", "null"]
+          format: uri
+        mandatoryDeliverables:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 500
+          maxItems: 50
+        teamSkills:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 100
+          maxItems: 30
+        ideaComplexity:
+          type: integer
+          minimum: 1
+          maximum: 5
+        status:
+          type: string
+          enum: [preparing, active, submitted, completed]
+      minProperties: 1
+    Competition:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        organizer:
+          type: ["string", "null"]
+        competitionType:
+          type: string
+          enum: [online, in_person, hybrid, unknown]
+        startAt:
+          type: ["string", "null"]
+          format: date-time
+        deadline:
+          type: string
+          format: date-time
+        teamSize:
+          type: integer
+        trackMode:
+          type: string
+          enum: [assigned, choose]
+        currentTrack:
+          type: ["string", "null"]
+        problemStatement:
+          type: ["string", "null"]
+        officialUrl:
+          type: ["string", "null"]
+        rulesUrl:
+          type: ["string", "null"]
+        mandatoryDeliverables:
+          type: array
+          items:
+            type: string
+        teamSkills:
+          type: array
+          items:
+            type: string
+        ideaComplexity:
+          type: integer
+        status:
+          type: string
+          enum: [preparing, active, submitted, completed]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - organizer
+        - competitionType
+        - startAt
+        - deadline
+        - teamSize
+        - trackMode
+        - currentTrack
+        - problemStatement
+        - officialUrl
+        - rulesUrl
+        - mandatoryDeliverables
+        - teamSkills
+        - ideaComplexity
+        - status
+        - createdAt
+        - updatedAt
+    PlanRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        remainingHours:
+          type: number
+          minimum: 0.25
+          maximum: 1000
+        trigger:
+          type: string
+          enum: [manual, deadline_changed, task_failed, progress_changed]
+      required: [trigger]
+    TaskUpdate:
+      type: object
+      additionalProperties: false
+      properties:
+        status:
+          type: string
+          enum: [todo, in_progress, blocked, done, deferred]
+      required: [status]
+    PlanTask:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        planId:
+          type: string
+          format: uuid
+        taskKey:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        phase:
+          type: string
+          enum:
+            [intake, problem, research, track_selection, idea_selection, specification, architecture, implementation, testing, security, deployment, demo, pitch, submission]
+        priority:
+          type: string
+          enum: [critical, high, medium, low]
+        estimatedMinutes:
+          type: integer
+          minimum: 1
+        plannedStartAt:
+          type: string
+          format: date-time
+        plannedEndAt:
+          type: string
+          format: date-time
+        dependencies:
+          type: array
+          items:
+            type: string
+        owner:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [todo, in_progress, blocked, done, deferred]
+        acceptanceCriteria:
+          type: array
+          items:
+            type: string
+        expectedArtifact:
+          type: ["string", "null"]
+        verificationMethod:
+          type: string
+        riskIfSkipped:
+          type: string
+        mandatory:
+          type: boolean
+      required:
+        - id
+        - planId
+        - taskKey
+        - title
+        - description
+        - phase
+        - priority
+        - estimatedMinutes
+        - plannedStartAt
+        - plannedEndAt
+        - dependencies
+        - owner
+        - status
+        - acceptanceCriteria
+        - expectedArtifact
+        - verificationMethod
+        - riskIfSkipped
+        - mandatory
+    WorkflowPlanSummary:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        competitionId:
+          type: string
+          format: uuid
+        version:
+          type: integer
+        generatedAt:
+          type: string
+          format: date-time
+        deadline:
+          type: string
+          format: date-time
+        availableMinutes:
+          type: integer
+        bufferMinutes:
+          type: integer
+        status:
+          type: string
+          enum: [feasible, at_risk, infeasible]
+        warnings:
+          type: array
+          items:
+            type: string
+        trigger:
+          type: string
+          enum: [manual, deadline_changed, task_failed, progress_changed]
+        taskCount:
+          type: integer
+        completedTaskCount:
+          type: integer
+      required:
+        - id
+        - competitionId
+        - version
+        - generatedAt
+        - deadline
+        - availableMinutes
+        - bufferMinutes
+        - status
+        - warnings
+        - trigger
+        - taskCount
+        - completedTaskCount
+    WorkflowPlan:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        competitionId:
+          type: string
+          format: uuid
+        version:
+          type: integer
+        generatedAt:
+          type: string
+          format: date-time
+        deadline:
+          type: string
+          format: date-time
+        availableMinutes:
+          type: integer
+        bufferMinutes:
+          type: integer
+        status:
+          type: string
+          enum: [feasible, at_risk, infeasible]
+        warnings:
+          type: array
+          items:
+            type: string
+        trigger:
+          type: string
+          enum: [manual, deadline_changed, task_failed, progress_changed]
+        taskCount:
+          type: integer
+        completedTaskCount:
+          type: integer
+        tasks:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlanTask"
+      required:
+        - id
+        - competitionId
+        - version
+        - generatedAt
+        - deadline
+        - availableMinutes
+        - bufferMinutes
+        - status
+        - warnings
+        - trigger
+        - taskCount
+        - completedTaskCount
+        - tasks
+    QualitySignals:
+      type: object
+      additionalProperties: false
+      properties:
+        applicationBuild:
+          type: string
+          enum: [not_run, passed, failed]
+        automatedTests:
+          type: string
+          enum: [not_run, passed, failed]
+        browserVerification:
+          type: string
+          enum: [not_run, passed, failed]
+        securityReview:
+          type: string
+          enum: [not_run, passed, failed]
+        deployment:
+          type: string
+          enum: [not_run, passed, failed]
+        demoReadiness:
+          type: string
+          enum: [not_run, passed, failed]
+        submissionReadiness:
+          type: string
+          enum: [not_run, passed, failed]
+      required:
+        - applicationBuild
+        - automatedTests
+        - browserVerification
+        - securityReview
+        - deployment
+        - demoReadiness
+        - submissionReadiness
+    OverviewResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        currentCompetition:
+          anyOf:
+            - $ref: "#/components/schemas/Competition"
+            - type: "null"
+        currentPlan:
+          anyOf:
+            - $ref: "#/components/schemas/WorkflowPlan"
+            - type: "null"
+        competitionCount:
+          type: integer
+        openTaskCount:
+          type: integer
+        completedTaskCount:
+          type: integer
+        nextAction:
+          anyOf:
+            - $ref: "#/components/schemas/PlanTask"
+            - type: "null"
+        quality:
+          $ref: "#/components/schemas/QualitySignals"
+      required:
+        - currentCompetition
+        - currentPlan
+        - competitionCount
+        - openTaskCount
+        - completedTaskCount
+        - nextAction
+        - quality
 

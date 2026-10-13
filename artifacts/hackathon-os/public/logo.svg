@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 32" role="img" aria-label="HackathonOS">
+  <rect width="32" height="32" rx="8" fill="#49c998"/>
+  <path d="M13 9 7.5 16l5.5 7M19 9l5.5 7-5.5 7M17.5 7l-3 18" fill="none" stroke="#101a17" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+  <text x="40" y="23" fill="#dce4e3" font-family="Manrope,Arial,sans-serif" font-size="19" font-weight="700">hackathon<tspan fill="#49c998">os</tspan></text>
+</svg>
