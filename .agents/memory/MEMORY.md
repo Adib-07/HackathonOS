@@ -1,0 +1,1 @@
+- [React/Vite cache diagnosis](react-vite-cache.md) — if runtime versions conflict while lockfile and installed versions match, check for stale Vite prebundles before changing dependencies.
