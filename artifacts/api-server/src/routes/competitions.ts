@@ -187,26 +187,33 @@ router.post("/competitions", async (req, res): Promise<void> => {
       { errors: parsed.error.issues.map((issue) => issue.message) },
       "Invalid competition input",
     );
-    res.status(400).json({ error: "Invalid competition details." });
+    const errorMessage = parsed.error.issues[0]?.message || "Invalid competition details.";
+    res.status(400).json({ error: errorMessage });
     return;
   }
 
   const data = parsed.data;
+  const trimmedName = data.name.trim();
+  if (!trimmedName) {
+    res.status(400).json({ error: "Competition name cannot be empty." });
+    return;
+  }
+
   const [competition] = await db
     .insert(competitionsTable)
     .values({
       ownerId: res.locals.userId as string,
-      name: data.name,
-      organizer: data.organizer ?? null,
+      name: trimmedName,
+      organizer: data.organizer?.trim() || null,
       competitionType: data.competitionType ?? "unknown",
       startAt: data.startAt ? new Date(data.startAt) : null,
       deadline: new Date(data.deadline),
       teamSize: data.teamSize ?? 1,
       trackMode: data.trackMode ?? "choose",
-      currentTrack: data.currentTrack ?? null,
-      problemStatement: data.problemStatement ?? null,
-      officialUrl: data.officialUrl ?? null,
-      rulesUrl: data.rulesUrl ?? null,
+      currentTrack: data.currentTrack?.trim() || null,
+      problemStatement: data.problemStatement?.trim() || null,
+      officialUrl: data.officialUrl?.trim() || null,
+      rulesUrl: data.rulesUrl?.trim() || null,
       mandatoryDeliverables: data.mandatoryDeliverables ?? [],
       teamSkills: data.teamSkills ?? [],
       ideaComplexity: data.ideaComplexity ?? 3,

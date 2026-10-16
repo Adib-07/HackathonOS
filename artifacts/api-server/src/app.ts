@@ -34,15 +34,21 @@ app.use(
 app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(
-  clerkMiddleware((req) => ({
-    publishableKey: publishableKeyFromHost(
-      getClerkProxyHost(req) ?? "",
-      process.env.CLERK_PUBLISHABLE_KEY,
-    ),
-  })),
-);
+if (process.env.CLERK_SECRET_KEY || process.env.CLERK_PUBLISHABLE_KEY) {
+  app.use(
+    clerkMiddleware((req) => ({
+      publishableKey: publishableKeyFromHost(
+        getClerkProxyHost(req) ?? "",
+        process.env.CLERK_PUBLISHABLE_KEY,
+      ),
+    })),
+  );
+} else {
+  logger.warn("Clerk keys not configured; running in development/test mode without Clerk middleware");
+}
 
 app.use("/api", router);
 
 export default app;
+
+export { db, pool, competitionsTable } from "@workspace/db";

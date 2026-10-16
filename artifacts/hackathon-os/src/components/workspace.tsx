@@ -368,17 +368,20 @@ export function ModuleStatus() {
 export function FormField({
   label,
   hint,
+  error,
   children,
 }: {
   label: string;
   hint?: string;
+  error?: string;
   children: ReactNode;
 }) {
   return (
     <label className="form-field">
       <span className="field-label">{label}</span>
       {children}
-      {hint && <span className="field-hint">{hint}</span>}
+      {error && <span className="field-error" role="alert">{error}</span>}
+      {hint && !error && <span className="field-hint">{hint}</span>}
     </label>
   );
 }

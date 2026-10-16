@@ -3647,3 +3647,18 @@
     font-size: 6px;
   }
 }
+
+.field-error {
+  color: #f1aaa2;
+  font-size: 11px;
+  line-height: 1.4;
+  margin-top: 3px;
+  font-weight: 500;
+}
+
+.form-field input[aria-invalid="true"],
+.form-field textarea[aria-invalid="true"],
+.form-field select[aria-invalid="true"] {
+  border-color: #d15b53 !important;
+  background-color: #1a1214 !important;
+}
