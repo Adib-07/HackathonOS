@@ -11,200 +11,207 @@ export interface HealthStatus {
 
 export interface ErrorResponse {
   error: string;
+  /**
+   * A machine-readable reason, when the error has one.
+   * @nullable
+   */
+  code?: string | null;
+  /** Configuration that is missing, when the error is a configuration error. */
+  missing?: string[];
 }
 
-export type CompetitionInputCompetitionType = typeof CompetitionInputCompetitionType[keyof typeof CompetitionInputCompetitionType];
-
+export type CompetitionInputCompetitionType =
+  (typeof CompetitionInputCompetitionType)[keyof typeof CompetitionInputCompetitionType];
 
 export const CompetitionInputCompetitionType = {
-  online: 'online',
-  in_person: 'in_person',
-  hybrid: 'hybrid',
-  unknown: 'unknown',
+  online: "online",
+  in_person: "in_person",
+  hybrid: "hybrid",
+  unknown: "unknown",
 } as const;
 
-export type CompetitionInputTrackMode = typeof CompetitionInputTrackMode[keyof typeof CompetitionInputTrackMode];
-
+export type CompetitionInputTrackMode =
+  (typeof CompetitionInputTrackMode)[keyof typeof CompetitionInputTrackMode];
 
 export const CompetitionInputTrackMode = {
-  assigned: 'assigned',
-  choose: 'choose',
+  assigned: "assigned",
+  choose: "choose",
 } as const;
 
-export type CompetitionInputStatus = typeof CompetitionInputStatus[keyof typeof CompetitionInputStatus];
-
+export type CompetitionInputStatus =
+  (typeof CompetitionInputStatus)[keyof typeof CompetitionInputStatus];
 
 export const CompetitionInputStatus = {
-  preparing: 'preparing',
-  active: 'active',
-  submitted: 'submitted',
-  completed: 'completed',
+  preparing: "preparing",
+  active: "active",
+  submitted: "submitted",
+  completed: "completed",
 } as const;
 
 export interface CompetitionInput {
   /**
-     * @minLength 1
-     * @maxLength 160
-     */
+   * @minLength 1
+   * @maxLength 160
+   */
   name: string;
   /**
-     * @maxLength 160
-     * @nullable
-     */
+   * @maxLength 160
+   * @nullable
+   */
   organizer?: string | null;
   competitionType?: CompetitionInputCompetitionType;
   /** @nullable */
   startAt?: string | null;
   deadline: string;
   /**
-     * @minimum 1
-     * @maximum 100
-     */
+   * @minimum 1
+   * @maximum 100
+   */
   teamSize?: number;
   trackMode?: CompetitionInputTrackMode;
   /**
-     * @maxLength 200
-     * @nullable
-     */
+   * @maxLength 200
+   * @nullable
+   */
   currentTrack?: string | null;
   /**
-     * @maxLength 20000
-     * @nullable
-     */
+   * @maxLength 20000
+   * @nullable
+   */
   problemStatement?: string | null;
   /** @nullable */
   officialUrl?: string | null;
   /** @nullable */
   rulesUrl?: string | null;
   /**
-     * @maxItems 50
-     * @items.minLength 1
-     * @items.maxLength 500
-     */
+   * @maxItems 50
+   * @items.minLength 1
+   * @items.maxLength 500
+   */
   mandatoryDeliverables?: string[];
   /**
-     * @maxItems 30
-     * @items.minLength 1
-     * @items.maxLength 100
-     */
+   * @maxItems 30
+   * @items.minLength 1
+   * @items.maxLength 100
+   */
   teamSkills?: string[];
   /**
-     * @minimum 1
-     * @maximum 5
-     */
+   * @minimum 1
+   * @maximum 5
+   */
   ideaComplexity?: number;
   status?: CompetitionInputStatus;
 }
 
-export type CompetitionUpdateCompetitionType = typeof CompetitionUpdateCompetitionType[keyof typeof CompetitionUpdateCompetitionType];
-
+export type CompetitionUpdateCompetitionType =
+  (typeof CompetitionUpdateCompetitionType)[keyof typeof CompetitionUpdateCompetitionType];
 
 export const CompetitionUpdateCompetitionType = {
-  online: 'online',
-  in_person: 'in_person',
-  hybrid: 'hybrid',
-  unknown: 'unknown',
+  online: "online",
+  in_person: "in_person",
+  hybrid: "hybrid",
+  unknown: "unknown",
 } as const;
 
-export type CompetitionUpdateTrackMode = typeof CompetitionUpdateTrackMode[keyof typeof CompetitionUpdateTrackMode];
-
+export type CompetitionUpdateTrackMode =
+  (typeof CompetitionUpdateTrackMode)[keyof typeof CompetitionUpdateTrackMode];
 
 export const CompetitionUpdateTrackMode = {
-  assigned: 'assigned',
-  choose: 'choose',
+  assigned: "assigned",
+  choose: "choose",
 } as const;
 
-export type CompetitionUpdateStatus = typeof CompetitionUpdateStatus[keyof typeof CompetitionUpdateStatus];
-
+export type CompetitionUpdateStatus =
+  (typeof CompetitionUpdateStatus)[keyof typeof CompetitionUpdateStatus];
 
 export const CompetitionUpdateStatus = {
-  preparing: 'preparing',
-  active: 'active',
-  submitted: 'submitted',
-  completed: 'completed',
+  preparing: "preparing",
+  active: "active",
+  submitted: "submitted",
+  completed: "completed",
 } as const;
 
 export interface CompetitionUpdate {
   /**
-     * @minLength 1
-     * @maxLength 160
-     */
+   * @minLength 1
+   * @maxLength 160
+   */
   name?: string;
   /**
-     * @maxLength 160
-     * @nullable
-     */
+   * @maxLength 160
+   * @nullable
+   */
   organizer?: string | null;
   competitionType?: CompetitionUpdateCompetitionType;
   /** @nullable */
   startAt?: string | null;
   deadline?: string;
   /**
-     * @minimum 1
-     * @maximum 100
-     */
+   * @minimum 1
+   * @maximum 100
+   */
   teamSize?: number;
   trackMode?: CompetitionUpdateTrackMode;
   /**
-     * @maxLength 200
-     * @nullable
-     */
+   * @maxLength 200
+   * @nullable
+   */
   currentTrack?: string | null;
   /**
-     * @maxLength 20000
-     * @nullable
-     */
+   * @maxLength 20000
+   * @nullable
+   */
   problemStatement?: string | null;
   /** @nullable */
   officialUrl?: string | null;
   /** @nullable */
   rulesUrl?: string | null;
   /**
-     * @maxItems 50
-     * @items.minLength 1
-     * @items.maxLength 500
-     */
+   * @maxItems 50
+   * @items.minLength 1
+   * @items.maxLength 500
+   */
   mandatoryDeliverables?: string[];
   /**
-     * @maxItems 30
-     * @items.minLength 1
-     * @items.maxLength 100
-     */
+   * @maxItems 30
+   * @items.minLength 1
+   * @items.maxLength 100
+   */
   teamSkills?: string[];
   /**
-     * @minimum 1
-     * @maximum 5
-     */
+   * @minimum 1
+   * @maximum 5
+   */
   ideaComplexity?: number;
   status?: CompetitionUpdateStatus;
 }
 
-export type CompetitionCompetitionType = typeof CompetitionCompetitionType[keyof typeof CompetitionCompetitionType];
-
+export type CompetitionCompetitionType =
+  (typeof CompetitionCompetitionType)[keyof typeof CompetitionCompetitionType];
 
 export const CompetitionCompetitionType = {
-  online: 'online',
-  in_person: 'in_person',
-  hybrid: 'hybrid',
-  unknown: 'unknown',
+  online: "online",
+  in_person: "in_person",
+  hybrid: "hybrid",
+  unknown: "unknown",
 } as const;
 
-export type CompetitionTrackMode = typeof CompetitionTrackMode[keyof typeof CompetitionTrackMode];
-
+export type CompetitionTrackMode =
+  (typeof CompetitionTrackMode)[keyof typeof CompetitionTrackMode];
 
 export const CompetitionTrackMode = {
-  assigned: 'assigned',
-  choose: 'choose',
+  assigned: "assigned",
+  choose: "choose",
 } as const;
 
-export type CompetitionStatus = typeof CompetitionStatus[keyof typeof CompetitionStatus];
-
+export type CompetitionStatus =
+  (typeof CompetitionStatus)[keyof typeof CompetitionStatus];
 
 export const CompetitionStatus = {
-  preparing: 'preparing',
-  active: 'active',
-  submitted: 'submitted',
-  completed: 'completed',
+  preparing: "preparing",
+  active: "active",
+  submitted: "submitted",
+  completed: "completed",
 } as const;
 
 export interface Competition {
@@ -234,80 +241,557 @@ export interface Competition {
   updatedAt: string;
 }
 
-export type PlanRequestTrigger = typeof PlanRequestTrigger[keyof typeof PlanRequestTrigger];
+export type EvidenceInputType =
+  (typeof EvidenceInputType)[keyof typeof EvidenceInputType];
 
+export const EvidenceInputType = {
+  TEST_RESULT: "TEST_RESULT",
+  BUILD_RESULT: "BUILD_RESULT",
+  DEPLOYMENT_URL: "DEPLOYMENT_URL",
+  HTTP_CHECK: "HTTP_CHECK",
+  MANUAL_REVIEW: "MANUAL_REVIEW",
+  SUBMISSION_CONFIRMATION: "SUBMISSION_CONFIRMATION",
+} as const;
+
+export type EvidenceInputResult =
+  (typeof EvidenceInputResult)[keyof typeof EvidenceInputResult];
+
+export const EvidenceInputResult = {
+  passed: "passed",
+  failed: "failed",
+} as const;
+
+export interface EvidenceInput {
+  type: EvidenceInputType;
+  /**
+   * @minLength 1
+   * @maxLength 2000
+   */
+  summary: string;
+  result: EvidenceInputResult;
+  /**
+   * @maxLength 2000
+   * @nullable
+   */
+  sourceUrl?: string | null;
+  /**
+   * @maxLength 300
+   * @nullable
+   */
+  commandName?: string | null;
+  /** @nullable */
+  observedAt?: string | null;
+  /**
+   * @maxLength 4000
+   * @nullable
+   */
+  reviewerNote?: string | null;
+}
+
+export type EvidenceType = (typeof EvidenceType)[keyof typeof EvidenceType];
+
+export const EvidenceType = {
+  TEST_RESULT: "TEST_RESULT",
+  BUILD_RESULT: "BUILD_RESULT",
+  DEPLOYMENT_URL: "DEPLOYMENT_URL",
+  HTTP_CHECK: "HTTP_CHECK",
+  MANUAL_REVIEW: "MANUAL_REVIEW",
+  SUBMISSION_CONFIRMATION: "SUBMISSION_CONFIRMATION",
+} as const;
+
+export type EvidenceResult =
+  (typeof EvidenceResult)[keyof typeof EvidenceResult];
+
+export const EvidenceResult = {
+  passed: "passed",
+  failed: "failed",
+} as const;
+
+export type EvidenceSource =
+  (typeof EvidenceSource)[keyof typeof EvidenceSource];
+
+export const EvidenceSource = {
+  manual: "manual",
+} as const;
+
+export interface Evidence {
+  id: string;
+  competitionId: string;
+  /** @nullable */
+  taskId: string | null;
+  taskKey: string;
+  type: EvidenceType;
+  summary: string;
+  /** @nullable */
+  sourceUrl: string | null;
+  /** @nullable */
+  commandName: string | null;
+  result: EvidenceResult;
+  observedAt: string;
+  /** @nullable */
+  reviewerNote: string | null;
+  source: EvidenceSource;
+  phaseSnapshot: string;
+  verificationMethodSnapshot: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EvidenceDeletion {
+  id: string;
+  deleted: boolean;
+}
+
+export interface CompetitionAnalysis {
+  id: string;
+  competitionId: string;
+  version: number;
+  coreProblem: string;
+  missingFields: string[];
+  unansweredQuestions: string[];
+  method: string;
+  /** @nullable */
+  provider: string | null;
+  /** @nullable */
+  model: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type AnalysisRequirementClaimKind =
+  (typeof AnalysisRequirementClaimKind)[keyof typeof AnalysisRequirementClaimKind];
+
+export const AnalysisRequirementClaimKind = {
+  VERIFIED_FACT: "VERIFIED_FACT",
+  SOURCE_SUPPORTED: "SOURCE_SUPPORTED",
+  INFERENCE: "INFERENCE",
+  HYPOTHESIS: "HYPOTHESIS",
+  UNKNOWN: "UNKNOWN",
+} as const;
+
+export interface AnalysisRequirement {
+  id: string;
+  analysisId: string;
+  category: string;
+  text: string;
+  claimKind: AnalysisRequirementClaimKind;
+  source: string;
+  /** @nullable */
+  origin: string | null;
+  reviewed: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AnalysisResponse {
+  analysis?: CompetitionAnalysis;
+  requirements: AnalysisRequirement[];
+  /** @nullable */
+  note?: string | null;
+}
+
+export interface RequirementUpdate {
+  /**
+   * @minLength 1
+   * @maxLength 4000
+   */
+  text: string;
+  reviewed?: boolean;
+}
+
+export type ResearchRequestProvidersItem =
+  (typeof ResearchRequestProvidersItem)[keyof typeof ResearchRequestProvidersItem];
+
+export const ResearchRequestProvidersItem = {
+  wikipedia: "wikipedia",
+  arxiv: "arxiv",
+  github: "github",
+} as const;
+
+export interface ResearchRequest {
+  /**
+   * @minLength 3
+   * @maxLength 300
+   */
+  query?: string;
+  providers?: ResearchRequestProvidersItem[];
+  manual?: boolean;
+  /** @maxLength 300 */
+  title?: string;
+  /** @maxLength 4000 */
+  summary?: string;
+  /**
+   * @maxLength 2000
+   * @nullable
+   */
+  sourceUrl?: string | null;
+  sourceType?: string;
+  /**
+   * @maxLength 2000
+   * @nullable
+   */
+  supports?: string | null;
+  /**
+   * @maxLength 2000
+   * @nullable
+   */
+  limitations?: string | null;
+  /**
+   * @maxLength 2000
+   * @nullable
+   */
+  excerpt?: string | null;
+}
+
+export type ResearchFindingClaimKind =
+  (typeof ResearchFindingClaimKind)[keyof typeof ResearchFindingClaimKind];
+
+export const ResearchFindingClaimKind = {
+  VERIFIED_FACT: "VERIFIED_FACT",
+  SOURCE_SUPPORTED: "SOURCE_SUPPORTED",
+  INFERENCE: "INFERENCE",
+  HYPOTHESIS: "HYPOTHESIS",
+  UNKNOWN: "UNKNOWN",
+} as const;
+
+export interface ResearchFinding {
+  id: string;
+  competitionId: string;
+  title: string;
+  /** @nullable */
+  sourceUrl: string | null;
+  provider: string;
+  sourceType: string;
+  retrievedAt: string;
+  summary: string;
+  /** @nullable */
+  excerpt: string | null;
+  /** @nullable */
+  supports: string | null;
+  /** @nullable */
+  limitations: string | null;
+  claimKind: ResearchFindingClaimKind;
+  /** @nullable */
+  query: string | null;
+  manual: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ResearchOutcome {
+  provider: string;
+  ok: boolean;
+  count: number;
+  /** @nullable */
+  error?: string | null;
+}
+
+export interface ResearchResponse {
+  findings: ResearchFinding[];
+  providerOutcomes?: ResearchOutcome[];
+  retrievedAt?: string;
+}
+
+export type ResearchGapClaimKind =
+  (typeof ResearchGapClaimKind)[keyof typeof ResearchGapClaimKind];
+
+export const ResearchGapClaimKind = {
+  VERIFIED_FACT: "VERIFIED_FACT",
+  SOURCE_SUPPORTED: "SOURCE_SUPPORTED",
+  INFERENCE: "INFERENCE",
+  HYPOTHESIS: "HYPOTHESIS",
+  UNKNOWN: "UNKNOWN",
+} as const;
+
+export interface ResearchGap {
+  id: string;
+  competitionId: string;
+  need: string;
+  targetUser: string;
+  supportingFindingIds: string[];
+  existingApproaches: string;
+  insufficiency: string;
+  opportunity: string;
+  risks: string[];
+  claimKind: ResearchGapClaimKind;
+  evidenceGaps: string[];
+  nextInvestigations: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GapResponse {
+  gaps: ResearchGap[];
+  evidenceGaps: string[];
+  nextInvestigations: string[];
+  method: string;
+  /** @nullable */
+  provider?: string | null;
+  /** @nullable */
+  model?: string | null;
+  /** @nullable */
+  note?: string | null;
+}
+
+export type IdeaCandidateClaimKind =
+  (typeof IdeaCandidateClaimKind)[keyof typeof IdeaCandidateClaimKind];
+
+export const IdeaCandidateClaimKind = {
+  VERIFIED_FACT: "VERIFIED_FACT",
+  SOURCE_SUPPORTED: "SOURCE_SUPPORTED",
+  INFERENCE: "INFERENCE",
+  HYPOTHESIS: "HYPOTHESIS",
+  UNKNOWN: "UNKNOWN",
+} as const;
+
+export interface IdeaCandidate {
+  id: string;
+  competitionId: string;
+  name: string;
+  pitch: string;
+  targetUser: string;
+  problemSolved: string;
+  proposedSolution: string;
+  differentiator: string;
+  coreUserJourney: string;
+  mvpFeatures: string[];
+  excludedFeatures: string[];
+  architectureSuggestion: string;
+  dataAndIntegrations: string;
+  feasibilityNote: string;
+  risks: string[];
+  demoStrategy: string;
+  supportingEvidence: string[];
+  unverifiedAssumptions: string[];
+  claimKind: IdeaCandidateClaimKind;
+  status: string;
+  /** @nullable */
+  decisionRationale: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type IdeasResponseWeights = { [key: string]: number };
+
+export type IdeasResponseComparison = { [key: string]: unknown };
+
+export interface IdeasResponse {
+  ideas: IdeaCandidate[];
+  weights: IdeasResponseWeights;
+  comparison?: IdeasResponseComparison;
+}
+
+export type DimensionScoreInputDimension =
+  (typeof DimensionScoreInputDimension)[keyof typeof DimensionScoreInputDimension];
+
+export const DimensionScoreInputDimension = {
+  PROBLEM_RELEVANCE: "PROBLEM_RELEVANCE",
+  JUDGING_ALIGNMENT: "JUDGING_ALIGNMENT",
+  USER_VALUE: "USER_VALUE",
+  DIFFERENTIATION: "DIFFERENTIATION",
+  TECHNICAL_FEASIBILITY: "TECHNICAL_FEASIBILITY",
+  DEMONSTRABILITY: "DEMONSTRABILITY",
+  IMPLEMENTATION_TIME: "IMPLEMENTATION_TIME",
+  RELIABILITY_RISK: "RELIABILITY_RISK",
+  DATA_AVAILABILITY: "DATA_AVAILABILITY",
+  POTENTIAL_IMPACT: "POTENTIAL_IMPACT",
+} as const;
+
+export type DimensionScoreInputConfidence =
+  (typeof DimensionScoreInputConfidence)[keyof typeof DimensionScoreInputConfidence];
+
+export const DimensionScoreInputConfidence = {
+  LOW: "LOW",
+  MEDIUM: "MEDIUM",
+  HIGH: "HIGH",
+} as const;
+
+export interface DimensionScoreInput {
+  dimension: DimensionScoreInputDimension;
+  /**
+   * @minimum 1
+   * @maximum 5
+   */
+  score: number;
+  /** @maxLength 2000 */
+  rationale?: string;
+  evidenceRefs?: string[];
+  uncertainties?: string[];
+  confidence?: DimensionScoreInputConfidence;
+}
+
+export interface EvaluationRequest {
+  scores: DimensionScoreInput[];
+}
+
+export type RubricRequestWeights = { [key: string]: number };
+
+export interface RubricRequest {
+  weights: RubricRequestWeights;
+}
+
+export type IdeaDecisionRequestStatus =
+  (typeof IdeaDecisionRequestStatus)[keyof typeof IdeaDecisionRequestStatus];
+
+export const IdeaDecisionRequestStatus = {
+  selected: "selected",
+  rejected: "rejected",
+} as const;
+
+export interface IdeaDecisionRequest {
+  status: IdeaDecisionRequestStatus;
+  /**
+   * @minLength 1
+   * @maxLength 4000
+   */
+  rationale: string;
+}
+
+export type IdeaEvaluationSensitivityRange = { [key: string]: unknown };
+
+export interface IdeaEvaluation {
+  ideaId: string;
+  scores: DimensionScoreInput[];
+  total: number;
+  sensitivityRange?: IdeaEvaluationSensitivityRange;
+  strongestDimensions?: string[];
+  weakestDimensions?: string[];
+  uncertainDimensions?: string[];
+  [key: string]: unknown;
+}
+
+export type BuildBriefRecordContent = { [key: string]: unknown };
+
+export type BuildBriefRecordClaimKind =
+  (typeof BuildBriefRecordClaimKind)[keyof typeof BuildBriefRecordClaimKind];
+
+export const BuildBriefRecordClaimKind = {
+  VERIFIED_FACT: "VERIFIED_FACT",
+  SOURCE_SUPPORTED: "SOURCE_SUPPORTED",
+  INFERENCE: "INFERENCE",
+  HYPOTHESIS: "HYPOTHESIS",
+  UNKNOWN: "UNKNOWN",
+} as const;
+
+export interface BuildBriefRecord {
+  id: string;
+  competitionId: string;
+  /** @nullable */
+  ideaId: string | null;
+  ideaName: string;
+  content: BuildBriefRecordContent;
+  missingSections: string[];
+  claimKind: BuildBriefRecordClaimKind;
+  method: string;
+  /** @nullable */
+  provider: string | null;
+  /** @nullable */
+  model: string | null;
+  createdAt: string;
+  updatedAt: string;
+  [key: string]: unknown;
+}
+
+export type PlanRequestTrigger =
+  (typeof PlanRequestTrigger)[keyof typeof PlanRequestTrigger];
 
 export const PlanRequestTrigger = {
-  manual: 'manual',
-  deadline_changed: 'deadline_changed',
-  task_failed: 'task_failed',
-  progress_changed: 'progress_changed',
+  manual: "manual",
+  deadline_changed: "deadline_changed",
+  task_failed: "task_failed",
+  progress_changed: "progress_changed",
 } as const;
 
 export interface PlanRequest {
   /**
-     * @minimum 0.25
-     * @maximum 1000
-     */
+   * @minimum 0.25
+   * @maximum 1000
+   */
   remainingHours?: number;
   trigger: PlanRequestTrigger;
 }
 
-export type TaskUpdateStatus = typeof TaskUpdateStatus[keyof typeof TaskUpdateStatus];
-
+export type TaskUpdateStatus =
+  (typeof TaskUpdateStatus)[keyof typeof TaskUpdateStatus];
 
 export const TaskUpdateStatus = {
-  todo: 'todo',
-  in_progress: 'in_progress',
-  blocked: 'blocked',
-  done: 'done',
-  deferred: 'deferred',
+  todo: "todo",
+  in_progress: "in_progress",
+  blocked: "blocked",
+  done: "done",
+  deferred: "deferred",
 } as const;
 
 export interface TaskUpdate {
   status: TaskUpdateStatus;
 }
 
-export type PlanTaskPhase = typeof PlanTaskPhase[keyof typeof PlanTaskPhase];
-
+export type PlanTaskPhase = (typeof PlanTaskPhase)[keyof typeof PlanTaskPhase];
 
 export const PlanTaskPhase = {
-  intake: 'intake',
-  problem: 'problem',
-  research: 'research',
-  track_selection: 'track_selection',
-  idea_selection: 'idea_selection',
-  specification: 'specification',
-  architecture: 'architecture',
-  implementation: 'implementation',
-  testing: 'testing',
-  security: 'security',
-  deployment: 'deployment',
-  demo: 'demo',
-  pitch: 'pitch',
-  submission: 'submission',
+  intake: "intake",
+  problem: "problem",
+  research: "research",
+  track_selection: "track_selection",
+  idea_selection: "idea_selection",
+  specification: "specification",
+  architecture: "architecture",
+  implementation: "implementation",
+  testing: "testing",
+  security: "security",
+  deployment: "deployment",
+  demo: "demo",
+  pitch: "pitch",
+  submission: "submission",
 } as const;
 
-export type PlanTaskPriority = typeof PlanTaskPriority[keyof typeof PlanTaskPriority];
-
+export type PlanTaskPriority =
+  (typeof PlanTaskPriority)[keyof typeof PlanTaskPriority];
 
 export const PlanTaskPriority = {
-  critical: 'critical',
-  high: 'high',
-  medium: 'medium',
-  low: 'low',
+  critical: "critical",
+  high: "high",
+  medium: "medium",
+  low: "low",
 } as const;
 
-export type PlanTaskStatus = typeof PlanTaskStatus[keyof typeof PlanTaskStatus];
-
+export type PlanTaskStatus =
+  (typeof PlanTaskStatus)[keyof typeof PlanTaskStatus];
 
 export const PlanTaskStatus = {
-  todo: 'todo',
-  in_progress: 'in_progress',
-  blocked: 'blocked',
-  done: 'done',
-  deferred: 'deferred',
+  todo: "todo",
+  in_progress: "in_progress",
+  blocked: "blocked",
+  done: "done",
+  deferred: "deferred",
 } as const;
+
+export type TaskVerificationState =
+  (typeof TaskVerificationState)[keyof typeof TaskVerificationState];
+
+export const TaskVerificationState = {
+  not_started: "not_started",
+  in_progress: "in_progress",
+  blocked: "blocked",
+  done: "done",
+  verified: "verified",
+} as const;
+
+export interface TaskVerification {
+  state: TaskVerificationState;
+  verified: boolean;
+  requiredTypes: string[];
+  satisfiedTypes: string[];
+  missingTypes: string[];
+  failedTypes: string[];
+  /** @minimum 0 */
+  evidenceCount: number;
+  supportingEvidenceIds: string[];
+  unusableEvidenceIds: string[];
+  blockedByFailure: boolean;
+  hasStaleEvidence: boolean;
+  reason: string;
+}
 
 export interface PlanTask {
   id: string;
@@ -331,25 +815,26 @@ export interface PlanTask {
   verificationMethod: string;
   riskIfSkipped: string;
   mandatory: boolean;
+  verification: TaskVerification;
 }
 
-export type WorkflowPlanSummaryStatus = typeof WorkflowPlanSummaryStatus[keyof typeof WorkflowPlanSummaryStatus];
-
+export type WorkflowPlanSummaryStatus =
+  (typeof WorkflowPlanSummaryStatus)[keyof typeof WorkflowPlanSummaryStatus];
 
 export const WorkflowPlanSummaryStatus = {
-  feasible: 'feasible',
-  at_risk: 'at_risk',
-  infeasible: 'infeasible',
+  feasible: "feasible",
+  at_risk: "at_risk",
+  infeasible: "infeasible",
 } as const;
 
-export type WorkflowPlanSummaryTrigger = typeof WorkflowPlanSummaryTrigger[keyof typeof WorkflowPlanSummaryTrigger];
-
+export type WorkflowPlanSummaryTrigger =
+  (typeof WorkflowPlanSummaryTrigger)[keyof typeof WorkflowPlanSummaryTrigger];
 
 export const WorkflowPlanSummaryTrigger = {
-  manual: 'manual',
-  deadline_changed: 'deadline_changed',
-  task_failed: 'task_failed',
-  progress_changed: 'progress_changed',
+  manual: "manual",
+  deadline_changed: "deadline_changed",
+  task_failed: "task_failed",
+  progress_changed: "progress_changed",
 } as const;
 
 export interface WorkflowPlanSummary {
@@ -367,23 +852,23 @@ export interface WorkflowPlanSummary {
   completedTaskCount: number;
 }
 
-export type WorkflowPlanStatus = typeof WorkflowPlanStatus[keyof typeof WorkflowPlanStatus];
-
+export type WorkflowPlanStatus =
+  (typeof WorkflowPlanStatus)[keyof typeof WorkflowPlanStatus];
 
 export const WorkflowPlanStatus = {
-  feasible: 'feasible',
-  at_risk: 'at_risk',
-  infeasible: 'infeasible',
+  feasible: "feasible",
+  at_risk: "at_risk",
+  infeasible: "infeasible",
 } as const;
 
-export type WorkflowPlanTrigger = typeof WorkflowPlanTrigger[keyof typeof WorkflowPlanTrigger];
-
+export type WorkflowPlanTrigger =
+  (typeof WorkflowPlanTrigger)[keyof typeof WorkflowPlanTrigger];
 
 export const WorkflowPlanTrigger = {
-  manual: 'manual',
-  deadline_changed: 'deadline_changed',
-  task_failed: 'task_failed',
-  progress_changed: 'progress_changed',
+  manual: "manual",
+  deadline_changed: "deadline_changed",
+  task_failed: "task_failed",
+  progress_changed: "progress_changed",
 } as const;
 
 export interface WorkflowPlan {
@@ -402,67 +887,67 @@ export interface WorkflowPlan {
   tasks: PlanTask[];
 }
 
-export type QualitySignalsApplicationBuild = typeof QualitySignalsApplicationBuild[keyof typeof QualitySignalsApplicationBuild];
-
+export type QualitySignalsApplicationBuild =
+  (typeof QualitySignalsApplicationBuild)[keyof typeof QualitySignalsApplicationBuild];
 
 export const QualitySignalsApplicationBuild = {
-  not_run: 'not_run',
-  passed: 'passed',
-  failed: 'failed',
+  not_run: "not_run",
+  passed: "passed",
+  failed: "failed",
 } as const;
 
-export type QualitySignalsAutomatedTests = typeof QualitySignalsAutomatedTests[keyof typeof QualitySignalsAutomatedTests];
-
+export type QualitySignalsAutomatedTests =
+  (typeof QualitySignalsAutomatedTests)[keyof typeof QualitySignalsAutomatedTests];
 
 export const QualitySignalsAutomatedTests = {
-  not_run: 'not_run',
-  passed: 'passed',
-  failed: 'failed',
+  not_run: "not_run",
+  passed: "passed",
+  failed: "failed",
 } as const;
 
-export type QualitySignalsBrowserVerification = typeof QualitySignalsBrowserVerification[keyof typeof QualitySignalsBrowserVerification];
-
+export type QualitySignalsBrowserVerification =
+  (typeof QualitySignalsBrowserVerification)[keyof typeof QualitySignalsBrowserVerification];
 
 export const QualitySignalsBrowserVerification = {
-  not_run: 'not_run',
-  passed: 'passed',
-  failed: 'failed',
+  not_run: "not_run",
+  passed: "passed",
+  failed: "failed",
 } as const;
 
-export type QualitySignalsSecurityReview = typeof QualitySignalsSecurityReview[keyof typeof QualitySignalsSecurityReview];
-
+export type QualitySignalsSecurityReview =
+  (typeof QualitySignalsSecurityReview)[keyof typeof QualitySignalsSecurityReview];
 
 export const QualitySignalsSecurityReview = {
-  not_run: 'not_run',
-  passed: 'passed',
-  failed: 'failed',
+  not_run: "not_run",
+  passed: "passed",
+  failed: "failed",
 } as const;
 
-export type QualitySignalsDeployment = typeof QualitySignalsDeployment[keyof typeof QualitySignalsDeployment];
-
+export type QualitySignalsDeployment =
+  (typeof QualitySignalsDeployment)[keyof typeof QualitySignalsDeployment];
 
 export const QualitySignalsDeployment = {
-  not_run: 'not_run',
-  passed: 'passed',
-  failed: 'failed',
+  not_run: "not_run",
+  passed: "passed",
+  failed: "failed",
 } as const;
 
-export type QualitySignalsDemoReadiness = typeof QualitySignalsDemoReadiness[keyof typeof QualitySignalsDemoReadiness];
-
+export type QualitySignalsDemoReadiness =
+  (typeof QualitySignalsDemoReadiness)[keyof typeof QualitySignalsDemoReadiness];
 
 export const QualitySignalsDemoReadiness = {
-  not_run: 'not_run',
-  passed: 'passed',
-  failed: 'failed',
+  not_run: "not_run",
+  passed: "passed",
+  failed: "failed",
 } as const;
 
-export type QualitySignalsSubmissionReadiness = typeof QualitySignalsSubmissionReadiness[keyof typeof QualitySignalsSubmissionReadiness];
-
+export type QualitySignalsSubmissionReadiness =
+  (typeof QualitySignalsSubmissionReadiness)[keyof typeof QualitySignalsSubmissionReadiness];
 
 export const QualitySignalsSubmissionReadiness = {
-  not_run: 'not_run',
-  passed: 'passed',
-  failed: 'failed',
+  not_run: "not_run",
+  passed: "passed",
+  failed: "failed",
 } as const;
 
 export interface QualitySignals {
@@ -500,3 +985,46 @@ export type NotFoundResponse = ErrorResponse;
  */
 export type BadRequestResponse = ErrorResponse;
 
+export type UpdateRequirement200 = {
+  requirement: AnalysisRequirement;
+};
+
+export type ListResearch200 = {
+  findings: ResearchFinding[];
+};
+
+export type ListGaps200 = {
+  gaps: ResearchGap[];
+};
+
+export type CreateIdeas201 = {
+  ideas: IdeaCandidate[];
+  /** @nullable */
+  provider?: string | null;
+  /** @nullable */
+  model?: string | null;
+};
+
+export type EvaluateIdea200 = {
+  evaluation: IdeaEvaluation;
+};
+
+export type SaveRubric200Weights = { [key: string]: number };
+
+export type SaveRubric200 = {
+  weights: SaveRubric200Weights;
+};
+
+export type DecideIdea200 = {
+  idea: IdeaCandidate;
+};
+
+export type CreateBrief201 = {
+  brief: BuildBriefRecord;
+  missingSections?: string[];
+  method?: string;
+};
+
+export type ListBriefs200 = {
+  briefs: BuildBriefRecord[];
+};

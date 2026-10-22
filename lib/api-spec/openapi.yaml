@@ -11,6 +11,8 @@ tags:
     description: Health operations
   - name: competitions
     description: Competition workspaces and plans
+  - name: intel
+    description: Problem analysis, research, opportunities, ideas, and build briefs
 security:
   - clerkSession: []
 paths:
@@ -239,6 +241,548 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
+  /competitions/{competitionId}/evidence:
+    parameters:
+      - name: competitionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: listEvidence
+      tags: [competitions]
+      summary: List verification evidence recorded for a competition
+      responses:
+        "200":
+          description: Evidence records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Evidence"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /competitions/{competitionId}/tasks/{taskId}/evidence:
+    parameters:
+      - name: competitionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: taskId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      operationId: createEvidence
+      tags: [competitions]
+      summary: Record a verification evidence entry for a task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EvidenceInput"
+      responses:
+        "201":
+          description: Recorded evidence
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Evidence"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /competitions/{competitionId}/evidence/{evidenceId}:
+    parameters:
+      - name: competitionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: evidenceId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    delete:
+      operationId: deleteEvidence
+      tags: [competitions]
+      summary: Remove a verification evidence entry
+      responses:
+        "200":
+          description: Removal confirmation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EvidenceDeletion"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /competitions/{competitionId}/analysis:
+    parameters:
+      - name: competitionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: getAnalysis
+      tags: [intel]
+      summary: Get the latest problem analysis for a competition
+      responses:
+        "200":
+          description: The latest analysis and its requirements
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalysisResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      operationId: createAnalysis
+      tags: [intel]
+      summary: Analyse the stored competition record into reviewable requirements
+      responses:
+        "201":
+          description: The analysis and its requirements
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalysisResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /competitions/{competitionId}/analysis/requirements/{requirementId}:
+    parameters:
+      - name: competitionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: requirementId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    patch:
+      operationId: updateRequirement
+      tags: [intel]
+      summary: Edit or review an extracted requirement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequirementUpdate"
+      responses:
+        "200":
+          description: The updated requirement
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requirement:
+                    $ref: "#/components/schemas/AnalysisRequirement"
+                required: [requirement]
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /competitions/{competitionId}/research:
+    parameters:
+      - name: competitionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: listResearch
+      tags: [intel]
+      summary: List the research findings recorded for a competition
+      responses:
+        "200":
+          description: Research findings
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  findings:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ResearchFinding"
+                required: [findings]
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      operationId: createResearch
+      tags: [intel]
+      summary: Search real research sources, or record a finding by hand
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResearchRequest"
+      responses:
+        "201":
+          description: The findings that were recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResearchResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          description: Too many research searches in a short time
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /competitions/{competitionId}/research/{findingId}:
+    parameters:
+      - name: competitionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: findingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    delete:
+      operationId: deleteResearch
+      tags: [intel]
+      summary: Remove a research finding
+      responses:
+        "200":
+          description: Removal confirmation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EvidenceDeletion"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /competitions/{competitionId}/gaps:
+    parameters:
+      - name: competitionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: listGaps
+      tags: [intel]
+      summary: List the opportunities identified for a competition
+      responses:
+        "200":
+          description: Opportunities
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  gaps:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ResearchGap"
+                required: [gaps]
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      operationId: createGaps
+      tags: [intel]
+      summary: Identify opportunities from the analysis and the research findings
+      responses:
+        "201":
+          description: The opportunities that were identified
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GapResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /competitions/{competitionId}/ideas:
+    parameters:
+      - name: competitionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: listIdeas
+      tags: [intel]
+      summary: List the idea candidates and compare them
+      responses:
+        "200":
+          description: Idea candidates with their evaluations
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IdeasResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      operationId: createIdeas
+      tags: [intel]
+      summary: Generate buildable idea candidates for the competition
+      responses:
+        "201":
+          description: The idea candidates that were generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ideas:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/IdeaCandidate"
+                  provider:
+                    type: ["string", "null"]
+                  model:
+                    type: ["string", "null"]
+                required: [ideas]
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "503":
+          description: The AI provider is not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /competitions/{competitionId}/ideas/{ideaId}/evaluate:
+    parameters:
+      - name: competitionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: ideaId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      operationId: evaluateIdea
+      tags: [intel]
+      summary: Score an idea on the rubric and compute its weighted total
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EvaluationRequest"
+      responses:
+        "200":
+          description: The evaluation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  evaluation:
+                    $ref: "#/components/schemas/IdeaEvaluation"
+                required: [evaluation]
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /competitions/{competitionId}/rubric:
+    parameters:
+      - name: competitionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    put:
+      operationId: saveRubric
+      tags: [intel]
+      summary: Save the weights used to score ideas
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RubricRequest"
+      responses:
+        "200":
+          description: The normalised weights
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  weights:
+                    type: object
+                    additionalProperties:
+                      type: number
+                required: [weights]
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /competitions/{competitionId}/ideas/{ideaId}/decision:
+    parameters:
+      - name: competitionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: ideaId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      operationId: decideIdea
+      tags: [intel]
+      summary: Record the team's decision about an idea
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IdeaDecisionRequest"
+      responses:
+        "200":
+          description: The updated idea
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  idea:
+                    $ref: "#/components/schemas/IdeaCandidate"
+                required: [idea]
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /competitions/{competitionId}/ideas/{ideaId}/brief:
+    parameters:
+      - name: competitionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: ideaId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      operationId: createBrief
+      tags: [intel]
+      summary: Produce a build brief for the selected idea
+      responses:
+        "201":
+          description: The build brief
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  brief:
+                    $ref: "#/components/schemas/BuildBriefRecord"
+                  missingSections:
+                    type: array
+                    items:
+                      type: string
+                  method:
+                    type: string
+                required: [brief]
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /competitions/{competitionId}/briefs:
+    parameters:
+      - name: competitionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: listBriefs
+      tags: [intel]
+      summary: List the build briefs saved for a competition
+      responses:
+        "200":
+          description: Build briefs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  briefs:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/BuildBriefRecord"
+                required: [briefs]
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
 components:
   securitySchemes:
     clerkSession:
@@ -279,6 +823,14 @@ components:
       properties:
         error:
           type: string
+        code:
+          type: ["string", "null"]
+          description: A machine-readable reason, when the error has one.
+        missing:
+          type: array
+          items:
+            type: string
+          description: Configuration that is missing, when the error is a configuration error.
       required: [error]
     CompetitionInput:
       type: object
@@ -473,6 +1025,665 @@ components:
         - status
         - createdAt
         - updatedAt
+    EvidenceInput:
+      type: object
+      additionalProperties: false
+      properties:
+        type:
+          type: string
+          enum:
+            [TEST_RESULT, BUILD_RESULT, DEPLOYMENT_URL, HTTP_CHECK, MANUAL_REVIEW, SUBMISSION_CONFIRMATION]
+        summary:
+          type: string
+          minLength: 1
+          maxLength: 2000
+        result:
+          type: string
+          enum: [passed, failed]
+        sourceUrl:
+          type: ["string", "null"]
+          maxLength: 2000
+        commandName:
+          type: ["string", "null"]
+          maxLength: 300
+        observedAt:
+          type: ["string", "null"]
+          format: date-time
+        reviewerNote:
+          type: ["string", "null"]
+          maxLength: 4000
+      required: [type, summary, result]
+    Evidence:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        competitionId:
+          type: string
+          format: uuid
+        taskId:
+          type: ["string", "null"]
+          format: uuid
+        taskKey:
+          type: string
+        type:
+          type: string
+          enum:
+            [TEST_RESULT, BUILD_RESULT, DEPLOYMENT_URL, HTTP_CHECK, MANUAL_REVIEW, SUBMISSION_CONFIRMATION]
+        summary:
+          type: string
+        sourceUrl:
+          type: ["string", "null"]
+        commandName:
+          type: ["string", "null"]
+        result:
+          type: string
+          enum: [passed, failed]
+        observedAt:
+          type: string
+          format: date-time
+        reviewerNote:
+          type: ["string", "null"]
+        source:
+          type: string
+          enum: [manual]
+        phaseSnapshot:
+          type: string
+        verificationMethodSnapshot:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - competitionId
+        - taskId
+        - taskKey
+        - type
+        - summary
+        - sourceUrl
+        - commandName
+        - result
+        - observedAt
+        - reviewerNote
+        - source
+        - phaseSnapshot
+        - verificationMethodSnapshot
+        - createdAt
+        - updatedAt
+    EvidenceDeletion:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        deleted:
+          type: boolean
+      required: [id, deleted]
+    AnalysisResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        analysis:
+          $ref: "#/components/schemas/CompetitionAnalysis"
+        requirements:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnalysisRequirement"
+        note:
+          type: ["string", "null"]
+      required: [requirements]
+    CompetitionAnalysis:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        competitionId:
+          type: string
+          format: uuid
+        version:
+          type: integer
+        coreProblem:
+          type: string
+        missingFields:
+          type: array
+          items:
+            type: string
+        unansweredQuestions:
+          type: array
+          items:
+            type: string
+        method:
+          type: string
+        provider:
+          type: ["string", "null"]
+        model:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - competitionId
+        - version
+        - coreProblem
+        - missingFields
+        - unansweredQuestions
+        - method
+        - provider
+        - model
+        - createdAt
+        - updatedAt
+    AnalysisRequirement:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        analysisId:
+          type: string
+          format: uuid
+        category:
+          type: string
+        text:
+          type: string
+        claimKind:
+          type: string
+          enum: [VERIFIED_FACT, SOURCE_SUPPORTED, INFERENCE, HYPOTHESIS, UNKNOWN]
+        source:
+          type: string
+        origin:
+          type: ["string", "null"]
+        reviewed:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - analysisId
+        - category
+        - text
+        - claimKind
+        - source
+        - origin
+        - reviewed
+        - createdAt
+        - updatedAt
+    RequirementUpdate:
+      type: object
+      additionalProperties: false
+      properties:
+        text:
+          type: string
+          minLength: 1
+          maxLength: 4000
+        reviewed:
+          type: boolean
+      required: [text]
+    ResearchRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        query:
+          type: string
+          minLength: 3
+          maxLength: 300
+        providers:
+          type: array
+          items:
+            type: string
+            enum: [wikipedia, arxiv, github]
+        manual:
+          type: boolean
+        title:
+          type: string
+          maxLength: 300
+        summary:
+          type: string
+          maxLength: 4000
+        sourceUrl:
+          type: ["string", "null"]
+          maxLength: 2000
+        sourceType:
+          type: string
+        supports:
+          type: ["string", "null"]
+          maxLength: 2000
+        limitations:
+          type: ["string", "null"]
+          maxLength: 2000
+        excerpt:
+          type: ["string", "null"]
+          maxLength: 2000
+    ResearchResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        findings:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResearchFinding"
+        providerOutcomes:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResearchOutcome"
+        retrievedAt:
+          type: string
+          format: date-time
+      required: [findings]
+    ResearchOutcome:
+      type: object
+      additionalProperties: false
+      properties:
+        provider:
+          type: string
+        ok:
+          type: boolean
+        count:
+          type: integer
+        error:
+          type: ["string", "null"]
+      required: [provider, ok, count]
+    ResearchFinding:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        competitionId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        sourceUrl:
+          type: ["string", "null"]
+        provider:
+          type: string
+        sourceType:
+          type: string
+        retrievedAt:
+          type: string
+          format: date-time
+        summary:
+          type: string
+        excerpt:
+          type: ["string", "null"]
+        supports:
+          type: ["string", "null"]
+        limitations:
+          type: ["string", "null"]
+        claimKind:
+          type: string
+          enum: [VERIFIED_FACT, SOURCE_SUPPORTED, INFERENCE, HYPOTHESIS, UNKNOWN]
+        query:
+          type: ["string", "null"]
+        manual:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - competitionId
+        - title
+        - sourceUrl
+        - provider
+        - sourceType
+        - retrievedAt
+        - summary
+        - excerpt
+        - supports
+        - limitations
+        - claimKind
+        - query
+        - manual
+        - createdAt
+        - updatedAt
+    GapResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        gaps:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResearchGap"
+        evidenceGaps:
+          type: array
+          items:
+            type: string
+        nextInvestigations:
+          type: array
+          items:
+            type: string
+        method:
+          type: string
+        provider:
+          type: ["string", "null"]
+        model:
+          type: ["string", "null"]
+        note:
+          type: ["string", "null"]
+      required: [gaps, evidenceGaps, nextInvestigations, method]
+    ResearchGap:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        competitionId:
+          type: string
+          format: uuid
+        need:
+          type: string
+        targetUser:
+          type: string
+        supportingFindingIds:
+          type: array
+          items:
+            type: string
+        existingApproaches:
+          type: string
+        insufficiency:
+          type: string
+        opportunity:
+          type: string
+        risks:
+          type: array
+          items:
+            type: string
+        claimKind:
+          type: string
+          enum: [VERIFIED_FACT, SOURCE_SUPPORTED, INFERENCE, HYPOTHESIS, UNKNOWN]
+        evidenceGaps:
+          type: array
+          items:
+            type: string
+        nextInvestigations:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - competitionId
+        - need
+        - targetUser
+        - supportingFindingIds
+        - existingApproaches
+        - insufficiency
+        - opportunity
+        - risks
+        - claimKind
+        - evidenceGaps
+        - nextInvestigations
+        - createdAt
+        - updatedAt
+    IdeaCandidate:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        competitionId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        pitch:
+          type: string
+        targetUser:
+          type: string
+        problemSolved:
+          type: string
+        proposedSolution:
+          type: string
+        differentiator:
+          type: string
+        coreUserJourney:
+          type: string
+        mvpFeatures:
+          type: array
+          items:
+            type: string
+        excludedFeatures:
+          type: array
+          items:
+            type: string
+        architectureSuggestion:
+          type: string
+        dataAndIntegrations:
+          type: string
+        feasibilityNote:
+          type: string
+        risks:
+          type: array
+          items:
+            type: string
+        demoStrategy:
+          type: string
+        supportingEvidence:
+          type: array
+          items:
+            type: string
+        unverifiedAssumptions:
+          type: array
+          items:
+            type: string
+        claimKind:
+          type: string
+          enum: [VERIFIED_FACT, SOURCE_SUPPORTED, INFERENCE, HYPOTHESIS, UNKNOWN]
+        status:
+          type: string
+        decisionRationale:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - competitionId
+        - name
+        - pitch
+        - targetUser
+        - problemSolved
+        - proposedSolution
+        - differentiator
+        - coreUserJourney
+        - mvpFeatures
+        - excludedFeatures
+        - architectureSuggestion
+        - dataAndIntegrations
+        - feasibilityNote
+        - risks
+        - demoStrategy
+        - supportingEvidence
+        - unverifiedAssumptions
+        - claimKind
+        - status
+        - decisionRationale
+        - createdAt
+        - updatedAt
+    IdeasResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        ideas:
+          type: array
+          items:
+            $ref: "#/components/schemas/IdeaCandidate"
+        weights:
+          type: object
+          additionalProperties:
+            type: number
+        comparison:
+          type: object
+          additionalProperties: true
+      required: [ideas, weights]
+    EvaluationRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        scores:
+          type: array
+          items:
+            $ref: "#/components/schemas/DimensionScoreInput"
+      required: [scores]
+    RubricRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        weights:
+          type: object
+          additionalProperties:
+            type: number
+      required: [weights]
+    IdeaDecisionRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        status:
+          type: string
+          enum: [selected, rejected]
+        rationale:
+          type: string
+          minLength: 1
+          maxLength: 4000
+      required: [status, rationale]
+    DimensionScoreInput:
+      type: object
+      additionalProperties: false
+      properties:
+        dimension:
+          type: string
+          enum:
+            [PROBLEM_RELEVANCE, JUDGING_ALIGNMENT, USER_VALUE, DIFFERENTIATION, TECHNICAL_FEASIBILITY, DEMONSTRABILITY, IMPLEMENTATION_TIME, RELIABILITY_RISK, DATA_AVAILABILITY, POTENTIAL_IMPACT]
+        score:
+          type: integer
+          minimum: 1
+          maximum: 5
+        rationale:
+          type: string
+          maxLength: 2000
+        evidenceRefs:
+          type: array
+          items:
+            type: string
+        uncertainties:
+          type: array
+          items:
+            type: string
+        confidence:
+          type: string
+          enum: [LOW, MEDIUM, HIGH]
+      required: [dimension, score]
+    IdeaEvaluation:
+      type: object
+      additionalProperties: true
+      properties:
+        ideaId:
+          type: string
+        scores:
+          type: array
+          items:
+            $ref: "#/components/schemas/DimensionScoreInput"
+        total:
+          type: number
+        sensitivityRange:
+          type: object
+          additionalProperties: true
+        strongestDimensions:
+          type: array
+          items:
+            type: string
+        weakestDimensions:
+          type: array
+          items:
+            type: string
+        uncertainDimensions:
+          type: array
+          items:
+            type: string
+      required: [ideaId, scores, total]
+    BuildBriefRecord:
+      type: object
+      additionalProperties: true
+      properties:
+        id:
+          type: string
+          format: uuid
+        competitionId:
+          type: string
+          format: uuid
+        ideaId:
+          type: ["string", "null"]
+          format: uuid
+        ideaName:
+          type: string
+        content:
+          type: object
+          additionalProperties: true
+        missingSections:
+          type: array
+          items:
+            type: string
+        claimKind:
+          type: string
+          enum: [VERIFIED_FACT, SOURCE_SUPPORTED, INFERENCE, HYPOTHESIS, UNKNOWN]
+        method:
+          type: string
+        provider:
+          type: ["string", "null"]
+        model:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - competitionId
+        - ideaId
+        - ideaName
+        - content
+        - missingSections
+        - claimKind
+        - method
+        - provider
+        - model
+        - createdAt
+        - updatedAt
     PlanRequest:
       type: object
       additionalProperties: false
@@ -546,6 +1757,8 @@ components:
           type: string
         mandatory:
           type: boolean
+        verification:
+          $ref: "#/components/schemas/TaskVerification"
       required:
         - id
         - planId
@@ -565,6 +1778,62 @@ components:
         - verificationMethod
         - riskIfSkipped
         - mandatory
+        - verification
+    TaskVerification:
+      type: object
+      additionalProperties: false
+      properties:
+        state:
+          type: string
+          enum: [not_started, in_progress, blocked, done, verified]
+        verified:
+          type: boolean
+        requiredTypes:
+          type: array
+          items:
+            type: string
+        satisfiedTypes:
+          type: array
+          items:
+            type: string
+        missingTypes:
+          type: array
+          items:
+            type: string
+        failedTypes:
+          type: array
+          items:
+            type: string
+        evidenceCount:
+          type: integer
+          minimum: 0
+        supportingEvidenceIds:
+          type: array
+          items:
+            type: string
+        unusableEvidenceIds:
+          type: array
+          items:
+            type: string
+        blockedByFailure:
+          type: boolean
+        hasStaleEvidence:
+          type: boolean
+        reason:
+          type: string
+      required:
+        - state
+        - verified
+        - requiredTypes
+        - satisfiedTypes
+        - missingTypes
+        - failedTypes
+        - evidenceCount
+        - supportingEvidenceIds
+        - unusableEvidenceIds
+        - blockedByFailure
+        - hasStaleEvidence
+        - reason
     WorkflowPlanSummary:
       type: object
       additionalProperties: false

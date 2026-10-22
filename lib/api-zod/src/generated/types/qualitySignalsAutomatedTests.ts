@@ -6,11 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type QualitySignalsAutomatedTests = typeof QualitySignalsAutomatedTests[keyof typeof QualitySignalsAutomatedTests];
-
+export type QualitySignalsAutomatedTests =
+  (typeof QualitySignalsAutomatedTests)[keyof typeof QualitySignalsAutomatedTests];
 
 export const QualitySignalsAutomatedTests = {
-  not_run: 'not_run',
-  passed: 'passed',
-  failed: 'failed',
+  not_run: "not_run",
+  passed: "passed",
+  failed: "failed",
 } as const;

@@ -6,13 +6,13 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type TaskUpdateStatus = typeof TaskUpdateStatus[keyof typeof TaskUpdateStatus];
-
+export type TaskUpdateStatus =
+  (typeof TaskUpdateStatus)[keyof typeof TaskUpdateStatus];
 
 export const TaskUpdateStatus = {
-  todo: 'todo',
-  in_progress: 'in_progress',
-  blocked: 'blocked',
-  done: 'done',
-  deferred: 'deferred',
+  todo: "todo",
+  in_progress: "in_progress",
+  blocked: "blocked",
+  done: "done",
+  deferred: "deferred",
 } as const;

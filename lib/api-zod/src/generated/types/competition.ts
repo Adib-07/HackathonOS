@@ -5,9 +5,9 @@
  * Authenticated HackathonOS competition planning API.
  * OpenAPI spec version: 0.1.0
  */
-import type { CompetitionCompetitionType } from './competitionCompetitionType';
-import type { CompetitionStatus } from './competitionStatus';
-import type { CompetitionTrackMode } from './competitionTrackMode';
+import type { CompetitionCompetitionType } from "./competitionCompetitionType";
+import type { CompetitionStatus } from "./competitionStatus";
+import type { CompetitionTrackMode } from "./competitionTrackMode";
 
 export interface Competition {
   id: string;

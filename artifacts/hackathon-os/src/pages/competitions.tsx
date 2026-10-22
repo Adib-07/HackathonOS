@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { useListCompetitions, type Competition } from "@workspace/api-client-react";
 import {
   ArrowRight,
-  CalendarDays,
+  CalendarClock,
   Check,
   CircleHelp,
   FolderKanban,
@@ -19,6 +19,7 @@ import {
   StatusPill,
 } from "@/components/workspace";
 import { CompetitionModal } from "@/components/CompetitionModal";
+import { computeRemaining } from "@/lib/workflow";
 
 export default function CompetitionsPage() {
   const [, setLocation] = useLocation();
@@ -94,46 +95,74 @@ export default function CompetitionsPage() {
             <span>STATUS</span>
             <span />
           </div>
-          {items.map((competition) => (
-            <Link
-              href={`/competitions/${competition.id}`}
-              className="competition-row"
-              key={competition.id}
-              data-testid={`row-competition-${competition.id}`}
-            >
-              <span className="comp-row-main">
-                <span className="comp-row-icon">
-                  {competition.name.slice(0, 1).toUpperCase()}
+          {items.map((competition) => {
+            const remaining = computeRemaining(competition.deadline);
+            return (
+              <Link
+                href={`/competitions/${competition.id}`}
+                className="competition-row"
+                key={competition.id}
+                data-testid={`row-competition-${competition.id}`}
+              >
+                <span className="comp-row-main">
+                  <span className="comp-row-icon">
+                    {competition.name.slice(0, 1).toUpperCase()}
+                  </span>
+                  <span className="comp-row-copy">
+                    <strong>{competition.name}</strong>
+                    <small>
+                      {competition.organizer || "Organizer not added"}{" "}
+                      <span className="tiny-dot" />{" "}
+                      {competition.competitionType.replaceAll("_", " ")}
+                      {competition.currentTrack ? (
+                        <>
+                          {" "}
+                          <span className="tiny-dot" /> {competition.currentTrack}
+                        </>
+                      ) : null}
+                    </small>
+                  </span>
                 </span>
-                <span className="comp-row-copy">
-                  <strong>{competition.name}</strong>
-                  <small>
-                    {competition.organizer || "Organizer not added"}{" "}
-                    <span className="tiny-dot" />{" "}
-                    {competition.competitionType.replaceAll("_", " ")}
-                  </small>
+                <span className="comp-row-deadline">
+                  <CalendarClock size={14} />
+                  <span className="comp-row-deadline-text">
+                    <span>
+                      {new Date(competition.deadline).toLocaleDateString(
+                        undefined,
+                        {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        },
+                      )}
+                    </span>
+                    <small
+                      className={
+                        remaining.isPast
+                          ? "comp-row-remaining comp-row-remaining-late"
+                          : remaining.isUrgent
+                            ? "comp-row-remaining comp-row-remaining-urgent"
+                            : "comp-row-remaining"
+                      }
+                    >
+                      {remaining.isPast ? "Overdue" : `${remaining.label} left`}
+                    </small>
+                  </span>
                 </span>
-              </span>
-              <span className="comp-row-deadline">
-                <CalendarDays size={14} />
-                {new Date(competition.deadline).toLocaleDateString(undefined, {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </span>
-              <StatusPill value={competition.status} />
-              <ArrowRight size={15} className="row-arrow" />
-            </Link>
-          ))}
+                <StatusPill value={competition.status} />
+                <ArrowRight size={15} className="row-arrow" />
+              </Link>
+            );
+          })}
         </div>
       )}
 
       <div className="planned-note">
         <CircleHelp size={15} />
         <span>
-          Research and idea exploration are planned modules. The current
-          workspace focuses on competition details and verified plans.
+          Research, idea exploration, and external integrations are planned
+          modules. The current workspace focuses on competition details,
+          deadline-aware plans, and evidence-based verification.
         </span>
       </div>
 

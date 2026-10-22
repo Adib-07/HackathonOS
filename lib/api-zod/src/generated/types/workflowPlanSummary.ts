@@ -5,8 +5,8 @@
  * Authenticated HackathonOS competition planning API.
  * OpenAPI spec version: 0.1.0
  */
-import type { WorkflowPlanSummaryStatus } from './workflowPlanSummaryStatus';
-import type { WorkflowPlanSummaryTrigger } from './workflowPlanSummaryTrigger';
+import type { WorkflowPlanSummaryStatus } from "./workflowPlanSummaryStatus";
+import type { WorkflowPlanSummaryTrigger } from "./workflowPlanSummaryTrigger";
 
 export interface WorkflowPlanSummary {
   id: string;

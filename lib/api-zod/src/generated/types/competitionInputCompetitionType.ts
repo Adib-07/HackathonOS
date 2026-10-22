@@ -6,12 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type CompetitionInputCompetitionType = typeof CompetitionInputCompetitionType[keyof typeof CompetitionInputCompetitionType];
-
+export type CompetitionInputCompetitionType =
+  (typeof CompetitionInputCompetitionType)[keyof typeof CompetitionInputCompetitionType];
 
 export const CompetitionInputCompetitionType = {
-  online: 'online',
-  in_person: 'in_person',
-  hybrid: 'hybrid',
-  unknown: 'unknown',
+  online: "online",
+  in_person: "in_person",
+  hybrid: "hybrid",
+  unknown: "unknown",
 } as const;

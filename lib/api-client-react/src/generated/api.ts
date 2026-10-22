@@ -5,10 +5,7 @@
  * Authenticated HackathonOS competition planning API.
  * OpenAPI spec version: 0.1.0
  */
-import {
-  useMutation,
-  useQuery
-} from '@tanstack/react-query';
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
   MutationFunction,
   QueryFunction,
@@ -16,43 +13,65 @@ import type {
   UseMutationOptions,
   UseMutationResult,
   UseQueryOptions,
-  UseQueryResult
-} from '@tanstack/react-query';
+  UseQueryResult,
+} from "@tanstack/react-query";
 
 import type {
+  AnalysisResponse,
   BadRequestResponse,
   Competition,
   CompetitionInput,
   CompetitionUpdate,
+  CreateBrief201,
+  CreateIdeas201,
+  DecideIdea200,
+  ErrorResponse,
+  EvaluateIdea200,
+  EvaluationRequest,
+  Evidence,
+  EvidenceDeletion,
+  EvidenceInput,
+  GapResponse,
   HealthStatus,
+  IdeaDecisionRequest,
+  IdeasResponse,
+  ListBriefs200,
+  ListGaps200,
+  ListResearch200,
   NotFoundResponse,
   OverviewResponse,
   PlanRequest,
   PlanTask,
+  RequirementUpdate,
+  ResearchRequest,
+  ResearchResponse,
+  RubricRequest,
+  SaveRubric200,
   TaskUpdate,
   UnauthorizedResponse,
+  UpdateRequirement200,
   WorkflowPlan,
-  WorkflowPlanSummary
-} from './api.schemas';
+  WorkflowPlanSummary,
+} from "./api.schemas";
 
-import { customFetch } from '../custom-fetch';
-import type { ErrorType , BodyType } from '../custom-fetch';
+import { customFetch } from "../custom-fetch";
+import type { ErrorType, BodyType } from "../custom-fetch";
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
-      type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
-
+type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
-
-
-const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
+const withQueryKey = <T extends object, K>(
+  query: T,
+  queryKey: K,
+): T & { queryKey: K } => {
   const result = { queryKey } as T & { queryKey: K };
   for (const key of Object.keys(query)) {
     // The explicit queryKey always wins, matching the previous
     // `{ ...query, queryKey }` spread where it was set last.
-    if (key === 'queryKey') continue;
+    if (key === "queryKey") continue;
     Object.defineProperty(result, key, {
       enumerable: true,
       configurable: true,
@@ -63,827 +82,2842 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
 };
 
 export const getHealthCheckUrl = () => {
-
-
-
-
-  return `/api/healthz`
-}
+  return `/api/healthz`;
+};
 
 /**
  * Returns server health status
  * @summary Health check
  */
-export const healthCheck = async ( options?: Parameters<typeof customFetch>[1]): Promise<HealthStatus> => {
-
-  return customFetch<HealthStatus>(getHealthCheckUrl(),
-  {
+export const healthCheck = async (
+  options?: Parameters<typeof customFetch>[1],
+): Promise<HealthStatus> => {
+  return customFetch<HealthStatus>(getHealthCheckUrl(), {
     ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
+    method: "GET",
+  });
+};
 
 export const getHealthCheckQueryKey = () => {
-    return [
-    `/api/healthz`
-    ] as const;
-    }
+  return [`/api/healthz`] as const;
+};
 
+export const getHealthCheckQueryOptions = <
+  TData = Awaited<ReturnType<typeof healthCheck>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof healthCheck>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-export const getHealthCheckQueryOptions = <TData = Awaited<ReturnType<typeof healthCheck>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof healthCheck>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
+  const queryKey = queryOptions?.queryKey ?? getHealthCheckQueryKey();
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof healthCheck>>> = ({
+    signal,
+  }) => healthCheck({ signal, ...requestOptions });
 
-  const queryKey =  queryOptions?.queryKey ?? getHealthCheckQueryKey();
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof healthCheck>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
 
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof healthCheck>>> = ({ signal }) => healthCheck({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof healthCheck>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type HealthCheckQueryResult = NonNullable<Awaited<ReturnType<typeof healthCheck>>>
-export type HealthCheckQueryError = ErrorType<unknown>
-
+export type HealthCheckQueryResult = NonNullable<
+  Awaited<ReturnType<typeof healthCheck>>
+>;
+export type HealthCheckQueryError = ErrorType<unknown>;
 
 /**
  * @summary Health check
  */
 
-export function useHealthCheck<TData = Awaited<ReturnType<typeof healthCheck>>, TError = ErrorType<unknown>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof healthCheck>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export function useHealthCheck<
+  TData = Awaited<ReturnType<typeof healthCheck>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof healthCheck>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getHealthCheckQueryOptions(options);
 
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getHealthCheckQueryOptions(options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
 
   return withQueryKey(query, queryOptions.queryKey);
 }
-
-
-
-
-
-
 
 export const getGetOverviewUrl = () => {
-
-
-
-
-  return `/api/overview`
-}
+  return `/api/overview`;
+};
 
 /**
  * @summary Get the workspace overview
  */
-export const getOverview = async ( options?: Parameters<typeof customFetch>[1]): Promise<OverviewResponse> => {
-
-  return customFetch<OverviewResponse>(getGetOverviewUrl(),
-  {
+export const getOverview = async (
+  options?: Parameters<typeof customFetch>[1],
+): Promise<OverviewResponse> => {
+  return customFetch<OverviewResponse>(getGetOverviewUrl(), {
     ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
+    method: "GET",
+  });
+};
 
 export const getGetOverviewQueryKey = () => {
-    return [
-    `/api/overview`
-    ] as const;
-    }
+  return [`/api/overview`] as const;
+};
 
+export const getGetOverviewQueryOptions = <
+  TData = Awaited<ReturnType<typeof getOverview>>,
+  TError = ErrorType<UnauthorizedResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getOverview>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-export const getGetOverviewQueryOptions = <TData = Awaited<ReturnType<typeof getOverview>>, TError = ErrorType<UnauthorizedResponse>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getOverview>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
+  const queryKey = queryOptions?.queryKey ?? getGetOverviewQueryKey();
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getOverview>>> = ({
+    signal,
+  }) => getOverview({ signal, ...requestOptions });
 
-  const queryKey =  queryOptions?.queryKey ?? getGetOverviewQueryKey();
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getOverview>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
 
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getOverview>>> = ({ signal }) => getOverview({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getOverview>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type GetOverviewQueryResult = NonNullable<Awaited<ReturnType<typeof getOverview>>>
-export type GetOverviewQueryError = ErrorType<UnauthorizedResponse>
-
+export type GetOverviewQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getOverview>>
+>;
+export type GetOverviewQueryError = ErrorType<UnauthorizedResponse>;
 
 /**
  * @summary Get the workspace overview
  */
 
-export function useGetOverview<TData = Awaited<ReturnType<typeof getOverview>>, TError = ErrorType<UnauthorizedResponse>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getOverview>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export function useGetOverview<
+  TData = Awaited<ReturnType<typeof getOverview>>,
+  TError = ErrorType<UnauthorizedResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getOverview>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetOverviewQueryOptions(options);
 
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getGetOverviewQueryOptions(options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
 
   return withQueryKey(query, queryOptions.queryKey);
 }
-
-
-
-
-
-
 
 export const getListCompetitionsUrl = () => {
-
-
-
-
-  return `/api/competitions`
-}
+  return `/api/competitions`;
+};
 
 /**
  * @summary List the owner's competitions
  */
-export const listCompetitions = async ( options?: Parameters<typeof customFetch>[1]): Promise<Competition[]> => {
-
-  return customFetch<Competition[]>(getListCompetitionsUrl(),
-  {
+export const listCompetitions = async (
+  options?: Parameters<typeof customFetch>[1],
+): Promise<Competition[]> => {
+  return customFetch<Competition[]>(getListCompetitionsUrl(), {
     ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
+    method: "GET",
+  });
+};
 
 export const getListCompetitionsQueryKey = () => {
-    return [
-    `/api/competitions`
-    ] as const;
-    }
+  return [`/api/competitions`] as const;
+};
 
+export const getListCompetitionsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listCompetitions>>,
+  TError = ErrorType<UnauthorizedResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listCompetitions>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-export const getListCompetitionsQueryOptions = <TData = Awaited<ReturnType<typeof listCompetitions>>, TError = ErrorType<UnauthorizedResponse>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCompetitions>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
+  const queryKey = queryOptions?.queryKey ?? getListCompetitionsQueryKey();
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listCompetitions>>
+  > = ({ signal }) => listCompetitions({ signal, ...requestOptions });
 
-  const queryKey =  queryOptions?.queryKey ?? getListCompetitionsQueryKey();
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listCompetitions>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
 
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listCompetitions>>> = ({ signal }) => listCompetitions({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listCompetitions>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type ListCompetitionsQueryResult = NonNullable<Awaited<ReturnType<typeof listCompetitions>>>
-export type ListCompetitionsQueryError = ErrorType<UnauthorizedResponse>
-
+export type ListCompetitionsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listCompetitions>>
+>;
+export type ListCompetitionsQueryError = ErrorType<UnauthorizedResponse>;
 
 /**
  * @summary List the owner's competitions
  */
 
-export function useListCompetitions<TData = Awaited<ReturnType<typeof listCompetitions>>, TError = ErrorType<UnauthorizedResponse>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCompetitions>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export function useListCompetitions<
+  TData = Awaited<ReturnType<typeof listCompetitions>>,
+  TError = ErrorType<UnauthorizedResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listCompetitions>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListCompetitionsQueryOptions(options);
 
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getListCompetitionsQueryOptions(options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
 
   return withQueryKey(query, queryOptions.queryKey);
 }
-
-
-
-
-
-
 
 export const getCreateCompetitionUrl = () => {
-
-
-
-
-  return `/api/competitions`
-}
+  return `/api/competitions`;
+};
 
 /**
  * @summary Create a competition workspace
  */
-export const createCompetition = async (competitionInput: CompetitionInput, options?: Parameters<typeof customFetch>[1]): Promise<Competition> => {
-
-    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+export const createCompetition = async (
+  competitionInput: CompetitionInput,
+  options?: Parameters<typeof customFetch>[1],
+): Promise<Competition> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit["headers"]>,
+  ): Record<string, string | readonly string[]> => {
     if (!h) return {};
     if (h instanceof Headers) return Object.fromEntries(h.entries());
     if (Symbol.iterator in h) {
       return Object.fromEntries(
-        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+        Array.from(
+          h as Iterable<Iterable<string>>,
+          (entry) => Array.from(entry) as [string, string],
+        ),
       );
     }
     const headers: Record<string, string | readonly string[]> = {};
-    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+    for (const [name, value] of Object.entries<
+      string | readonly string[] | undefined
+    >(h)) {
       if (value !== undefined) headers[name] = value;
     }
     return headers;
   };
-return customFetch<Competition>(getCreateCompetitionUrl(),
-  {
+  return customFetch<Competition>(getCreateCompetitionUrl(), {
     ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
-    body: JSON.stringify(competitionInput)
-  }
-);}
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(competitionInput),
+  });
+};
 
+export const getCreateCompetitionMutationKey = () =>
+  ["createCompetition"] as const;
 
+export const getCreateCompetitionMutationOptions = <
+  TError = ErrorType<BadRequestResponse | UnauthorizedResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createCompetition>>,
+    TError,
+    CreateCompetitionMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createCompetition>>,
+  TError,
+  CreateCompetitionMutationVariables,
+  TContext
+> => {
+  const mutationKey = getCreateCompetitionMutationKey();
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createCompetition>>,
+    CreateCompetitionMutationVariables
+  > = (props) => {
+    const { data } = props ?? {};
 
+    return createCompetition(data, requestOptions);
+  };
 
-export const getCreateCompetitionMutationKey = () => ['createCompetition'] as const;
+  return { mutationFn, ...mutationOptions };
+};
 
-export const getCreateCompetitionMutationOptions = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCompetition>>, TError,CreateCompetitionMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof createCompetition>>, TError,CreateCompetitionMutationVariables, TContext> => {
+export type CreateCompetitionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createCompetition>>
+>;
+export type CreateCompetitionMutationBody = BodyType<CompetitionInput>;
+export type CreateCompetitionMutationError = ErrorType<
+  BadRequestResponse | UnauthorizedResponse
+>;
+export type CreateCompetitionMutationVariables = {
+  data: BodyType<CompetitionInput>;
+};
 
-const mutationKey = getCreateCompetitionMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCompetition>>, CreateCompetitionMutationVariables> = (props) => {
-          const {data} = props ?? {};
-
-          return  createCompetition(data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type CreateCompetitionMutationResult = NonNullable<Awaited<ReturnType<typeof createCompetition>>>
-    export type CreateCompetitionMutationBody = BodyType<CompetitionInput>
-    export type CreateCompetitionMutationError = ErrorType<BadRequestResponse | UnauthorizedResponse>
-    export type CreateCompetitionMutationVariables = {data: BodyType<CompetitionInput>}
-
-    /**
+/**
  * @summary Create a competition workspace
  */
-export const useCreateCompetition = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCompetition>>, TError,CreateCompetitionMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof createCompetition>>,
-        TError,
-        CreateCompetitionMutationVariables,
-        TContext
-      > => {
-      return useMutation(getCreateCompetitionMutationOptions(options));
-    }
+export const useCreateCompetition = <
+  TError = ErrorType<BadRequestResponse | UnauthorizedResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createCompetition>>,
+    TError,
+    CreateCompetitionMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createCompetition>>,
+  TError,
+  CreateCompetitionMutationVariables,
+  TContext
+> => {
+  return useMutation(getCreateCompetitionMutationOptions(options));
+};
 
-export const getGetCompetitionUrl = (competitionId: string,) => {
-
-
-
-
-  return `/api/competitions/${competitionId}`
-}
-
-/**
- * @summary Get a competition workspace
- */
-export const getCompetition = async (competitionId: string, options?: Parameters<typeof customFetch>[1]): Promise<Competition> => {
-
-  return customFetch<Competition>(getGetCompetitionUrl(competitionId),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getGetCompetitionQueryKey = (competitionId: string,) => {
-    return [
-    `/api/competitions/${competitionId}`
-    ] as const;
-    }
-
-
-export const getGetCompetitionQueryOptions = <TData = Awaited<ReturnType<typeof getCompetition>>, TError = ErrorType<UnauthorizedResponse | NotFoundResponse>>(competitionId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCompetition>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetCompetitionQueryKey(competitionId);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCompetition>>> = ({ signal }) => getCompetition(competitionId, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: competitionId !== null && competitionId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCompetition>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type GetCompetitionQueryResult = NonNullable<Awaited<ReturnType<typeof getCompetition>>>
-export type GetCompetitionQueryError = ErrorType<UnauthorizedResponse | NotFoundResponse>
-
+export const getGetCompetitionUrl = (competitionId: string) => {
+  return `/api/competitions/${competitionId}`;
+};
 
 /**
  * @summary Get a competition workspace
  */
+export const getCompetition = async (
+  competitionId: string,
+  options?: Parameters<typeof customFetch>[1],
+): Promise<Competition> => {
+  return customFetch<Competition>(getGetCompetitionUrl(competitionId), {
+    ...options,
+    method: "GET",
+  });
+};
 
-export function useGetCompetition<TData = Awaited<ReturnType<typeof getCompetition>>, TError = ErrorType<UnauthorizedResponse | NotFoundResponse>>(
- competitionId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCompetition>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getGetCompetitionQueryKey = (competitionId: string) => {
+  return [`/api/competitions/${competitionId}`] as const;
+};
 
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+export const getGetCompetitionQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCompetition>>,
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+>(
+  competitionId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getCompetition>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryOptions = getGetCompetitionQueryOptions(competitionId,options)
+  const queryKey =
+    queryOptions?.queryKey ?? getGetCompetitionQueryKey(competitionId);
 
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getCompetition>>> = ({
+    signal,
+  }) => getCompetition(competitionId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: competitionId !== null && competitionId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getCompetition>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetCompetitionQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getCompetition>>
+>;
+export type GetCompetitionQueryError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+
+/**
+ * @summary Get a competition workspace
+ */
+
+export function useGetCompetition<
+  TData = Awaited<ReturnType<typeof getCompetition>>,
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+>(
+  competitionId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getCompetition>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetCompetitionQueryOptions(competitionId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
 
   return withQueryKey(query, queryOptions.queryKey);
 }
 
-
-
-
-
-
-
-export const getUpdateCompetitionUrl = (competitionId: string,) => {
-
-
-
-
-  return `/api/competitions/${competitionId}`
-}
+export const getUpdateCompetitionUrl = (competitionId: string) => {
+  return `/api/competitions/${competitionId}`;
+};
 
 /**
  * @summary Update competition details
  */
-export const updateCompetition = async (competitionId: string,
-    competitionUpdate: CompetitionUpdate, options?: Parameters<typeof customFetch>[1]): Promise<Competition> => {
-
-    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+export const updateCompetition = async (
+  competitionId: string,
+  competitionUpdate: CompetitionUpdate,
+  options?: Parameters<typeof customFetch>[1],
+): Promise<Competition> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit["headers"]>,
+  ): Record<string, string | readonly string[]> => {
     if (!h) return {};
     if (h instanceof Headers) return Object.fromEntries(h.entries());
     if (Symbol.iterator in h) {
       return Object.fromEntries(
-        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+        Array.from(
+          h as Iterable<Iterable<string>>,
+          (entry) => Array.from(entry) as [string, string],
+        ),
       );
     }
     const headers: Record<string, string | readonly string[]> = {};
-    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+    for (const [name, value] of Object.entries<
+      string | readonly string[] | undefined
+    >(h)) {
       if (value !== undefined) headers[name] = value;
     }
     return headers;
   };
-return customFetch<Competition>(getUpdateCompetitionUrl(competitionId),
-  {
+  return customFetch<Competition>(getUpdateCompetitionUrl(competitionId), {
     ...options,
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
-    body: JSON.stringify(competitionUpdate)
-  }
-);}
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(competitionUpdate),
+  });
+};
 
+export const getUpdateCompetitionMutationKey = () =>
+  ["updateCompetition"] as const;
 
+export const getUpdateCompetitionMutationOptions = <
+  TError = ErrorType<
+    BadRequestResponse | UnauthorizedResponse | NotFoundResponse
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateCompetition>>,
+    TError,
+    UpdateCompetitionMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateCompetition>>,
+  TError,
+  UpdateCompetitionMutationVariables,
+  TContext
+> => {
+  const mutationKey = getUpdateCompetitionMutationKey();
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateCompetition>>,
+    UpdateCompetitionMutationVariables
+  > = (props) => {
+    const { competitionId, data } = props ?? {};
 
+    return updateCompetition(competitionId, data, requestOptions);
+  };
 
-export const getUpdateCompetitionMutationKey = () => ['updateCompetition'] as const;
+  return { mutationFn, ...mutationOptions };
+};
 
-export const getUpdateCompetitionMutationOptions = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | NotFoundResponse>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCompetition>>, TError,UpdateCompetitionMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof updateCompetition>>, TError,UpdateCompetitionMutationVariables, TContext> => {
+export type UpdateCompetitionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateCompetition>>
+>;
+export type UpdateCompetitionMutationBody = BodyType<CompetitionUpdate>;
+export type UpdateCompetitionMutationError = ErrorType<
+  BadRequestResponse | UnauthorizedResponse | NotFoundResponse
+>;
+export type UpdateCompetitionMutationVariables = {
+  competitionId: string;
+  data: BodyType<CompetitionUpdate>;
+};
 
-const mutationKey = getUpdateCompetitionMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateCompetition>>, UpdateCompetitionMutationVariables> = (props) => {
-          const {competitionId,data} = props ?? {};
-
-          return  updateCompetition(competitionId,data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type UpdateCompetitionMutationResult = NonNullable<Awaited<ReturnType<typeof updateCompetition>>>
-    export type UpdateCompetitionMutationBody = BodyType<CompetitionUpdate>
-    export type UpdateCompetitionMutationError = ErrorType<BadRequestResponse | UnauthorizedResponse | NotFoundResponse>
-    export type UpdateCompetitionMutationVariables = {competitionId: string;data: BodyType<CompetitionUpdate>}
-
-    /**
+/**
  * @summary Update competition details
  */
-export const useUpdateCompetition = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | NotFoundResponse>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCompetition>>, TError,UpdateCompetitionMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof updateCompetition>>,
-        TError,
-        UpdateCompetitionMutationVariables,
-        TContext
-      > => {
-      return useMutation(getUpdateCompetitionMutationOptions(options));
-    }
+export const useUpdateCompetition = <
+  TError = ErrorType<
+    BadRequestResponse | UnauthorizedResponse | NotFoundResponse
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateCompetition>>,
+    TError,
+    UpdateCompetitionMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateCompetition>>,
+  TError,
+  UpdateCompetitionMutationVariables,
+  TContext
+> => {
+  return useMutation(getUpdateCompetitionMutationOptions(options));
+};
 
-export const getListPlanVersionsUrl = (competitionId: string,) => {
-
-
-
-
-  return `/api/competitions/${competitionId}/plans`
-}
-
-/**
- * @summary List saved plan versions
- */
-export const listPlanVersions = async (competitionId: string, options?: Parameters<typeof customFetch>[1]): Promise<WorkflowPlanSummary[]> => {
-
-  return customFetch<WorkflowPlanSummary[]>(getListPlanVersionsUrl(competitionId),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getListPlanVersionsQueryKey = (competitionId: string,) => {
-    return [
-    `/api/competitions/${competitionId}/plans`
-    ] as const;
-    }
-
-
-export const getListPlanVersionsQueryOptions = <TData = Awaited<ReturnType<typeof listPlanVersions>>, TError = ErrorType<UnauthorizedResponse | NotFoundResponse>>(competitionId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPlanVersions>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getListPlanVersionsQueryKey(competitionId);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPlanVersions>>> = ({ signal }) => listPlanVersions(competitionId, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: competitionId !== null && competitionId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPlanVersions>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type ListPlanVersionsQueryResult = NonNullable<Awaited<ReturnType<typeof listPlanVersions>>>
-export type ListPlanVersionsQueryError = ErrorType<UnauthorizedResponse | NotFoundResponse>
-
+export const getListPlanVersionsUrl = (competitionId: string) => {
+  return `/api/competitions/${competitionId}/plans`;
+};
 
 /**
  * @summary List saved plan versions
  */
+export const listPlanVersions = async (
+  competitionId: string,
+  options?: Parameters<typeof customFetch>[1],
+): Promise<WorkflowPlanSummary[]> => {
+  return customFetch<WorkflowPlanSummary[]>(
+    getListPlanVersionsUrl(competitionId),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
 
-export function useListPlanVersions<TData = Awaited<ReturnType<typeof listPlanVersions>>, TError = ErrorType<UnauthorizedResponse | NotFoundResponse>>(
- competitionId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPlanVersions>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getListPlanVersionsQueryKey = (competitionId: string) => {
+  return [`/api/competitions/${competitionId}/plans`] as const;
+};
 
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getListPlanVersionsQueryOptions(competitionId,options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-
-export const getGeneratePlanUrl = (competitionId: string,) => {
-
-
-
-
-  return `/api/competitions/${competitionId}/plans`
-}
-
-/**
- * @summary Generate a deadline-aware plan and save a new version
- */
-export const generatePlan = async (competitionId: string,
-    planRequest: PlanRequest, options?: Parameters<typeof customFetch>[1]): Promise<WorkflowPlan> => {
-
-    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
-    if (!h) return {};
-    if (h instanceof Headers) return Object.fromEntries(h.entries());
-    if (Symbol.iterator in h) {
-      return Object.fromEntries(
-        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
-      );
-    }
-    const headers: Record<string, string | readonly string[]> = {};
-    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
-      if (value !== undefined) headers[name] = value;
-    }
-    return headers;
-  };
-return customFetch<WorkflowPlan>(getGeneratePlanUrl(competitionId),
-  {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
-    body: JSON.stringify(planRequest)
-  }
-);}
-
-
-
-
-
-export const getGeneratePlanMutationKey = () => ['generatePlan'] as const;
-
-export const getGeneratePlanMutationOptions = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | NotFoundResponse>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generatePlan>>, TError,GeneratePlanMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof generatePlan>>, TError,GeneratePlanMutationVariables, TContext> => {
-
-const mutationKey = getGeneratePlanMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof generatePlan>>, GeneratePlanMutationVariables> = (props) => {
-          const {competitionId,data} = props ?? {};
-
-          return  generatePlan(competitionId,data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type GeneratePlanMutationResult = NonNullable<Awaited<ReturnType<typeof generatePlan>>>
-    export type GeneratePlanMutationBody = BodyType<PlanRequest>
-    export type GeneratePlanMutationError = ErrorType<BadRequestResponse | UnauthorizedResponse | NotFoundResponse>
-    export type GeneratePlanMutationVariables = {competitionId: string;data: BodyType<PlanRequest>}
-
-    /**
- * @summary Generate a deadline-aware plan and save a new version
- */
-export const useGeneratePlan = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | NotFoundResponse>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generatePlan>>, TError,GeneratePlanMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof generatePlan>>,
-        TError,
-        GeneratePlanMutationVariables,
-        TContext
-      > => {
-      return useMutation(getGeneratePlanMutationOptions(options));
-    }
-
-export const getGetPlanUrl = (competitionId: string,
-    planId: string,) => {
-
-
-
-
-  return `/api/competitions/${competitionId}/plans/${planId}`
-}
-
-/**
- * @summary Get a saved plan version and its tasks
- */
-export const getPlan = async (competitionId: string,
-    planId: string, options?: Parameters<typeof customFetch>[1]): Promise<WorkflowPlan> => {
-
-  return customFetch<WorkflowPlan>(getGetPlanUrl(competitionId,planId),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getGetPlanQueryKey = (competitionId: string,
-    planId: string,) => {
-    return [
-    `/api/competitions/${competitionId}/plans/${planId}`
-    ] as const;
-    }
-
-
-export const getGetPlanQueryOptions = <TData = Awaited<ReturnType<typeof getPlan>>, TError = ErrorType<UnauthorizedResponse | NotFoundResponse>>(competitionId: string,
-    planId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPlan>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getListPlanVersionsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listPlanVersions>>,
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+>(
+  competitionId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listPlanVersions>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
 ) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryKey =
+    queryOptions?.queryKey ?? getListPlanVersionsQueryKey(competitionId);
 
-  const queryKey =  queryOptions?.queryKey ?? getGetPlanQueryKey(competitionId,planId);
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listPlanVersions>>
+  > = ({ signal }) =>
+    listPlanVersions(competitionId, { signal, ...requestOptions });
 
+  return {
+    queryKey,
+    queryFn,
+    enabled: competitionId !== null && competitionId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof listPlanVersions>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
 
+export type ListPlanVersionsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listPlanVersions>>
+>;
+export type ListPlanVersionsQueryError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPlan>>> = ({ signal }) => getPlan(competitionId,planId, { signal, ...requestOptions });
+/**
+ * @summary List saved plan versions
+ */
 
+export function useListPlanVersions<
+  TData = Awaited<ReturnType<typeof listPlanVersions>>,
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+>(
+  competitionId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listPlanVersions>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListPlanVersionsQueryOptions(competitionId, options);
 
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
 
-
-
-   return  { queryKey, queryFn, enabled: competitionId !== null && competitionId !== undefined && planId !== null && planId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPlan>>, TError, TData> & { queryKey: QueryKey }
+  return withQueryKey(query, queryOptions.queryKey);
 }
 
-export type GetPlanQueryResult = NonNullable<Awaited<ReturnType<typeof getPlan>>>
-export type GetPlanQueryError = ErrorType<UnauthorizedResponse | NotFoundResponse>
+export const getGeneratePlanUrl = (competitionId: string) => {
+  return `/api/competitions/${competitionId}/plans`;
+};
 
+/**
+ * @summary Generate a deadline-aware plan and save a new version
+ */
+export const generatePlan = async (
+  competitionId: string,
+  planRequest: PlanRequest,
+  options?: Parameters<typeof customFetch>[1],
+): Promise<WorkflowPlan> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit["headers"]>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(
+          h as Iterable<Iterable<string>>,
+          (entry) => Array.from(entry) as [string, string],
+        ),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<
+      string | readonly string[] | undefined
+    >(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+  return customFetch<WorkflowPlan>(getGeneratePlanUrl(competitionId), {
+    ...options,
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(planRequest),
+  });
+};
+
+export const getGeneratePlanMutationKey = () => ["generatePlan"] as const;
+
+export const getGeneratePlanMutationOptions = <
+  TError = ErrorType<
+    BadRequestResponse | UnauthorizedResponse | NotFoundResponse
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof generatePlan>>,
+    TError,
+    GeneratePlanMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof generatePlan>>,
+  TError,
+  GeneratePlanMutationVariables,
+  TContext
+> => {
+  const mutationKey = getGeneratePlanMutationKey();
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof generatePlan>>,
+    GeneratePlanMutationVariables
+  > = (props) => {
+    const { competitionId, data } = props ?? {};
+
+    return generatePlan(competitionId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type GeneratePlanMutationResult = NonNullable<
+  Awaited<ReturnType<typeof generatePlan>>
+>;
+export type GeneratePlanMutationBody = BodyType<PlanRequest>;
+export type GeneratePlanMutationError = ErrorType<
+  BadRequestResponse | UnauthorizedResponse | NotFoundResponse
+>;
+export type GeneratePlanMutationVariables = {
+  competitionId: string;
+  data: BodyType<PlanRequest>;
+};
+
+/**
+ * @summary Generate a deadline-aware plan and save a new version
+ */
+export const useGeneratePlan = <
+  TError = ErrorType<
+    BadRequestResponse | UnauthorizedResponse | NotFoundResponse
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof generatePlan>>,
+    TError,
+    GeneratePlanMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof generatePlan>>,
+  TError,
+  GeneratePlanMutationVariables,
+  TContext
+> => {
+  return useMutation(getGeneratePlanMutationOptions(options));
+};
+
+export const getGetPlanUrl = (competitionId: string, planId: string) => {
+  return `/api/competitions/${competitionId}/plans/${planId}`;
+};
+
+/**
+ * @summary Get a saved plan version and its tasks
+ */
+export const getPlan = async (
+  competitionId: string,
+  planId: string,
+  options?: Parameters<typeof customFetch>[1],
+): Promise<WorkflowPlan> => {
+  return customFetch<WorkflowPlan>(getGetPlanUrl(competitionId, planId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetPlanQueryKey = (competitionId: string, planId: string) => {
+  return [`/api/competitions/${competitionId}/plans/${planId}`] as const;
+};
+
+export const getGetPlanQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPlan>>,
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+>(
+  competitionId: string,
+  planId: string,
+  options?: {
+    query?: UseQueryOptions<Awaited<ReturnType<typeof getPlan>>, TError, TData>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetPlanQueryKey(competitionId, planId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getPlan>>> = ({
+    signal,
+  }) => getPlan(competitionId, planId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled:
+      competitionId !== null &&
+      competitionId !== undefined &&
+      planId !== null &&
+      planId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<Awaited<ReturnType<typeof getPlan>>, TError, TData> & {
+    queryKey: QueryKey;
+  };
+};
+
+export type GetPlanQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getPlan>>
+>;
+export type GetPlanQueryError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
 
 /**
  * @summary Get a saved plan version and its tasks
  */
 
-export function useGetPlan<TData = Awaited<ReturnType<typeof getPlan>>, TError = ErrorType<UnauthorizedResponse | NotFoundResponse>>(
- competitionId: string,
-    planId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPlan>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export function useGetPlan<
+  TData = Awaited<ReturnType<typeof getPlan>>,
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+>(
+  competitionId: string,
+  planId: string,
+  options?: {
+    query?: UseQueryOptions<Awaited<ReturnType<typeof getPlan>>, TError, TData>;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetPlanQueryOptions(competitionId, planId, options);
 
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getGetPlanQueryOptions(competitionId,planId,options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
 
   return withQueryKey(query, queryOptions.queryKey);
 }
 
-
-
-
-
-
-
-export const getUpdateTaskUrl = (competitionId: string,
-    taskId: string,) => {
-
-
-
-
-  return `/api/competitions/${competitionId}/tasks/${taskId}`
-}
+export const getUpdateTaskUrl = (competitionId: string, taskId: string) => {
+  return `/api/competitions/${competitionId}/tasks/${taskId}`;
+};
 
 /**
  * @summary Update a task's status
  */
-export const updateTask = async (competitionId: string,
-    taskId: string,
-    taskUpdate: TaskUpdate, options?: Parameters<typeof customFetch>[1]): Promise<PlanTask> => {
-
-    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+export const updateTask = async (
+  competitionId: string,
+  taskId: string,
+  taskUpdate: TaskUpdate,
+  options?: Parameters<typeof customFetch>[1],
+): Promise<PlanTask> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit["headers"]>,
+  ): Record<string, string | readonly string[]> => {
     if (!h) return {};
     if (h instanceof Headers) return Object.fromEntries(h.entries());
     if (Symbol.iterator in h) {
       return Object.fromEntries(
-        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+        Array.from(
+          h as Iterable<Iterable<string>>,
+          (entry) => Array.from(entry) as [string, string],
+        ),
       );
     }
     const headers: Record<string, string | readonly string[]> = {};
-    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+    for (const [name, value] of Object.entries<
+      string | readonly string[] | undefined
+    >(h)) {
       if (value !== undefined) headers[name] = value;
     }
     return headers;
   };
-return customFetch<PlanTask>(getUpdateTaskUrl(competitionId,taskId),
-  {
+  return customFetch<PlanTask>(getUpdateTaskUrl(competitionId, taskId), {
     ...options,
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
-    body: JSON.stringify(taskUpdate)
-  }
-);}
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(taskUpdate),
+  });
+};
 
+export const getUpdateTaskMutationKey = () => ["updateTask"] as const;
 
+export const getUpdateTaskMutationOptions = <
+  TError = ErrorType<
+    BadRequestResponse | UnauthorizedResponse | NotFoundResponse
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateTask>>,
+    TError,
+    UpdateTaskMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateTask>>,
+  TError,
+  UpdateTaskMutationVariables,
+  TContext
+> => {
+  const mutationKey = getUpdateTaskMutationKey();
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateTask>>,
+    UpdateTaskMutationVariables
+  > = (props) => {
+    const { competitionId, taskId, data } = props ?? {};
 
+    return updateTask(competitionId, taskId, data, requestOptions);
+  };
 
-export const getUpdateTaskMutationKey = () => ['updateTask'] as const;
+  return { mutationFn, ...mutationOptions };
+};
 
-export const getUpdateTaskMutationOptions = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | NotFoundResponse>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTask>>, TError,UpdateTaskMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof updateTask>>, TError,UpdateTaskMutationVariables, TContext> => {
+export type UpdateTaskMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateTask>>
+>;
+export type UpdateTaskMutationBody = BodyType<TaskUpdate>;
+export type UpdateTaskMutationError = ErrorType<
+  BadRequestResponse | UnauthorizedResponse | NotFoundResponse
+>;
+export type UpdateTaskMutationVariables = {
+  competitionId: string;
+  taskId: string;
+  data: BodyType<TaskUpdate>;
+};
 
-const mutationKey = getUpdateTaskMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateTask>>, UpdateTaskMutationVariables> = (props) => {
-          const {competitionId,taskId,data} = props ?? {};
-
-          return  updateTask(competitionId,taskId,data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type UpdateTaskMutationResult = NonNullable<Awaited<ReturnType<typeof updateTask>>>
-    export type UpdateTaskMutationBody = BodyType<TaskUpdate>
-    export type UpdateTaskMutationError = ErrorType<BadRequestResponse | UnauthorizedResponse | NotFoundResponse>
-    export type UpdateTaskMutationVariables = {competitionId: string;taskId: string;data: BodyType<TaskUpdate>}
-
-    /**
+/**
  * @summary Update a task's status
  */
-export const useUpdateTask = <TError = ErrorType<BadRequestResponse | UnauthorizedResponse | NotFoundResponse>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTask>>, TError,UpdateTaskMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof updateTask>>,
-        TError,
-        UpdateTaskMutationVariables,
-        TContext
-      > => {
-      return useMutation(getUpdateTaskMutationOptions(options));
-    }
+export const useUpdateTask = <
+  TError = ErrorType<
+    BadRequestResponse | UnauthorizedResponse | NotFoundResponse
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateTask>>,
+    TError,
+    UpdateTaskMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateTask>>,
+  TError,
+  UpdateTaskMutationVariables,
+  TContext
+> => {
+  return useMutation(getUpdateTaskMutationOptions(options));
+};
 
+export const getListEvidenceUrl = (competitionId: string) => {
+  return `/api/competitions/${competitionId}/evidence`;
+};
+
+/**
+ * @summary List verification evidence recorded for a competition
+ */
+export const listEvidence = async (
+  competitionId: string,
+  options?: Parameters<typeof customFetch>[1],
+): Promise<Evidence[]> => {
+  return customFetch<Evidence[]>(getListEvidenceUrl(competitionId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListEvidenceQueryKey = (competitionId: string) => {
+  return [`/api/competitions/${competitionId}/evidence`] as const;
+};
+
+export const getListEvidenceQueryOptions = <
+  TData = Awaited<ReturnType<typeof listEvidence>>,
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+>(
+  competitionId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listEvidence>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListEvidenceQueryKey(competitionId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listEvidence>>> = ({
+    signal,
+  }) => listEvidence(competitionId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: competitionId !== null && competitionId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof listEvidence>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListEvidenceQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listEvidence>>
+>;
+export type ListEvidenceQueryError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+
+/**
+ * @summary List verification evidence recorded for a competition
+ */
+
+export function useListEvidence<
+  TData = Awaited<ReturnType<typeof listEvidence>>,
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+>(
+  competitionId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listEvidence>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListEvidenceQueryOptions(competitionId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getCreateEvidenceUrl = (competitionId: string, taskId: string) => {
+  return `/api/competitions/${competitionId}/tasks/${taskId}/evidence`;
+};
+
+/**
+ * @summary Record a verification evidence entry for a task
+ */
+export const createEvidence = async (
+  competitionId: string,
+  taskId: string,
+  evidenceInput: EvidenceInput,
+  options?: Parameters<typeof customFetch>[1],
+): Promise<Evidence> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit["headers"]>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(
+          h as Iterable<Iterable<string>>,
+          (entry) => Array.from(entry) as [string, string],
+        ),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<
+      string | readonly string[] | undefined
+    >(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+  return customFetch<Evidence>(getCreateEvidenceUrl(competitionId, taskId), {
+    ...options,
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(evidenceInput),
+  });
+};
+
+export const getCreateEvidenceMutationKey = () => ["createEvidence"] as const;
+
+export const getCreateEvidenceMutationOptions = <
+  TError = ErrorType<
+    BadRequestResponse | UnauthorizedResponse | NotFoundResponse
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createEvidence>>,
+    TError,
+    CreateEvidenceMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createEvidence>>,
+  TError,
+  CreateEvidenceMutationVariables,
+  TContext
+> => {
+  const mutationKey = getCreateEvidenceMutationKey();
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createEvidence>>,
+    CreateEvidenceMutationVariables
+  > = (props) => {
+    const { competitionId, taskId, data } = props ?? {};
+
+    return createEvidence(competitionId, taskId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateEvidenceMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createEvidence>>
+>;
+export type CreateEvidenceMutationBody = BodyType<EvidenceInput>;
+export type CreateEvidenceMutationError = ErrorType<
+  BadRequestResponse | UnauthorizedResponse | NotFoundResponse
+>;
+export type CreateEvidenceMutationVariables = {
+  competitionId: string;
+  taskId: string;
+  data: BodyType<EvidenceInput>;
+};
+
+/**
+ * @summary Record a verification evidence entry for a task
+ */
+export const useCreateEvidence = <
+  TError = ErrorType<
+    BadRequestResponse | UnauthorizedResponse | NotFoundResponse
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createEvidence>>,
+    TError,
+    CreateEvidenceMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createEvidence>>,
+  TError,
+  CreateEvidenceMutationVariables,
+  TContext
+> => {
+  return useMutation(getCreateEvidenceMutationOptions(options));
+};
+
+export const getDeleteEvidenceUrl = (
+  competitionId: string,
+  evidenceId: string,
+) => {
+  return `/api/competitions/${competitionId}/evidence/${evidenceId}`;
+};
+
+/**
+ * @summary Remove a verification evidence entry
+ */
+export const deleteEvidence = async (
+  competitionId: string,
+  evidenceId: string,
+  options?: Parameters<typeof customFetch>[1],
+): Promise<EvidenceDeletion> => {
+  return customFetch<EvidenceDeletion>(
+    getDeleteEvidenceUrl(competitionId, evidenceId),
+    {
+      ...options,
+      method: "DELETE",
+    },
+  );
+};
+
+export const getDeleteEvidenceMutationKey = () => ["deleteEvidence"] as const;
+
+export const getDeleteEvidenceMutationOptions = <
+  TError = ErrorType<
+    BadRequestResponse | UnauthorizedResponse | NotFoundResponse
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteEvidence>>,
+    TError,
+    DeleteEvidenceMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteEvidence>>,
+  TError,
+  DeleteEvidenceMutationVariables,
+  TContext
+> => {
+  const mutationKey = getDeleteEvidenceMutationKey();
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteEvidence>>,
+    DeleteEvidenceMutationVariables
+  > = (props) => {
+    const { competitionId, evidenceId } = props ?? {};
+
+    return deleteEvidence(competitionId, evidenceId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteEvidenceMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteEvidence>>
+>;
+
+export type DeleteEvidenceMutationError = ErrorType<
+  BadRequestResponse | UnauthorizedResponse | NotFoundResponse
+>;
+export type DeleteEvidenceMutationVariables = {
+  competitionId: string;
+  evidenceId: string;
+};
+
+/**
+ * @summary Remove a verification evidence entry
+ */
+export const useDeleteEvidence = <
+  TError = ErrorType<
+    BadRequestResponse | UnauthorizedResponse | NotFoundResponse
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteEvidence>>,
+    TError,
+    DeleteEvidenceMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteEvidence>>,
+  TError,
+  DeleteEvidenceMutationVariables,
+  TContext
+> => {
+  return useMutation(getDeleteEvidenceMutationOptions(options));
+};
+
+export const getGetAnalysisUrl = (competitionId: string) => {
+  return `/api/competitions/${competitionId}/analysis`;
+};
+
+/**
+ * @summary Get the latest problem analysis for a competition
+ */
+export const getAnalysis = async (
+  competitionId: string,
+  options?: Parameters<typeof customFetch>[1],
+): Promise<AnalysisResponse> => {
+  return customFetch<AnalysisResponse>(getGetAnalysisUrl(competitionId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetAnalysisQueryKey = (competitionId: string) => {
+  return [`/api/competitions/${competitionId}/analysis`] as const;
+};
+
+export const getGetAnalysisQueryOptions = <
+  TData = Awaited<ReturnType<typeof getAnalysis>>,
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+>(
+  competitionId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getAnalysis>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetAnalysisQueryKey(competitionId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getAnalysis>>> = ({
+    signal,
+  }) => getAnalysis(competitionId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: competitionId !== null && competitionId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getAnalysis>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetAnalysisQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getAnalysis>>
+>;
+export type GetAnalysisQueryError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+
+/**
+ * @summary Get the latest problem analysis for a competition
+ */
+
+export function useGetAnalysis<
+  TData = Awaited<ReturnType<typeof getAnalysis>>,
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+>(
+  competitionId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getAnalysis>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetAnalysisQueryOptions(competitionId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getCreateAnalysisUrl = (competitionId: string) => {
+  return `/api/competitions/${competitionId}/analysis`;
+};
+
+/**
+ * @summary Analyse the stored competition record into reviewable requirements
+ */
+export const createAnalysis = async (
+  competitionId: string,
+  options?: Parameters<typeof customFetch>[1],
+): Promise<AnalysisResponse> => {
+  return customFetch<AnalysisResponse>(getCreateAnalysisUrl(competitionId), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getCreateAnalysisMutationKey = () => ["createAnalysis"] as const;
+
+export const getCreateAnalysisMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createAnalysis>>,
+    TError,
+    CreateAnalysisMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createAnalysis>>,
+  TError,
+  CreateAnalysisMutationVariables,
+  TContext
+> => {
+  const mutationKey = getCreateAnalysisMutationKey();
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createAnalysis>>,
+    CreateAnalysisMutationVariables
+  > = (props) => {
+    const { competitionId } = props ?? {};
+
+    return createAnalysis(competitionId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateAnalysisMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createAnalysis>>
+>;
+
+export type CreateAnalysisMutationError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+export type CreateAnalysisMutationVariables = { competitionId: string };
+
+/**
+ * @summary Analyse the stored competition record into reviewable requirements
+ */
+export const useCreateAnalysis = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createAnalysis>>,
+    TError,
+    CreateAnalysisMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createAnalysis>>,
+  TError,
+  CreateAnalysisMutationVariables,
+  TContext
+> => {
+  return useMutation(getCreateAnalysisMutationOptions(options));
+};
+
+export const getUpdateRequirementUrl = (
+  competitionId: string,
+  requirementId: string,
+) => {
+  return `/api/competitions/${competitionId}/analysis/requirements/${requirementId}`;
+};
+
+/**
+ * @summary Edit or review an extracted requirement
+ */
+export const updateRequirement = async (
+  competitionId: string,
+  requirementId: string,
+  requirementUpdate: RequirementUpdate,
+  options?: Parameters<typeof customFetch>[1],
+): Promise<UpdateRequirement200> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit["headers"]>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(
+          h as Iterable<Iterable<string>>,
+          (entry) => Array.from(entry) as [string, string],
+        ),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<
+      string | readonly string[] | undefined
+    >(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+  return customFetch<UpdateRequirement200>(
+    getUpdateRequirementUrl(competitionId, requirementId),
+    {
+      ...options,
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(requirementUpdate),
+    },
+  );
+};
+
+export const getUpdateRequirementMutationKey = () =>
+  ["updateRequirement"] as const;
+
+export const getUpdateRequirementMutationOptions = <
+  TError = ErrorType<
+    BadRequestResponse | UnauthorizedResponse | NotFoundResponse
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateRequirement>>,
+    TError,
+    UpdateRequirementMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateRequirement>>,
+  TError,
+  UpdateRequirementMutationVariables,
+  TContext
+> => {
+  const mutationKey = getUpdateRequirementMutationKey();
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateRequirement>>,
+    UpdateRequirementMutationVariables
+  > = (props) => {
+    const { competitionId, requirementId, data } = props ?? {};
+
+    return updateRequirement(
+      competitionId,
+      requirementId,
+      data,
+      requestOptions,
+    );
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateRequirementMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateRequirement>>
+>;
+export type UpdateRequirementMutationBody = BodyType<RequirementUpdate>;
+export type UpdateRequirementMutationError = ErrorType<
+  BadRequestResponse | UnauthorizedResponse | NotFoundResponse
+>;
+export type UpdateRequirementMutationVariables = {
+  competitionId: string;
+  requirementId: string;
+  data: BodyType<RequirementUpdate>;
+};
+
+/**
+ * @summary Edit or review an extracted requirement
+ */
+export const useUpdateRequirement = <
+  TError = ErrorType<
+    BadRequestResponse | UnauthorizedResponse | NotFoundResponse
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateRequirement>>,
+    TError,
+    UpdateRequirementMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateRequirement>>,
+  TError,
+  UpdateRequirementMutationVariables,
+  TContext
+> => {
+  return useMutation(getUpdateRequirementMutationOptions(options));
+};
+
+export const getListResearchUrl = (competitionId: string) => {
+  return `/api/competitions/${competitionId}/research`;
+};
+
+/**
+ * @summary List the research findings recorded for a competition
+ */
+export const listResearch = async (
+  competitionId: string,
+  options?: Parameters<typeof customFetch>[1],
+): Promise<ListResearch200> => {
+  return customFetch<ListResearch200>(getListResearchUrl(competitionId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListResearchQueryKey = (competitionId: string) => {
+  return [`/api/competitions/${competitionId}/research`] as const;
+};
+
+export const getListResearchQueryOptions = <
+  TData = Awaited<ReturnType<typeof listResearch>>,
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+>(
+  competitionId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listResearch>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListResearchQueryKey(competitionId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listResearch>>> = ({
+    signal,
+  }) => listResearch(competitionId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: competitionId !== null && competitionId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof listResearch>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListResearchQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listResearch>>
+>;
+export type ListResearchQueryError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+
+/**
+ * @summary List the research findings recorded for a competition
+ */
+
+export function useListResearch<
+  TData = Awaited<ReturnType<typeof listResearch>>,
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+>(
+  competitionId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listResearch>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListResearchQueryOptions(competitionId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getCreateResearchUrl = (competitionId: string) => {
+  return `/api/competitions/${competitionId}/research`;
+};
+
+/**
+ * @summary Search real research sources, or record a finding by hand
+ */
+export const createResearch = async (
+  competitionId: string,
+  researchRequest: ResearchRequest,
+  options?: Parameters<typeof customFetch>[1],
+): Promise<ResearchResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit["headers"]>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(
+          h as Iterable<Iterable<string>>,
+          (entry) => Array.from(entry) as [string, string],
+        ),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<
+      string | readonly string[] | undefined
+    >(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+  return customFetch<ResearchResponse>(getCreateResearchUrl(competitionId), {
+    ...options,
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(researchRequest),
+  });
+};
+
+export const getCreateResearchMutationKey = () => ["createResearch"] as const;
+
+export const getCreateResearchMutationOptions = <
+  TError = ErrorType<
+    BadRequestResponse | UnauthorizedResponse | NotFoundResponse | ErrorResponse
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createResearch>>,
+    TError,
+    CreateResearchMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createResearch>>,
+  TError,
+  CreateResearchMutationVariables,
+  TContext
+> => {
+  const mutationKey = getCreateResearchMutationKey();
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createResearch>>,
+    CreateResearchMutationVariables
+  > = (props) => {
+    const { competitionId, data } = props ?? {};
+
+    return createResearch(competitionId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateResearchMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createResearch>>
+>;
+export type CreateResearchMutationBody = BodyType<ResearchRequest>;
+export type CreateResearchMutationError = ErrorType<
+  BadRequestResponse | UnauthorizedResponse | NotFoundResponse | ErrorResponse
+>;
+export type CreateResearchMutationVariables = {
+  competitionId: string;
+  data: BodyType<ResearchRequest>;
+};
+
+/**
+ * @summary Search real research sources, or record a finding by hand
+ */
+export const useCreateResearch = <
+  TError = ErrorType<
+    BadRequestResponse | UnauthorizedResponse | NotFoundResponse | ErrorResponse
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createResearch>>,
+    TError,
+    CreateResearchMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createResearch>>,
+  TError,
+  CreateResearchMutationVariables,
+  TContext
+> => {
+  return useMutation(getCreateResearchMutationOptions(options));
+};
+
+export const getDeleteResearchUrl = (
+  competitionId: string,
+  findingId: string,
+) => {
+  return `/api/competitions/${competitionId}/research/${findingId}`;
+};
+
+/**
+ * @summary Remove a research finding
+ */
+export const deleteResearch = async (
+  competitionId: string,
+  findingId: string,
+  options?: Parameters<typeof customFetch>[1],
+): Promise<EvidenceDeletion> => {
+  return customFetch<EvidenceDeletion>(
+    getDeleteResearchUrl(competitionId, findingId),
+    {
+      ...options,
+      method: "DELETE",
+    },
+  );
+};
+
+export const getDeleteResearchMutationKey = () => ["deleteResearch"] as const;
+
+export const getDeleteResearchMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteResearch>>,
+    TError,
+    DeleteResearchMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteResearch>>,
+  TError,
+  DeleteResearchMutationVariables,
+  TContext
+> => {
+  const mutationKey = getDeleteResearchMutationKey();
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteResearch>>,
+    DeleteResearchMutationVariables
+  > = (props) => {
+    const { competitionId, findingId } = props ?? {};
+
+    return deleteResearch(competitionId, findingId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteResearchMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteResearch>>
+>;
+
+export type DeleteResearchMutationError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+export type DeleteResearchMutationVariables = {
+  competitionId: string;
+  findingId: string;
+};
+
+/**
+ * @summary Remove a research finding
+ */
+export const useDeleteResearch = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteResearch>>,
+    TError,
+    DeleteResearchMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteResearch>>,
+  TError,
+  DeleteResearchMutationVariables,
+  TContext
+> => {
+  return useMutation(getDeleteResearchMutationOptions(options));
+};
+
+export const getListGapsUrl = (competitionId: string) => {
+  return `/api/competitions/${competitionId}/gaps`;
+};
+
+/**
+ * @summary List the opportunities identified for a competition
+ */
+export const listGaps = async (
+  competitionId: string,
+  options?: Parameters<typeof customFetch>[1],
+): Promise<ListGaps200> => {
+  return customFetch<ListGaps200>(getListGapsUrl(competitionId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListGapsQueryKey = (competitionId: string) => {
+  return [`/api/competitions/${competitionId}/gaps`] as const;
+};
+
+export const getListGapsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listGaps>>,
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+>(
+  competitionId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listGaps>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListGapsQueryKey(competitionId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listGaps>>> = ({
+    signal,
+  }) => listGaps(competitionId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: competitionId !== null && competitionId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<Awaited<ReturnType<typeof listGaps>>, TError, TData> & {
+    queryKey: QueryKey;
+  };
+};
+
+export type ListGapsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listGaps>>
+>;
+export type ListGapsQueryError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+
+/**
+ * @summary List the opportunities identified for a competition
+ */
+
+export function useListGaps<
+  TData = Awaited<ReturnType<typeof listGaps>>,
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+>(
+  competitionId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listGaps>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListGapsQueryOptions(competitionId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getCreateGapsUrl = (competitionId: string) => {
+  return `/api/competitions/${competitionId}/gaps`;
+};
+
+/**
+ * @summary Identify opportunities from the analysis and the research findings
+ */
+export const createGaps = async (
+  competitionId: string,
+  options?: Parameters<typeof customFetch>[1],
+): Promise<GapResponse> => {
+  return customFetch<GapResponse>(getCreateGapsUrl(competitionId), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getCreateGapsMutationKey = () => ["createGaps"] as const;
+
+export const getCreateGapsMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createGaps>>,
+    TError,
+    CreateGapsMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createGaps>>,
+  TError,
+  CreateGapsMutationVariables,
+  TContext
+> => {
+  const mutationKey = getCreateGapsMutationKey();
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createGaps>>,
+    CreateGapsMutationVariables
+  > = (props) => {
+    const { competitionId } = props ?? {};
+
+    return createGaps(competitionId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateGapsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createGaps>>
+>;
+
+export type CreateGapsMutationError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+export type CreateGapsMutationVariables = { competitionId: string };
+
+/**
+ * @summary Identify opportunities from the analysis and the research findings
+ */
+export const useCreateGaps = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createGaps>>,
+    TError,
+    CreateGapsMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createGaps>>,
+  TError,
+  CreateGapsMutationVariables,
+  TContext
+> => {
+  return useMutation(getCreateGapsMutationOptions(options));
+};
+
+export const getListIdeasUrl = (competitionId: string) => {
+  return `/api/competitions/${competitionId}/ideas`;
+};
+
+/**
+ * @summary List the idea candidates and compare them
+ */
+export const listIdeas = async (
+  competitionId: string,
+  options?: Parameters<typeof customFetch>[1],
+): Promise<IdeasResponse> => {
+  return customFetch<IdeasResponse>(getListIdeasUrl(competitionId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListIdeasQueryKey = (competitionId: string) => {
+  return [`/api/competitions/${competitionId}/ideas`] as const;
+};
+
+export const getListIdeasQueryOptions = <
+  TData = Awaited<ReturnType<typeof listIdeas>>,
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+>(
+  competitionId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listIdeas>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListIdeasQueryKey(competitionId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listIdeas>>> = ({
+    signal,
+  }) => listIdeas(competitionId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: competitionId !== null && competitionId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<Awaited<ReturnType<typeof listIdeas>>, TError, TData> & {
+    queryKey: QueryKey;
+  };
+};
+
+export type ListIdeasQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listIdeas>>
+>;
+export type ListIdeasQueryError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+
+/**
+ * @summary List the idea candidates and compare them
+ */
+
+export function useListIdeas<
+  TData = Awaited<ReturnType<typeof listIdeas>>,
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+>(
+  competitionId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listIdeas>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListIdeasQueryOptions(competitionId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getCreateIdeasUrl = (competitionId: string) => {
+  return `/api/competitions/${competitionId}/ideas`;
+};
+
+/**
+ * @summary Generate buildable idea candidates for the competition
+ */
+export const createIdeas = async (
+  competitionId: string,
+  options?: Parameters<typeof customFetch>[1],
+): Promise<CreateIdeas201> => {
+  return customFetch<CreateIdeas201>(getCreateIdeasUrl(competitionId), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getCreateIdeasMutationKey = () => ["createIdeas"] as const;
+
+export const getCreateIdeasMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse | ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createIdeas>>,
+    TError,
+    CreateIdeasMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createIdeas>>,
+  TError,
+  CreateIdeasMutationVariables,
+  TContext
+> => {
+  const mutationKey = getCreateIdeasMutationKey();
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createIdeas>>,
+    CreateIdeasMutationVariables
+  > = (props) => {
+    const { competitionId } = props ?? {};
+
+    return createIdeas(competitionId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateIdeasMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createIdeas>>
+>;
+
+export type CreateIdeasMutationError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse | ErrorResponse
+>;
+export type CreateIdeasMutationVariables = { competitionId: string };
+
+/**
+ * @summary Generate buildable idea candidates for the competition
+ */
+export const useCreateIdeas = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse | ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createIdeas>>,
+    TError,
+    CreateIdeasMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createIdeas>>,
+  TError,
+  CreateIdeasMutationVariables,
+  TContext
+> => {
+  return useMutation(getCreateIdeasMutationOptions(options));
+};
+
+export const getEvaluateIdeaUrl = (competitionId: string, ideaId: string) => {
+  return `/api/competitions/${competitionId}/ideas/${ideaId}/evaluate`;
+};
+
+/**
+ * @summary Score an idea on the rubric and compute its weighted total
+ */
+export const evaluateIdea = async (
+  competitionId: string,
+  ideaId: string,
+  evaluationRequest: EvaluationRequest,
+  options?: Parameters<typeof customFetch>[1],
+): Promise<EvaluateIdea200> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit["headers"]>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(
+          h as Iterable<Iterable<string>>,
+          (entry) => Array.from(entry) as [string, string],
+        ),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<
+      string | readonly string[] | undefined
+    >(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+  return customFetch<EvaluateIdea200>(
+    getEvaluateIdeaUrl(competitionId, ideaId),
+    {
+      ...options,
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(evaluationRequest),
+    },
+  );
+};
+
+export const getEvaluateIdeaMutationKey = () => ["evaluateIdea"] as const;
+
+export const getEvaluateIdeaMutationOptions = <
+  TError = ErrorType<
+    BadRequestResponse | UnauthorizedResponse | NotFoundResponse
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof evaluateIdea>>,
+    TError,
+    EvaluateIdeaMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof evaluateIdea>>,
+  TError,
+  EvaluateIdeaMutationVariables,
+  TContext
+> => {
+  const mutationKey = getEvaluateIdeaMutationKey();
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof evaluateIdea>>,
+    EvaluateIdeaMutationVariables
+  > = (props) => {
+    const { competitionId, ideaId, data } = props ?? {};
+
+    return evaluateIdea(competitionId, ideaId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type EvaluateIdeaMutationResult = NonNullable<
+  Awaited<ReturnType<typeof evaluateIdea>>
+>;
+export type EvaluateIdeaMutationBody = BodyType<EvaluationRequest>;
+export type EvaluateIdeaMutationError = ErrorType<
+  BadRequestResponse | UnauthorizedResponse | NotFoundResponse
+>;
+export type EvaluateIdeaMutationVariables = {
+  competitionId: string;
+  ideaId: string;
+  data: BodyType<EvaluationRequest>;
+};
+
+/**
+ * @summary Score an idea on the rubric and compute its weighted total
+ */
+export const useEvaluateIdea = <
+  TError = ErrorType<
+    BadRequestResponse | UnauthorizedResponse | NotFoundResponse
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof evaluateIdea>>,
+    TError,
+    EvaluateIdeaMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof evaluateIdea>>,
+  TError,
+  EvaluateIdeaMutationVariables,
+  TContext
+> => {
+  return useMutation(getEvaluateIdeaMutationOptions(options));
+};
+
+export const getSaveRubricUrl = (competitionId: string) => {
+  return `/api/competitions/${competitionId}/rubric`;
+};
+
+/**
+ * @summary Save the weights used to score ideas
+ */
+export const saveRubric = async (
+  competitionId: string,
+  rubricRequest: RubricRequest,
+  options?: Parameters<typeof customFetch>[1],
+): Promise<SaveRubric200> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit["headers"]>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(
+          h as Iterable<Iterable<string>>,
+          (entry) => Array.from(entry) as [string, string],
+        ),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<
+      string | readonly string[] | undefined
+    >(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+  return customFetch<SaveRubric200>(getSaveRubricUrl(competitionId), {
+    ...options,
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(rubricRequest),
+  });
+};
+
+export const getSaveRubricMutationKey = () => ["saveRubric"] as const;
+
+export const getSaveRubricMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof saveRubric>>,
+    TError,
+    SaveRubricMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof saveRubric>>,
+  TError,
+  SaveRubricMutationVariables,
+  TContext
+> => {
+  const mutationKey = getSaveRubricMutationKey();
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof saveRubric>>,
+    SaveRubricMutationVariables
+  > = (props) => {
+    const { competitionId, data } = props ?? {};
+
+    return saveRubric(competitionId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SaveRubricMutationResult = NonNullable<
+  Awaited<ReturnType<typeof saveRubric>>
+>;
+export type SaveRubricMutationBody = BodyType<RubricRequest>;
+export type SaveRubricMutationError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+export type SaveRubricMutationVariables = {
+  competitionId: string;
+  data: BodyType<RubricRequest>;
+};
+
+/**
+ * @summary Save the weights used to score ideas
+ */
+export const useSaveRubric = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof saveRubric>>,
+    TError,
+    SaveRubricMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof saveRubric>>,
+  TError,
+  SaveRubricMutationVariables,
+  TContext
+> => {
+  return useMutation(getSaveRubricMutationOptions(options));
+};
+
+export const getDecideIdeaUrl = (competitionId: string, ideaId: string) => {
+  return `/api/competitions/${competitionId}/ideas/${ideaId}/decision`;
+};
+
+/**
+ * @summary Record the team's decision about an idea
+ */
+export const decideIdea = async (
+  competitionId: string,
+  ideaId: string,
+  ideaDecisionRequest: IdeaDecisionRequest,
+  options?: Parameters<typeof customFetch>[1],
+): Promise<DecideIdea200> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit["headers"]>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(
+          h as Iterable<Iterable<string>>,
+          (entry) => Array.from(entry) as [string, string],
+        ),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<
+      string | readonly string[] | undefined
+    >(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+  return customFetch<DecideIdea200>(getDecideIdeaUrl(competitionId, ideaId), {
+    ...options,
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(ideaDecisionRequest),
+  });
+};
+
+export const getDecideIdeaMutationKey = () => ["decideIdea"] as const;
+
+export const getDecideIdeaMutationOptions = <
+  TError = ErrorType<
+    BadRequestResponse | UnauthorizedResponse | NotFoundResponse
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof decideIdea>>,
+    TError,
+    DecideIdeaMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof decideIdea>>,
+  TError,
+  DecideIdeaMutationVariables,
+  TContext
+> => {
+  const mutationKey = getDecideIdeaMutationKey();
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof decideIdea>>,
+    DecideIdeaMutationVariables
+  > = (props) => {
+    const { competitionId, ideaId, data } = props ?? {};
+
+    return decideIdea(competitionId, ideaId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DecideIdeaMutationResult = NonNullable<
+  Awaited<ReturnType<typeof decideIdea>>
+>;
+export type DecideIdeaMutationBody = BodyType<IdeaDecisionRequest>;
+export type DecideIdeaMutationError = ErrorType<
+  BadRequestResponse | UnauthorizedResponse | NotFoundResponse
+>;
+export type DecideIdeaMutationVariables = {
+  competitionId: string;
+  ideaId: string;
+  data: BodyType<IdeaDecisionRequest>;
+};
+
+/**
+ * @summary Record the team's decision about an idea
+ */
+export const useDecideIdea = <
+  TError = ErrorType<
+    BadRequestResponse | UnauthorizedResponse | NotFoundResponse
+  >,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof decideIdea>>,
+    TError,
+    DecideIdeaMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof decideIdea>>,
+  TError,
+  DecideIdeaMutationVariables,
+  TContext
+> => {
+  return useMutation(getDecideIdeaMutationOptions(options));
+};
+
+export const getCreateBriefUrl = (competitionId: string, ideaId: string) => {
+  return `/api/competitions/${competitionId}/ideas/${ideaId}/brief`;
+};
+
+/**
+ * @summary Produce a build brief for the selected idea
+ */
+export const createBrief = async (
+  competitionId: string,
+  ideaId: string,
+  options?: Parameters<typeof customFetch>[1],
+): Promise<CreateBrief201> => {
+  return customFetch<CreateBrief201>(getCreateBriefUrl(competitionId, ideaId), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getCreateBriefMutationKey = () => ["createBrief"] as const;
+
+export const getCreateBriefMutationOptions = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createBrief>>,
+    TError,
+    CreateBriefMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createBrief>>,
+  TError,
+  CreateBriefMutationVariables,
+  TContext
+> => {
+  const mutationKey = getCreateBriefMutationKey();
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createBrief>>,
+    CreateBriefMutationVariables
+  > = (props) => {
+    const { competitionId, ideaId } = props ?? {};
+
+    return createBrief(competitionId, ideaId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateBriefMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createBrief>>
+>;
+
+export type CreateBriefMutationError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+export type CreateBriefMutationVariables = {
+  competitionId: string;
+  ideaId: string;
+};
+
+/**
+ * @summary Produce a build brief for the selected idea
+ */
+export const useCreateBrief = <
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createBrief>>,
+    TError,
+    CreateBriefMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createBrief>>,
+  TError,
+  CreateBriefMutationVariables,
+  TContext
+> => {
+  return useMutation(getCreateBriefMutationOptions(options));
+};
+
+export const getListBriefsUrl = (competitionId: string) => {
+  return `/api/competitions/${competitionId}/briefs`;
+};
+
+/**
+ * @summary List the build briefs saved for a competition
+ */
+export const listBriefs = async (
+  competitionId: string,
+  options?: Parameters<typeof customFetch>[1],
+): Promise<ListBriefs200> => {
+  return customFetch<ListBriefs200>(getListBriefsUrl(competitionId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListBriefsQueryKey = (competitionId: string) => {
+  return [`/api/competitions/${competitionId}/briefs`] as const;
+};
+
+export const getListBriefsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listBriefs>>,
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+>(
+  competitionId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listBriefs>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListBriefsQueryKey(competitionId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listBriefs>>> = ({
+    signal,
+  }) => listBriefs(competitionId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: competitionId !== null && competitionId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof listBriefs>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListBriefsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listBriefs>>
+>;
+export type ListBriefsQueryError = ErrorType<
+  UnauthorizedResponse | NotFoundResponse
+>;
+
+/**
+ * @summary List the build briefs saved for a competition
+ */
+
+export function useListBriefs<
+  TData = Awaited<ReturnType<typeof listBriefs>>,
+  TError = ErrorType<UnauthorizedResponse | NotFoundResponse>,
+>(
+  competitionId: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listBriefs>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListBriefsQueryOptions(competitionId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}

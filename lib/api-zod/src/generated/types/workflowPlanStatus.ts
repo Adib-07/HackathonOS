@@ -6,11 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type WorkflowPlanStatus = typeof WorkflowPlanStatus[keyof typeof WorkflowPlanStatus];
-
+export type WorkflowPlanStatus =
+  (typeof WorkflowPlanStatus)[keyof typeof WorkflowPlanStatus];
 
 export const WorkflowPlanStatus = {
-  feasible: 'feasible',
-  at_risk: 'at_risk',
-  infeasible: 'infeasible',
+  feasible: "feasible",
+  at_risk: "at_risk",
+  infeasible: "infeasible",
 } as const;

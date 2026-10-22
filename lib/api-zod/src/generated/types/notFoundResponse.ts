@@ -5,7 +5,7 @@
  * Authenticated HackathonOS competition planning API.
  * OpenAPI spec version: 0.1.0
  */
-import type { ErrorResponse } from './errorResponse';
+import type { ErrorResponse } from "./errorResponse";
 
 /**
  * The requested resource does not exist

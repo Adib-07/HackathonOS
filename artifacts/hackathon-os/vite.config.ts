@@ -72,6 +72,16 @@ export default defineConfig({
     fs: {
       strict: true,
     },
+    // The web app calls same-origin "/api" paths. In the Replit deployment the
+    // application router splits "/api" onto the API service, but a local
+    // `vite dev` server has no such router, so proxy "/api" to the API server
+    // here. Set API_PROXY_ORIGIN to override the target.
+    proxy: {
+      '/api': {
+        target: process.env.API_PROXY_ORIGIN ?? 'http://127.0.0.1:8080',
+        changeOrigin: true,
+      },
+    },
   },
   preview: {
     port,

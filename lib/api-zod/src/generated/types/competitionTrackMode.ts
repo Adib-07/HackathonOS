@@ -6,10 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type CompetitionTrackMode = typeof CompetitionTrackMode[keyof typeof CompetitionTrackMode];
-
+export type CompetitionTrackMode =
+  (typeof CompetitionTrackMode)[keyof typeof CompetitionTrackMode];
 
 export const CompetitionTrackMode = {
-  assigned: 'assigned',
-  choose: 'choose',
+  assigned: "assigned",
+  choose: "choose",
 } as const;

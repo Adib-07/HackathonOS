@@ -8,4 +8,11 @@
 
 export interface ErrorResponse {
   error: string;
+  /**
+   * A machine-readable reason, when the error has one.
+   * @nullable
+   */
+  code?: string | null;
+  /** Configuration that is missing, when the error is a configuration error. */
+  missing?: string[];
 }

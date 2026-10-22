@@ -6,11 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type QualitySignalsBrowserVerification = typeof QualitySignalsBrowserVerification[keyof typeof QualitySignalsBrowserVerification];
-
+export type QualitySignalsBrowserVerification =
+  (typeof QualitySignalsBrowserVerification)[keyof typeof QualitySignalsBrowserVerification];
 
 export const QualitySignalsBrowserVerification = {
-  not_run: 'not_run',
-  passed: 'passed',
-  failed: 'failed',
+  not_run: "not_run",
+  passed: "passed",
+  failed: "failed",
 } as const;

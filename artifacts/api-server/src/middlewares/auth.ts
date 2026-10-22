@@ -18,8 +18,8 @@ export const requireAuthenticatedUser: RequestHandler = (req, res, next) => {
     // In test or standalone environment where Clerk middleware did not resolve
   }
 
-  // Allow test client to supply authenticated test identity in test environment
-  if (!userId && (process.env.NODE_ENV === "test" || process.env.TEST_AUTH_HEADER === "1")) {
+  // Allow test client to supply authenticated test identity in test environment only
+  if (!userId && process.env.NODE_ENV === "test") {
     const testHeader = req.headers["x-test-user-id"];
     if (typeof testHeader === "string" && testHeader.trim()) {
       userId = testHeader.trim();

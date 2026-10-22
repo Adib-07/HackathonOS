@@ -1,10 +1,15 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "wouter";
+import {
+  useGetOverview,
+  useListCompetitions,
+  type Competition,
+} from "@workspace/api-client-react";
 import {
   ArrowRight,
   BadgeCheck,
+  Ban,
   CalendarClock,
-  CalendarDays,
   Check,
   ChevronRight,
   CircleHelp,
@@ -13,17 +18,14 @@ import {
   Flag,
   FolderKanban,
   Gauge,
+  ListChecks,
   Plus,
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
 import {
-  useGetOverview,
-  useListCompetitions,
-  type Competition,
-} from "@workspace/api-client-react";
-import {
   Button,
+  EmptyState,
   ErrorState,
   LoadingBlock,
   Metric,
@@ -33,16 +35,13 @@ import {
   StatusPill,
 } from "@/components/workspace";
 import { CompetitionModal } from "@/components/CompetitionModal";
-
-const qualityLabels = [
-  ["applicationBuild", "Application build"],
-  ["automatedTests", "Automated tests"],
-  ["browserVerification", "Browser verification"],
-  ["securityReview", "Security review"],
-  ["deployment", "Deployment"],
-  ["demoReadiness", "Demo readiness"],
-  ["submissionReadiness", "Submission readiness"],
-] as const;
+import {
+  buildStageSummaries,
+  computeRemaining,
+  formatDuration,
+  summarisePlan,
+  type StageTask,
+} from "@/lib/workflow";
 
 export default function OverviewPage() {
   const query = useGetOverview();
@@ -53,12 +52,27 @@ export default function OverviewPage() {
   const overview = query.data;
   const competitions = competitionsQuery.data ?? [];
 
+  const planTasks = useMemo(
+    () => (overview?.currentPlan?.tasks ?? []) as unknown as StageTask[],
+    [overview?.currentPlan?.tasks],
+  );
+  const progress = useMemo(() => summarisePlan(planTasks), [planTasks]);
+  const stages = useMemo(() => buildStageSummaries(planTasks), [planTasks]);
+
   if (query.isLoading) return <LoadingBlock label="Preparing overview" />;
-  if (query.isError || !overview) return <ErrorState retry={() => query.refetch()} />;
+  if (query.isError || !overview) {
+    return <ErrorState retry={() => query.refetch()} />;
+  }
 
   const competition = overview.currentCompetition;
   const plan = overview.currentPlan;
   const next = overview.nextAction;
+
+  const remaining = competition ? computeRemaining(competition.deadline) : null;
+  const blockedTasks = planTasks.filter((task) => task.status === "blocked");
+  const activeStage = stages.find((stage) => stage.state === "active");
+  const requirements = competition?.mandatoryDeliverables ?? [];
+  const completedRequirements = 0;
 
   const handleCreated = (newComp: Competition) => {
     setSuccessMessage(
@@ -73,7 +87,7 @@ export default function OverviewPage() {
         title="Overview"
         detail="The next useful move, with your competition and plan in context."
         action={
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
             <Button
               onClick={() => setCreateOpen(true)}
               data-testid="button-dashboard-add-competition"
@@ -98,6 +112,24 @@ export default function OverviewPage() {
 
       <div className="metrics-grid">
         <Metric
+          label="Time remaining"
+          value={
+            competition
+              ? remaining?.isPast
+                ? "Overdue"
+                : remaining?.label ?? "—"
+              : "—"
+          }
+          icon={<Clock3 size={16} />}
+          note={
+            competition
+              ? remaining?.isPast
+                ? "Deadline has passed"
+                : "Until the submission deadline"
+              : "No competition selected"
+          }
+        />
+        <Metric
           label="Workspaces"
           value={overview.competitionCount}
           icon={<Flag size={16} />}
@@ -106,20 +138,14 @@ export default function OverviewPage() {
         <Metric
           label="Open tasks"
           value={overview.openTaskCount}
-          icon={<Clock3 size={16} />}
+          icon={<ListChecks size={16} />}
           note="Across the active plan"
         />
         <Metric
-          label="Completed tasks"
-          value={overview.completedTaskCount}
-          icon={<Check size={16} />}
-          note="Recorded as done"
-        />
-        <Metric
-          label="Plan quality"
-          value="Not run"
-          icon={<ShieldCheck size={16} />}
-          note="Evidence not connected"
+          label="Blocked"
+          value={blockedTasks.length}
+          icon={<Ban size={16} />}
+          note={blockedTasks.length > 0 ? "Needs a decision" : "Nothing blocked"}
         />
       </div>
 
@@ -195,6 +221,13 @@ export default function OverviewPage() {
               >
                 Review competition details <ArrowRight size={14} />
               </Link>
+              <Link
+                href={`/competitions/${competition.id}/workflow`}
+                className="external-text-link"
+                data-testid="link-active-workflow"
+              >
+                Open workflow <ChevronRight size={14} />
+              </Link>
               {competition.officialUrl && (
                 <a
                   href={competition.officialUrl}
@@ -203,8 +236,7 @@ export default function OverviewPage() {
                   rel="noreferrer"
                   data-testid="link-official-competition"
                 >
-                  <span>Official site</span>
-                  <ChevronRight size={14} />
+                  Official site
                 </a>
               )}
             </div>
@@ -240,14 +272,30 @@ export default function OverviewPage() {
                     }}
                   />
                 </div>
-                <div className="plan-warning">
-                  <CircleHelp size={15} />
-                  <span>
-                    {plan.warnings.length
-                      ? plan.warnings[0]
-                      : "Plan status reflects schedule feasibility, not product quality."}
-                  </span>
-                </div>
+                {activeStage && (
+                  <div className="plan-stage-line">
+                    <span className="eyebrow">ACTIVE STAGE</span>
+                    <strong>{activeStage.definition.label}</strong>
+                    <small>
+                      {activeStage.done}/{activeStage.total} tasks ·{" "}
+                      {formatDuration(activeStage.estimatedMinutes)} estimated
+                    </small>
+                  </div>
+                )}
+                {plan.warnings.length > 0 ? (
+                  <div className="plan-warning">
+                    <CircleHelp size={15} />
+                    <span>{plan.warnings[0]}</span>
+                  </div>
+                ) : (
+                  <div className="plan-warning">
+                    <CircleHelp size={15} />
+                    <span>
+                      Plan status reflects schedule feasibility, not product
+                      quality.
+                    </span>
+                  </div>
+                )}
               </>
             ) : (
               <div className="plan-not-created">
@@ -267,16 +315,60 @@ export default function OverviewPage() {
         </div>
       )}
 
-      {/* Saved Competitions in Dashboard */}
+      {competition && (
+        <section className="overview-section" aria-labelledby="overview-requirements">
+          <div className="section-heading" style={{ marginBottom: "14px" }}>
+            <div>
+              <span className="eyebrow">BEFORE SUBMISSION</span>
+              <h2 id="overview-requirements" style={{ fontSize: "16px", fontWeight: 600 }}>
+                Required deliverables
+              </h2>
+            </div>
+            <span className="mono" data-testid="requirements-count">
+              {completedRequirements} of {requirements.length} verified
+            </span>
+          </div>
+          {requirements.length === 0 ? (
+            <Panel className="requirements-empty">
+              <EmptyState
+                icon={<FileCheck2 size={21} />}
+                title="No required deliverables recorded"
+                detail="Add the official submission requirements to the competition so the plan can check them before submission."
+                action={
+                  <Link
+                    href={`/competitions/${competition.id}`}
+                    className="button button-secondary"
+                    data-testid="link-add-requirements"
+                  >
+                    Add deliverables <ArrowRight size={14} />
+                  </Link>
+                }
+              />
+            </Panel>
+          ) : (
+            <ul className="requirement-list" data-testid="requirement-list">
+              {requirements.map((requirement) => (
+                <li className="requirement-row" key={requirement}>
+                  <span className="requirement-marker" aria-hidden="true" />
+                  <span>{requirement}</span>
+                  <span className="requirement-state">Not verified</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
+
       {competitions.length > 0 && (
         <section
           style={{ marginTop: "24px" }}
+          aria-labelledby="overview-saved"
           data-testid="section-saved-competitions"
         >
           <div className="section-heading" style={{ marginBottom: "14px" }}>
             <div>
               <span className="eyebrow">PERSISTED COMPETITIONS</span>
-              <h2 style={{ fontSize: "16px", fontWeight: 600 }}>
+              <h2 id="overview-saved" style={{ fontSize: "16px", fontWeight: 600 }}>
                 Saved Workspaces ({competitions.length})
               </h2>
             </div>
@@ -315,7 +407,7 @@ export default function OverviewPage() {
                   </span>
                 </span>
                 <span className="comp-row-deadline">
-                  <CalendarDays size={14} />
+                  <CalendarClock size={14} />
                   {new Date(item.deadline).toLocaleDateString(undefined, {
                     month: "short",
                     day: "numeric",
@@ -342,18 +434,30 @@ export default function OverviewPage() {
           {next ? (
             <div className="next-action-content">
               <div className="next-action-label">
-                <span className="priority-dot" />{" "}
-                {next.phase.replaceAll("_", " ")}{" "}
-                <span className="tiny-dot" /> {next.estimatedMinutes} min
+                <span
+                  className={
+                    next.status === "blocked" ? "priority-dot priority-dot-blocked" : "priority-dot"
+                  }
+                />{" "}
+                {next.phase.replaceAll("_", " ")} · {next.estimatedMinutes} min
+                {next.status === "blocked" ? " · BLOCKED" : ""}
               </div>
               <h3>{next.title}</h3>
               <p>{next.description}</p>
+              {next.acceptanceCriteria.length > 0 && (
+                <div className="next-action-criteria">
+                  <span className="acceptance-label">
+                    <Check size={12} /> DONE WHEN
+                  </span>
+                  <ul>
+                    {next.acceptanceCriteria.slice(0, 2).map((criterion, index) => (
+                      <li key={`${next.id}-criterion-${index}`}>{criterion}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               <Link
-                href={
-                  competition
-                    ? `/competitions/${competition.id}/planner`
-                    : "/competitions"
-                }
+                href={`/competitions/${competition!.id}/planner`}
                 className="button button-primary"
                 data-testid="link-recommended-action"
               >
@@ -417,12 +521,25 @@ export default function OverviewPage() {
               >
                 <span className="quality-state-dot" />
                 <span>{label}</span>
-                <span className="quality-value">not_run</span>
+                <span className="quality-value">{overview.quality[key]}</span>
               </div>
             ))}
           </div>
         </Panel>
       </div>
+
+      {blockedTasks.length > 0 && (
+        <div className="blocked-banner" role="status" data-testid="banner-blocked-tasks">
+          <Ban size={15} />
+          <span>
+            {blockedTasks.length} saved task{blockedTasks.length === 1 ? " is" : "s are"}{" "}
+            blocked. Resolve the blocker before treating the plan as on track.
+          </span>
+          <Link href={`/competitions/${competition?.id}/planner`} className="text-link">
+            Review <ArrowRight size={13} />
+          </Link>
+        </div>
+      )}
 
       <div className="overview-footnote">
         <ShieldCheck size={14} />
@@ -440,3 +557,13 @@ export default function OverviewPage() {
     </div>
   );
 }
+
+const qualityLabels = [
+  ["applicationBuild", "Application build"],
+  ["automatedTests", "Automated tests"],
+  ["browserVerification", "Browser verification"],
+  ["securityReview", "Security review"],
+  ["deployment", "Deployment"],
+  ["demoReadiness", "Demo readiness"],
+  ["submissionReadiness", "Submission readiness"],
+] as const;

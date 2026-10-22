@@ -5,61 +5,61 @@
  * Authenticated HackathonOS competition planning API.
  * OpenAPI spec version: 0.1.0
  */
-import type { CompetitionUpdateCompetitionType } from './competitionUpdateCompetitionType';
-import type { CompetitionUpdateStatus } from './competitionUpdateStatus';
-import type { CompetitionUpdateTrackMode } from './competitionUpdateTrackMode';
+import type { CompetitionUpdateCompetitionType } from "./competitionUpdateCompetitionType";
+import type { CompetitionUpdateStatus } from "./competitionUpdateStatus";
+import type { CompetitionUpdateTrackMode } from "./competitionUpdateTrackMode";
 
 export interface CompetitionUpdate {
   /**
-     * @minLength 1
-     * @maxLength 160
-     */
+   * @minLength 1
+   * @maxLength 160
+   */
   name?: string;
   /**
-     * @maxLength 160
-     * @nullable
-     */
+   * @maxLength 160
+   * @nullable
+   */
   organizer?: string | null;
   competitionType?: CompetitionUpdateCompetitionType;
   /** @nullable */
   startAt?: Date | null;
   deadline?: Date;
   /**
-     * @minimum 1
-     * @maximum 100
-     */
+   * @minimum 1
+   * @maximum 100
+   */
   teamSize?: number;
   trackMode?: CompetitionUpdateTrackMode;
   /**
-     * @maxLength 200
-     * @nullable
-     */
+   * @maxLength 200
+   * @nullable
+   */
   currentTrack?: string | null;
   /**
-     * @maxLength 20000
-     * @nullable
-     */
+   * @maxLength 20000
+   * @nullable
+   */
   problemStatement?: string | null;
   /** @nullable */
   officialUrl?: string | null;
   /** @nullable */
   rulesUrl?: string | null;
   /**
-     * @maxItems 50
-     * @items.minLength 1
-     * @items.maxLength 500
-     */
+   * @maxItems 50
+   * @items.minLength 1
+   * @items.maxLength 500
+   */
   mandatoryDeliverables?: string[];
   /**
-     * @maxItems 30
-     * @items.minLength 1
-     * @items.maxLength 100
-     */
+   * @maxItems 30
+   * @items.minLength 1
+   * @items.maxLength 100
+   */
   teamSkills?: string[];
   /**
-     * @minimum 1
-     * @maximum 5
-     */
+   * @minimum 1
+   * @maximum 5
+   */
   ideaComplexity?: number;
   status?: CompetitionUpdateStatus;
 }

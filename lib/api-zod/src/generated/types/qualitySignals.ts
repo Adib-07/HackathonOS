@@ -5,13 +5,13 @@
  * Authenticated HackathonOS competition planning API.
  * OpenAPI spec version: 0.1.0
  */
-import type { QualitySignalsApplicationBuild } from './qualitySignalsApplicationBuild';
-import type { QualitySignalsAutomatedTests } from './qualitySignalsAutomatedTests';
-import type { QualitySignalsBrowserVerification } from './qualitySignalsBrowserVerification';
-import type { QualitySignalsDemoReadiness } from './qualitySignalsDemoReadiness';
-import type { QualitySignalsDeployment } from './qualitySignalsDeployment';
-import type { QualitySignalsSecurityReview } from './qualitySignalsSecurityReview';
-import type { QualitySignalsSubmissionReadiness } from './qualitySignalsSubmissionReadiness';
+import type { QualitySignalsApplicationBuild } from "./qualitySignalsApplicationBuild";
+import type { QualitySignalsAutomatedTests } from "./qualitySignalsAutomatedTests";
+import type { QualitySignalsBrowserVerification } from "./qualitySignalsBrowserVerification";
+import type { QualitySignalsDemoReadiness } from "./qualitySignalsDemoReadiness";
+import type { QualitySignalsDeployment } from "./qualitySignalsDeployment";
+import type { QualitySignalsSecurityReview } from "./qualitySignalsSecurityReview";
+import type { QualitySignalsSubmissionReadiness } from "./qualitySignalsSubmissionReadiness";
 
 export interface QualitySignals {
   applicationBuild: QualitySignalsApplicationBuild;

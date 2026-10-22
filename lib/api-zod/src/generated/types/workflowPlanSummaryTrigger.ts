@@ -6,12 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type WorkflowPlanSummaryTrigger = typeof WorkflowPlanSummaryTrigger[keyof typeof WorkflowPlanSummaryTrigger];
-
+export type WorkflowPlanSummaryTrigger =
+  (typeof WorkflowPlanSummaryTrigger)[keyof typeof WorkflowPlanSummaryTrigger];
 
 export const WorkflowPlanSummaryTrigger = {
-  manual: 'manual',
-  deadline_changed: 'deadline_changed',
-  task_failed: 'task_failed',
-  progress_changed: 'progress_changed',
+  manual: "manual",
+  deadline_changed: "deadline_changed",
+  task_failed: "task_failed",
+  progress_changed: "progress_changed",
 } as const;

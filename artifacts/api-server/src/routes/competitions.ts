@@ -29,13 +29,22 @@ import {
 import {
   competitionsTable,
   db,
+  workflowEvidenceTable,
   workflowPlansTable,
   workflowTasksTable,
   type Competition as DbCompetition,
+  type WorkflowEvidenceRecord,
   type WorkflowPlanRecord,
   type WorkflowTaskRecord,
 } from "@workspace/db";
 import { createPlanDraft, serializeTask } from "../lib/planner";
+import {
+  evaluateTaskVerification,
+  type EvidenceResult,
+  type EvidenceSource,
+  type EvidenceType,
+  type TaskStatus,
+} from "../lib/verification";
 
 const router: IRouter = Router();
 
@@ -72,11 +81,63 @@ function serializePlanSummary(
 function serializePlan(
   plan: WorkflowPlanRecord,
   tasks: WorkflowTaskRecord[],
+  evidence: WorkflowEvidenceRecord[] = [],
 ) {
+  const verificationByTaskKey = new Map(
+    tasks.map((task) => [
+      task.taskKey,
+      evaluateTaskVerification(
+        {
+          id: task.id,
+          taskKey: task.taskKey,
+          phase: task.phase,
+          status: task.status as TaskStatus,
+          verificationMethod: task.verificationMethod,
+        },
+        evidence.map((record) => ({
+          id: record.id,
+          taskKey: record.taskKey,
+          type: record.type as EvidenceType,
+          result: record.result as EvidenceResult,
+          observedAt: record.observedAt,
+          verificationMethodSnapshot: record.verificationMethodSnapshot,
+          source: record.source as EvidenceSource,
+        })),
+      ),
+    ]),
+  );
+
   return GetPlanResponse.parse({
     ...serializePlanSummary(plan, tasks),
-    tasks: tasks.map((task) => serializeTask(task, plan.id)),
+    tasks: tasks.map((task) =>
+      serializeTask(
+        task,
+        plan.id,
+        verificationByTaskKey.get(task.taskKey)!,
+      ),
+    ),
   });
+}
+
+/** Load every evidence record for a competition, scoped by the caller. */
+async function loadOwnedEvidence(
+  competitionId: string,
+  ownerId: string,
+): Promise<WorkflowEvidenceRecord[]> {
+  return db
+    .select({ evidence: workflowEvidenceTable })
+    .from(workflowEvidenceTable)
+    .innerJoin(
+      competitionsTable,
+      eq(workflowEvidenceTable.competitionId, competitionsTable.id),
+    )
+    .where(
+      and(
+        eq(workflowEvidenceTable.competitionId, competitionId),
+        eq(competitionsTable.ownerId, ownerId),
+      ),
+    )
+    .then((rows) => rows.map((row) => row.evidence));
 }
 
 async function findOwnedCompetition(
@@ -112,6 +173,7 @@ router.get("/overview", async (_req, res): Promise<void> => {
 
   let currentPlan = null;
   let currentTasks: WorkflowTaskRecord[] = [];
+  let currentEvidence: WorkflowEvidenceRecord[] = [];
 
   if (currentCompetition) {
     const [latestPlan] = await db
@@ -127,7 +189,8 @@ router.get("/overview", async (_req, res): Promise<void> => {
         .from(workflowTasksTable)
         .where(eq(workflowTasksTable.planId, latestPlan.id))
         .orderBy(workflowTasksTable.plannedStartAt);
-      currentPlan = serializePlan(latestPlan, currentTasks);
+      currentEvidence = await loadOwnedEvidence(currentCompetition.id, ownerId);
+      currentPlan = serializePlan(latestPlan, currentTasks, currentEvidence);
     }
   }
 
@@ -138,6 +201,27 @@ router.get("/overview", async (_req, res): Promise<void> => {
         task.status === "todo" ||
         task.status === "blocked",
     ) ?? null;
+
+  const nextActionVerification = nextAction
+    ? evaluateTaskVerification(
+        {
+          id: nextAction.id,
+          taskKey: nextAction.taskKey,
+          phase: nextAction.phase,
+          status: nextAction.status as TaskStatus,
+          verificationMethod: nextAction.verificationMethod,
+        },
+        currentEvidence.map((record) => ({
+          id: record.id,
+          taskKey: record.taskKey,
+          type: record.type as EvidenceType,
+          result: record.result as EvidenceResult,
+          observedAt: record.observedAt,
+          verificationMethodSnapshot: record.verificationMethodSnapshot,
+          source: record.source as EvidenceSource,
+        })),
+      )
+    : undefined;
 
   res.json(
     GetOverviewResponse.parse({
@@ -153,7 +237,11 @@ router.get("/overview", async (_req, res): Promise<void> => {
         (task) => task.status === "done",
       ).length,
       nextAction: nextAction
-        ? serializeTask(nextAction, nextAction.planId)
+        ? serializeTask(
+            nextAction,
+            nextAction.planId,
+            nextActionVerification!,
+          )
         : null,
       quality: {
         applicationBuild: "not_run",
@@ -470,9 +558,19 @@ router.post(
       return { plan: plan!, tasks };
     });
 
+    const ownerId = res.locals.userId as string;
+    const evidence = await loadOwnedEvidence(
+      params.data.competitionId,
+      ownerId,
+    );
+
     res
       .status(201)
-      .json(GeneratePlanResponse.parse(serializePlan(result.plan, result.tasks)));
+      .json(
+        GeneratePlanResponse.parse(
+          serializePlan(result.plan, result.tasks, evidence),
+        ),
+      );
   },
 );
 
@@ -515,7 +613,12 @@ router.get(
       .where(eq(workflowTasksTable.planId, plan.id))
       .orderBy(workflowTasksTable.plannedStartAt);
 
-    res.json(GetPlanResponse.parse(serializePlan(plan, tasks)));
+    const evidence = await loadOwnedEvidence(
+      params.data.competitionId,
+      res.locals.userId as string,
+    );
+
+    res.json(GetPlanResponse.parse(serializePlan(plan, tasks, evidence)));
   },
 );
 
@@ -577,9 +680,34 @@ router.patch(
       .where(eq(workflowTasksTable.id, ownedTask.task.id))
       .returning();
 
+    // The verification state is recomputed from evidence on every read, so a
+    // status change can never leave a stale VERIFIED flag behind.
+    const evidence = await loadOwnedEvidence(
+      params.data.competitionId,
+      res.locals.userId as string,
+    );
+    const verification = evaluateTaskVerification(
+      {
+        id: updated!.id,
+        taskKey: updated!.taskKey,
+        phase: updated!.phase,
+        status: updated!.status as TaskStatus,
+        verificationMethod: updated!.verificationMethod,
+      },
+      evidence.map((record) => ({
+        id: record.id,
+        taskKey: record.taskKey,
+        type: record.type as EvidenceType,
+        result: record.result as EvidenceResult,
+        observedAt: record.observedAt,
+        verificationMethodSnapshot: record.verificationMethodSnapshot,
+        source: record.source as EvidenceSource,
+      })),
+    );
+
     res.json(
       UpdateTaskResponse.parse(
-        serializeTask(updated!, updated!.planId),
+        serializeTask(updated!, updated!.planId, verification),
       ),
     );
   },

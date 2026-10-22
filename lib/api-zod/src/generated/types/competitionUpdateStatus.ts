@@ -6,12 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type CompetitionUpdateStatus = typeof CompetitionUpdateStatus[keyof typeof CompetitionUpdateStatus];
-
+export type CompetitionUpdateStatus =
+  (typeof CompetitionUpdateStatus)[keyof typeof CompetitionUpdateStatus];
 
 export const CompetitionUpdateStatus = {
-  preparing: 'preparing',
-  active: 'active',
-  submitted: 'submitted',
-  completed: 'completed',
+  preparing: "preparing",
+  active: "active",
+  submitted: "submitted",
+  completed: "completed",
 } as const;

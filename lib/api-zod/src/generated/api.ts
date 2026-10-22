@@ -5,140 +5,237 @@
  * Authenticated HackathonOS competition planning API.
  * OpenAPI spec version: 0.1.0
  */
-import * as zod from 'zod';
-
+import * as zod from "zod";
 
 /**
  * Returns server health status
  * @summary Health check
  */
 export const HealthCheckResponse = zod.object({
-  "status": zod.string()
-})
-
+  status: zod.string(),
+});
 
 /**
  * @summary Get the workspace overview
  */
 
+export const getOverviewResponseCurrentPlanOneTasksItemVerificationEvidenceCountMin = 0;
 
-
+export const getOverviewResponseNextActionOneVerificationEvidenceCountMin = 0;
 
 export const GetOverviewResponse = zod.object({
-  "currentCompetition": zod.union([zod.object({
-  "id": zod.string().uuid(),
-  "name": zod.string(),
-  "organizer": zod.string().nullable(),
-  "competitionType": zod.enum(['online', 'in_person', 'hybrid', 'unknown']),
-  "startAt": zod.coerce.date().nullable(),
-  "deadline": zod.coerce.date(),
-  "teamSize": zod.number().int(),
-  "trackMode": zod.enum(['assigned', 'choose']),
-  "currentTrack": zod.string().nullable(),
-  "problemStatement": zod.string().nullable(),
-  "officialUrl": zod.string().nullable(),
-  "rulesUrl": zod.string().nullable(),
-  "mandatoryDeliverables": zod.array(zod.string()),
-  "teamSkills": zod.array(zod.string()),
-  "ideaComplexity": zod.number().int(),
-  "status": zod.enum(['preparing', 'active', 'submitted', 'completed']),
-  "createdAt": zod.coerce.date(),
-  "updatedAt": zod.coerce.date()
-}),zod.null()]),
-  "currentPlan": zod.union([zod.object({
-  "id": zod.string().uuid(),
-  "competitionId": zod.string().uuid(),
-  "version": zod.number().int(),
-  "generatedAt": zod.coerce.date(),
-  "deadline": zod.coerce.date(),
-  "availableMinutes": zod.number().int(),
-  "bufferMinutes": zod.number().int(),
-  "status": zod.enum(['feasible', 'at_risk', 'infeasible']),
-  "warnings": zod.array(zod.string()),
-  "trigger": zod.enum(['manual', 'deadline_changed', 'task_failed', 'progress_changed']),
-  "taskCount": zod.number().int(),
-  "completedTaskCount": zod.number().int(),
-  "tasks": zod.array(zod.object({
-  "id": zod.string().uuid(),
-  "planId": zod.string().uuid(),
-  "taskKey": zod.string(),
-  "title": zod.string(),
-  "description": zod.string(),
-  "phase": zod.enum(['intake', 'problem', 'research', 'track_selection', 'idea_selection', 'specification', 'architecture', 'implementation', 'testing', 'security', 'deployment', 'demo', 'pitch', 'submission']),
-  "priority": zod.enum(['critical', 'high', 'medium', 'low']),
-  "estimatedMinutes": zod.number().int().min(1),
-  "plannedStartAt": zod.coerce.date(),
-  "plannedEndAt": zod.coerce.date(),
-  "dependencies": zod.array(zod.string()),
-  "owner": zod.string().nullable(),
-  "status": zod.enum(['todo', 'in_progress', 'blocked', 'done', 'deferred']),
-  "acceptanceCriteria": zod.array(zod.string()),
-  "expectedArtifact": zod.string().nullable(),
-  "verificationMethod": zod.string(),
-  "riskIfSkipped": zod.string(),
-  "mandatory": zod.boolean()
-}))
-}),zod.null()]),
-  "competitionCount": zod.number().int(),
-  "openTaskCount": zod.number().int(),
-  "completedTaskCount": zod.number().int(),
-  "nextAction": zod.union([zod.object({
-  "id": zod.string().uuid(),
-  "planId": zod.string().uuid(),
-  "taskKey": zod.string(),
-  "title": zod.string(),
-  "description": zod.string(),
-  "phase": zod.enum(['intake', 'problem', 'research', 'track_selection', 'idea_selection', 'specification', 'architecture', 'implementation', 'testing', 'security', 'deployment', 'demo', 'pitch', 'submission']),
-  "priority": zod.enum(['critical', 'high', 'medium', 'low']),
-  "estimatedMinutes": zod.number().int().min(1),
-  "plannedStartAt": zod.coerce.date(),
-  "plannedEndAt": zod.coerce.date(),
-  "dependencies": zod.array(zod.string()),
-  "owner": zod.string().nullable(),
-  "status": zod.enum(['todo', 'in_progress', 'blocked', 'done', 'deferred']),
-  "acceptanceCriteria": zod.array(zod.string()),
-  "expectedArtifact": zod.string().nullable(),
-  "verificationMethod": zod.string(),
-  "riskIfSkipped": zod.string(),
-  "mandatory": zod.boolean()
-}),zod.null()]),
-  "quality": zod.object({
-  "applicationBuild": zod.enum(['not_run', 'passed', 'failed']),
-  "automatedTests": zod.enum(['not_run', 'passed', 'failed']),
-  "browserVerification": zod.enum(['not_run', 'passed', 'failed']),
-  "securityReview": zod.enum(['not_run', 'passed', 'failed']),
-  "deployment": zod.enum(['not_run', 'passed', 'failed']),
-  "demoReadiness": zod.enum(['not_run', 'passed', 'failed']),
-  "submissionReadiness": zod.enum(['not_run', 'passed', 'failed'])
-})
-})
-
+  currentCompetition: zod.union([
+    zod.object({
+      id: zod.string().uuid(),
+      name: zod.string(),
+      organizer: zod.string().nullable(),
+      competitionType: zod.enum(["online", "in_person", "hybrid", "unknown"]),
+      startAt: zod.coerce.date().nullable(),
+      deadline: zod.coerce.date(),
+      teamSize: zod.number().int(),
+      trackMode: zod.enum(["assigned", "choose"]),
+      currentTrack: zod.string().nullable(),
+      problemStatement: zod.string().nullable(),
+      officialUrl: zod.string().nullable(),
+      rulesUrl: zod.string().nullable(),
+      mandatoryDeliverables: zod.array(zod.string()),
+      teamSkills: zod.array(zod.string()),
+      ideaComplexity: zod.number().int(),
+      status: zod.enum(["preparing", "active", "submitted", "completed"]),
+      createdAt: zod.coerce.date(),
+      updatedAt: zod.coerce.date(),
+    }),
+    zod.null(),
+  ]),
+  currentPlan: zod.union([
+    zod.object({
+      id: zod.string().uuid(),
+      competitionId: zod.string().uuid(),
+      version: zod.number().int(),
+      generatedAt: zod.coerce.date(),
+      deadline: zod.coerce.date(),
+      availableMinutes: zod.number().int(),
+      bufferMinutes: zod.number().int(),
+      status: zod.enum(["feasible", "at_risk", "infeasible"]),
+      warnings: zod.array(zod.string()),
+      trigger: zod.enum([
+        "manual",
+        "deadline_changed",
+        "task_failed",
+        "progress_changed",
+      ]),
+      taskCount: zod.number().int(),
+      completedTaskCount: zod.number().int(),
+      tasks: zod.array(
+        zod.object({
+          id: zod.string().uuid(),
+          planId: zod.string().uuid(),
+          taskKey: zod.string(),
+          title: zod.string(),
+          description: zod.string(),
+          phase: zod.enum([
+            "intake",
+            "problem",
+            "research",
+            "track_selection",
+            "idea_selection",
+            "specification",
+            "architecture",
+            "implementation",
+            "testing",
+            "security",
+            "deployment",
+            "demo",
+            "pitch",
+            "submission",
+          ]),
+          priority: zod.enum(["critical", "high", "medium", "low"]),
+          estimatedMinutes: zod.number().int().min(1),
+          plannedStartAt: zod.coerce.date(),
+          plannedEndAt: zod.coerce.date(),
+          dependencies: zod.array(zod.string()),
+          owner: zod.string().nullable(),
+          status: zod.enum([
+            "todo",
+            "in_progress",
+            "blocked",
+            "done",
+            "deferred",
+          ]),
+          acceptanceCriteria: zod.array(zod.string()),
+          expectedArtifact: zod.string().nullable(),
+          verificationMethod: zod.string(),
+          riskIfSkipped: zod.string(),
+          mandatory: zod.boolean(),
+          verification: zod.object({
+            state: zod.enum([
+              "not_started",
+              "in_progress",
+              "blocked",
+              "done",
+              "verified",
+            ]),
+            verified: zod.boolean(),
+            requiredTypes: zod.array(zod.string()),
+            satisfiedTypes: zod.array(zod.string()),
+            missingTypes: zod.array(zod.string()),
+            failedTypes: zod.array(zod.string()),
+            evidenceCount: zod
+              .number()
+              .int()
+              .min(
+                getOverviewResponseCurrentPlanOneTasksItemVerificationEvidenceCountMin,
+              ),
+            supportingEvidenceIds: zod.array(zod.string()),
+            unusableEvidenceIds: zod.array(zod.string()),
+            blockedByFailure: zod.boolean(),
+            hasStaleEvidence: zod.boolean(),
+            reason: zod.string(),
+          }),
+        }),
+      ),
+    }),
+    zod.null(),
+  ]),
+  competitionCount: zod.number().int(),
+  openTaskCount: zod.number().int(),
+  completedTaskCount: zod.number().int(),
+  nextAction: zod.union([
+    zod.object({
+      id: zod.string().uuid(),
+      planId: zod.string().uuid(),
+      taskKey: zod.string(),
+      title: zod.string(),
+      description: zod.string(),
+      phase: zod.enum([
+        "intake",
+        "problem",
+        "research",
+        "track_selection",
+        "idea_selection",
+        "specification",
+        "architecture",
+        "implementation",
+        "testing",
+        "security",
+        "deployment",
+        "demo",
+        "pitch",
+        "submission",
+      ]),
+      priority: zod.enum(["critical", "high", "medium", "low"]),
+      estimatedMinutes: zod.number().int().min(1),
+      plannedStartAt: zod.coerce.date(),
+      plannedEndAt: zod.coerce.date(),
+      dependencies: zod.array(zod.string()),
+      owner: zod.string().nullable(),
+      status: zod.enum(["todo", "in_progress", "blocked", "done", "deferred"]),
+      acceptanceCriteria: zod.array(zod.string()),
+      expectedArtifact: zod.string().nullable(),
+      verificationMethod: zod.string(),
+      riskIfSkipped: zod.string(),
+      mandatory: zod.boolean(),
+      verification: zod.object({
+        state: zod.enum([
+          "not_started",
+          "in_progress",
+          "blocked",
+          "done",
+          "verified",
+        ]),
+        verified: zod.boolean(),
+        requiredTypes: zod.array(zod.string()),
+        satisfiedTypes: zod.array(zod.string()),
+        missingTypes: zod.array(zod.string()),
+        failedTypes: zod.array(zod.string()),
+        evidenceCount: zod
+          .number()
+          .int()
+          .min(getOverviewResponseNextActionOneVerificationEvidenceCountMin),
+        supportingEvidenceIds: zod.array(zod.string()),
+        unusableEvidenceIds: zod.array(zod.string()),
+        blockedByFailure: zod.boolean(),
+        hasStaleEvidence: zod.boolean(),
+        reason: zod.string(),
+      }),
+    }),
+    zod.null(),
+  ]),
+  quality: zod.object({
+    applicationBuild: zod.enum(["not_run", "passed", "failed"]),
+    automatedTests: zod.enum(["not_run", "passed", "failed"]),
+    browserVerification: zod.enum(["not_run", "passed", "failed"]),
+    securityReview: zod.enum(["not_run", "passed", "failed"]),
+    deployment: zod.enum(["not_run", "passed", "failed"]),
+    demoReadiness: zod.enum(["not_run", "passed", "failed"]),
+    submissionReadiness: zod.enum(["not_run", "passed", "failed"]),
+  }),
+});
 
 /**
  * @summary List the owner's competitions
  */
 export const ListCompetitionsResponseItem = zod.object({
-  "id": zod.string().uuid(),
-  "name": zod.string(),
-  "organizer": zod.string().nullable(),
-  "competitionType": zod.enum(['online', 'in_person', 'hybrid', 'unknown']),
-  "startAt": zod.coerce.date().nullable(),
-  "deadline": zod.coerce.date(),
-  "teamSize": zod.number().int(),
-  "trackMode": zod.enum(['assigned', 'choose']),
-  "currentTrack": zod.string().nullable(),
-  "problemStatement": zod.string().nullable(),
-  "officialUrl": zod.string().nullable(),
-  "rulesUrl": zod.string().nullable(),
-  "mandatoryDeliverables": zod.array(zod.string()),
-  "teamSkills": zod.array(zod.string()),
-  "ideaComplexity": zod.number().int(),
-  "status": zod.enum(['preparing', 'active', 'submitted', 'completed']),
-  "createdAt": zod.coerce.date(),
-  "updatedAt": zod.coerce.date()
-})
-export const ListCompetitionsResponse = zod.array(ListCompetitionsResponseItem)
-
+  id: zod.string().uuid(),
+  name: zod.string(),
+  organizer: zod.string().nullable(),
+  competitionType: zod.enum(["online", "in_person", "hybrid", "unknown"]),
+  startAt: zod.coerce.date().nullable(),
+  deadline: zod.coerce.date(),
+  teamSize: zod.number().int(),
+  trackMode: zod.enum(["assigned", "choose"]),
+  currentTrack: zod.string().nullable(),
+  problemStatement: zod.string().nullable(),
+  officialUrl: zod.string().nullable(),
+  rulesUrl: zod.string().nullable(),
+  mandatoryDeliverables: zod.array(zod.string()),
+  teamSkills: zod.array(zod.string()),
+  ideaComplexity: zod.number().int(),
+  status: zod.enum(["preparing", "active", "submitted", "completed"]),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const ListCompetitionsResponse = zod.array(ListCompetitionsResponseItem);
 
 /**
  * @summary Create a competition workspace
@@ -163,83 +260,110 @@ export const createCompetitionBodyTeamSkillsMax = 30;
 
 export const createCompetitionBodyIdeaComplexityMax = 5;
 
-
-
 export const CreateCompetitionBody = zod.object({
-  "name": zod.string().min(1).max(createCompetitionBodyNameMax),
-  "organizer": zod.string().max(createCompetitionBodyOrganizerMax).nullish(),
-  "competitionType": zod.enum(['online', 'in_person', 'hybrid', 'unknown']).optional(),
-  "startAt": zod.coerce.date().nullish(),
-  "deadline": zod.coerce.date(),
-  "teamSize": zod.number().int().min(1).max(createCompetitionBodyTeamSizeMax).optional(),
-  "trackMode": zod.enum(['assigned', 'choose']).optional(),
-  "currentTrack": zod.string().max(createCompetitionBodyCurrentTrackMax).nullish(),
-  "problemStatement": zod.string().max(createCompetitionBodyProblemStatementMax).nullish(),
-  "officialUrl": zod.string().url().nullish(),
-  "rulesUrl": zod.string().url().nullish(),
-  "mandatoryDeliverables": zod.array(zod.string().min(1).max(createCompetitionBodyMandatoryDeliverablesItemMax)).max(createCompetitionBodyMandatoryDeliverablesMax).optional(),
-  "teamSkills": zod.array(zod.string().min(1).max(createCompetitionBodyTeamSkillsItemMax)).max(createCompetitionBodyTeamSkillsMax).optional(),
-  "ideaComplexity": zod.number().int().min(1).max(createCompetitionBodyIdeaComplexityMax).optional(),
-  "status": zod.enum(['preparing', 'active', 'submitted', 'completed']).optional()
-})
+  name: zod.string().min(1).max(createCompetitionBodyNameMax),
+  organizer: zod.string().max(createCompetitionBodyOrganizerMax).nullish(),
+  competitionType: zod
+    .enum(["online", "in_person", "hybrid", "unknown"])
+    .optional(),
+  startAt: zod.coerce.date().nullish(),
+  deadline: zod.coerce.date(),
+  teamSize: zod
+    .number()
+    .int()
+    .min(1)
+    .max(createCompetitionBodyTeamSizeMax)
+    .optional(),
+  trackMode: zod.enum(["assigned", "choose"]).optional(),
+  currentTrack: zod
+    .string()
+    .max(createCompetitionBodyCurrentTrackMax)
+    .nullish(),
+  problemStatement: zod
+    .string()
+    .max(createCompetitionBodyProblemStatementMax)
+    .nullish(),
+  officialUrl: zod.string().url().nullish(),
+  rulesUrl: zod.string().url().nullish(),
+  mandatoryDeliverables: zod
+    .array(
+      zod
+        .string()
+        .min(1)
+        .max(createCompetitionBodyMandatoryDeliverablesItemMax),
+    )
+    .max(createCompetitionBodyMandatoryDeliverablesMax)
+    .optional(),
+  teamSkills: zod
+    .array(zod.string().min(1).max(createCompetitionBodyTeamSkillsItemMax))
+    .max(createCompetitionBodyTeamSkillsMax)
+    .optional(),
+  ideaComplexity: zod
+    .number()
+    .int()
+    .min(1)
+    .max(createCompetitionBodyIdeaComplexityMax)
+    .optional(),
+  status: zod
+    .enum(["preparing", "active", "submitted", "completed"])
+    .optional(),
+});
 
 export const CreateCompetitionResponse = zod.object({
-  "id": zod.string().uuid(),
-  "name": zod.string(),
-  "organizer": zod.string().nullable(),
-  "competitionType": zod.enum(['online', 'in_person', 'hybrid', 'unknown']),
-  "startAt": zod.coerce.date().nullable(),
-  "deadline": zod.coerce.date(),
-  "teamSize": zod.number().int(),
-  "trackMode": zod.enum(['assigned', 'choose']),
-  "currentTrack": zod.string().nullable(),
-  "problemStatement": zod.string().nullable(),
-  "officialUrl": zod.string().nullable(),
-  "rulesUrl": zod.string().nullable(),
-  "mandatoryDeliverables": zod.array(zod.string()),
-  "teamSkills": zod.array(zod.string()),
-  "ideaComplexity": zod.number().int(),
-  "status": zod.enum(['preparing', 'active', 'submitted', 'completed']),
-  "createdAt": zod.coerce.date(),
-  "updatedAt": zod.coerce.date()
-})
-
+  id: zod.string().uuid(),
+  name: zod.string(),
+  organizer: zod.string().nullable(),
+  competitionType: zod.enum(["online", "in_person", "hybrid", "unknown"]),
+  startAt: zod.coerce.date().nullable(),
+  deadline: zod.coerce.date(),
+  teamSize: zod.number().int(),
+  trackMode: zod.enum(["assigned", "choose"]),
+  currentTrack: zod.string().nullable(),
+  problemStatement: zod.string().nullable(),
+  officialUrl: zod.string().nullable(),
+  rulesUrl: zod.string().nullable(),
+  mandatoryDeliverables: zod.array(zod.string()),
+  teamSkills: zod.array(zod.string()),
+  ideaComplexity: zod.number().int(),
+  status: zod.enum(["preparing", "active", "submitted", "completed"]),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
 
 /**
  * @summary Get a competition workspace
  */
 export const GetCompetitionParams = zod.object({
-  "competitionId": zod.coerce.string().uuid()
-})
+  competitionId: zod.coerce.string().uuid(),
+});
 
 export const GetCompetitionResponse = zod.object({
-  "id": zod.string().uuid(),
-  "name": zod.string(),
-  "organizer": zod.string().nullable(),
-  "competitionType": zod.enum(['online', 'in_person', 'hybrid', 'unknown']),
-  "startAt": zod.coerce.date().nullable(),
-  "deadline": zod.coerce.date(),
-  "teamSize": zod.number().int(),
-  "trackMode": zod.enum(['assigned', 'choose']),
-  "currentTrack": zod.string().nullable(),
-  "problemStatement": zod.string().nullable(),
-  "officialUrl": zod.string().nullable(),
-  "rulesUrl": zod.string().nullable(),
-  "mandatoryDeliverables": zod.array(zod.string()),
-  "teamSkills": zod.array(zod.string()),
-  "ideaComplexity": zod.number().int(),
-  "status": zod.enum(['preparing', 'active', 'submitted', 'completed']),
-  "createdAt": zod.coerce.date(),
-  "updatedAt": zod.coerce.date()
-})
-
+  id: zod.string().uuid(),
+  name: zod.string(),
+  organizer: zod.string().nullable(),
+  competitionType: zod.enum(["online", "in_person", "hybrid", "unknown"]),
+  startAt: zod.coerce.date().nullable(),
+  deadline: zod.coerce.date(),
+  teamSize: zod.number().int(),
+  trackMode: zod.enum(["assigned", "choose"]),
+  currentTrack: zod.string().nullable(),
+  problemStatement: zod.string().nullable(),
+  officialUrl: zod.string().nullable(),
+  rulesUrl: zod.string().nullable(),
+  mandatoryDeliverables: zod.array(zod.string()),
+  teamSkills: zod.array(zod.string()),
+  ideaComplexity: zod.number().int(),
+  status: zod.enum(["preparing", "active", "submitted", "completed"]),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
 
 /**
  * @summary Update competition details
  */
 export const UpdateCompetitionParams = zod.object({
-  "competitionId": zod.coerce.string().uuid()
-})
+  competitionId: zod.coerce.string().uuid(),
+});
 
 export const updateCompetitionBodyNameMax = 160;
 
@@ -261,209 +385,1106 @@ export const updateCompetitionBodyTeamSkillsMax = 30;
 
 export const updateCompetitionBodyIdeaComplexityMax = 5;
 
-
-
 export const UpdateCompetitionBody = zod.object({
-  "name": zod.string().min(1).max(updateCompetitionBodyNameMax).optional(),
-  "organizer": zod.string().max(updateCompetitionBodyOrganizerMax).nullish(),
-  "competitionType": zod.enum(['online', 'in_person', 'hybrid', 'unknown']).optional(),
-  "startAt": zod.coerce.date().nullish(),
-  "deadline": zod.coerce.date().optional(),
-  "teamSize": zod.number().int().min(1).max(updateCompetitionBodyTeamSizeMax).optional(),
-  "trackMode": zod.enum(['assigned', 'choose']).optional(),
-  "currentTrack": zod.string().max(updateCompetitionBodyCurrentTrackMax).nullish(),
-  "problemStatement": zod.string().max(updateCompetitionBodyProblemStatementMax).nullish(),
-  "officialUrl": zod.string().url().nullish(),
-  "rulesUrl": zod.string().url().nullish(),
-  "mandatoryDeliverables": zod.array(zod.string().min(1).max(updateCompetitionBodyMandatoryDeliverablesItemMax)).max(updateCompetitionBodyMandatoryDeliverablesMax).optional(),
-  "teamSkills": zod.array(zod.string().min(1).max(updateCompetitionBodyTeamSkillsItemMax)).max(updateCompetitionBodyTeamSkillsMax).optional(),
-  "ideaComplexity": zod.number().int().min(1).max(updateCompetitionBodyIdeaComplexityMax).optional(),
-  "status": zod.enum(['preparing', 'active', 'submitted', 'completed']).optional()
-})
+  name: zod.string().min(1).max(updateCompetitionBodyNameMax).optional(),
+  organizer: zod.string().max(updateCompetitionBodyOrganizerMax).nullish(),
+  competitionType: zod
+    .enum(["online", "in_person", "hybrid", "unknown"])
+    .optional(),
+  startAt: zod.coerce.date().nullish(),
+  deadline: zod.coerce.date().optional(),
+  teamSize: zod
+    .number()
+    .int()
+    .min(1)
+    .max(updateCompetitionBodyTeamSizeMax)
+    .optional(),
+  trackMode: zod.enum(["assigned", "choose"]).optional(),
+  currentTrack: zod
+    .string()
+    .max(updateCompetitionBodyCurrentTrackMax)
+    .nullish(),
+  problemStatement: zod
+    .string()
+    .max(updateCompetitionBodyProblemStatementMax)
+    .nullish(),
+  officialUrl: zod.string().url().nullish(),
+  rulesUrl: zod.string().url().nullish(),
+  mandatoryDeliverables: zod
+    .array(
+      zod
+        .string()
+        .min(1)
+        .max(updateCompetitionBodyMandatoryDeliverablesItemMax),
+    )
+    .max(updateCompetitionBodyMandatoryDeliverablesMax)
+    .optional(),
+  teamSkills: zod
+    .array(zod.string().min(1).max(updateCompetitionBodyTeamSkillsItemMax))
+    .max(updateCompetitionBodyTeamSkillsMax)
+    .optional(),
+  ideaComplexity: zod
+    .number()
+    .int()
+    .min(1)
+    .max(updateCompetitionBodyIdeaComplexityMax)
+    .optional(),
+  status: zod
+    .enum(["preparing", "active", "submitted", "completed"])
+    .optional(),
+});
 
 export const UpdateCompetitionResponse = zod.object({
-  "id": zod.string().uuid(),
-  "name": zod.string(),
-  "organizer": zod.string().nullable(),
-  "competitionType": zod.enum(['online', 'in_person', 'hybrid', 'unknown']),
-  "startAt": zod.coerce.date().nullable(),
-  "deadline": zod.coerce.date(),
-  "teamSize": zod.number().int(),
-  "trackMode": zod.enum(['assigned', 'choose']),
-  "currentTrack": zod.string().nullable(),
-  "problemStatement": zod.string().nullable(),
-  "officialUrl": zod.string().nullable(),
-  "rulesUrl": zod.string().nullable(),
-  "mandatoryDeliverables": zod.array(zod.string()),
-  "teamSkills": zod.array(zod.string()),
-  "ideaComplexity": zod.number().int(),
-  "status": zod.enum(['preparing', 'active', 'submitted', 'completed']),
-  "createdAt": zod.coerce.date(),
-  "updatedAt": zod.coerce.date()
-})
-
+  id: zod.string().uuid(),
+  name: zod.string(),
+  organizer: zod.string().nullable(),
+  competitionType: zod.enum(["online", "in_person", "hybrid", "unknown"]),
+  startAt: zod.coerce.date().nullable(),
+  deadline: zod.coerce.date(),
+  teamSize: zod.number().int(),
+  trackMode: zod.enum(["assigned", "choose"]),
+  currentTrack: zod.string().nullable(),
+  problemStatement: zod.string().nullable(),
+  officialUrl: zod.string().nullable(),
+  rulesUrl: zod.string().nullable(),
+  mandatoryDeliverables: zod.array(zod.string()),
+  teamSkills: zod.array(zod.string()),
+  ideaComplexity: zod.number().int(),
+  status: zod.enum(["preparing", "active", "submitted", "completed"]),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
 
 /**
  * @summary List saved plan versions
  */
 export const ListPlanVersionsParams = zod.object({
-  "competitionId": zod.coerce.string().uuid()
-})
+  competitionId: zod.coerce.string().uuid(),
+});
 
 export const ListPlanVersionsResponseItem = zod.object({
-  "id": zod.string().uuid(),
-  "competitionId": zod.string().uuid(),
-  "version": zod.number().int(),
-  "generatedAt": zod.coerce.date(),
-  "deadline": zod.coerce.date(),
-  "availableMinutes": zod.number().int(),
-  "bufferMinutes": zod.number().int(),
-  "status": zod.enum(['feasible', 'at_risk', 'infeasible']),
-  "warnings": zod.array(zod.string()),
-  "trigger": zod.enum(['manual', 'deadline_changed', 'task_failed', 'progress_changed']),
-  "taskCount": zod.number().int(),
-  "completedTaskCount": zod.number().int()
-})
-export const ListPlanVersionsResponse = zod.array(ListPlanVersionsResponseItem)
-
+  id: zod.string().uuid(),
+  competitionId: zod.string().uuid(),
+  version: zod.number().int(),
+  generatedAt: zod.coerce.date(),
+  deadline: zod.coerce.date(),
+  availableMinutes: zod.number().int(),
+  bufferMinutes: zod.number().int(),
+  status: zod.enum(["feasible", "at_risk", "infeasible"]),
+  warnings: zod.array(zod.string()),
+  trigger: zod.enum([
+    "manual",
+    "deadline_changed",
+    "task_failed",
+    "progress_changed",
+  ]),
+  taskCount: zod.number().int(),
+  completedTaskCount: zod.number().int(),
+});
+export const ListPlanVersionsResponse = zod.array(ListPlanVersionsResponseItem);
 
 /**
  * @summary Generate a deadline-aware plan and save a new version
  */
 export const GeneratePlanParams = zod.object({
-  "competitionId": zod.coerce.string().uuid()
-})
+  competitionId: zod.coerce.string().uuid(),
+});
 
 export const generatePlanBodyRemainingHoursMin = 0.25;
 export const generatePlanBodyRemainingHoursMax = 1000;
 
-
-
 export const GeneratePlanBody = zod.object({
-  "remainingHours": zod.number().min(generatePlanBodyRemainingHoursMin).max(generatePlanBodyRemainingHoursMax).optional(),
-  "trigger": zod.enum(['manual', 'deadline_changed', 'task_failed', 'progress_changed'])
-})
+  remainingHours: zod
+    .number()
+    .min(generatePlanBodyRemainingHoursMin)
+    .max(generatePlanBodyRemainingHoursMax)
+    .optional(),
+  trigger: zod.enum([
+    "manual",
+    "deadline_changed",
+    "task_failed",
+    "progress_changed",
+  ]),
+});
 
-
-
+export const generatePlanResponseTasksItemVerificationEvidenceCountMin = 0;
 
 export const GeneratePlanResponse = zod.object({
-  "id": zod.string().uuid(),
-  "competitionId": zod.string().uuid(),
-  "version": zod.number().int(),
-  "generatedAt": zod.coerce.date(),
-  "deadline": zod.coerce.date(),
-  "availableMinutes": zod.number().int(),
-  "bufferMinutes": zod.number().int(),
-  "status": zod.enum(['feasible', 'at_risk', 'infeasible']),
-  "warnings": zod.array(zod.string()),
-  "trigger": zod.enum(['manual', 'deadline_changed', 'task_failed', 'progress_changed']),
-  "taskCount": zod.number().int(),
-  "completedTaskCount": zod.number().int(),
-  "tasks": zod.array(zod.object({
-  "id": zod.string().uuid(),
-  "planId": zod.string().uuid(),
-  "taskKey": zod.string(),
-  "title": zod.string(),
-  "description": zod.string(),
-  "phase": zod.enum(['intake', 'problem', 'research', 'track_selection', 'idea_selection', 'specification', 'architecture', 'implementation', 'testing', 'security', 'deployment', 'demo', 'pitch', 'submission']),
-  "priority": zod.enum(['critical', 'high', 'medium', 'low']),
-  "estimatedMinutes": zod.number().int().min(1),
-  "plannedStartAt": zod.coerce.date(),
-  "plannedEndAt": zod.coerce.date(),
-  "dependencies": zod.array(zod.string()),
-  "owner": zod.string().nullable(),
-  "status": zod.enum(['todo', 'in_progress', 'blocked', 'done', 'deferred']),
-  "acceptanceCriteria": zod.array(zod.string()),
-  "expectedArtifact": zod.string().nullable(),
-  "verificationMethod": zod.string(),
-  "riskIfSkipped": zod.string(),
-  "mandatory": zod.boolean()
-}))
-})
-
+  id: zod.string().uuid(),
+  competitionId: zod.string().uuid(),
+  version: zod.number().int(),
+  generatedAt: zod.coerce.date(),
+  deadline: zod.coerce.date(),
+  availableMinutes: zod.number().int(),
+  bufferMinutes: zod.number().int(),
+  status: zod.enum(["feasible", "at_risk", "infeasible"]),
+  warnings: zod.array(zod.string()),
+  trigger: zod.enum([
+    "manual",
+    "deadline_changed",
+    "task_failed",
+    "progress_changed",
+  ]),
+  taskCount: zod.number().int(),
+  completedTaskCount: zod.number().int(),
+  tasks: zod.array(
+    zod.object({
+      id: zod.string().uuid(),
+      planId: zod.string().uuid(),
+      taskKey: zod.string(),
+      title: zod.string(),
+      description: zod.string(),
+      phase: zod.enum([
+        "intake",
+        "problem",
+        "research",
+        "track_selection",
+        "idea_selection",
+        "specification",
+        "architecture",
+        "implementation",
+        "testing",
+        "security",
+        "deployment",
+        "demo",
+        "pitch",
+        "submission",
+      ]),
+      priority: zod.enum(["critical", "high", "medium", "low"]),
+      estimatedMinutes: zod.number().int().min(1),
+      plannedStartAt: zod.coerce.date(),
+      plannedEndAt: zod.coerce.date(),
+      dependencies: zod.array(zod.string()),
+      owner: zod.string().nullable(),
+      status: zod.enum(["todo", "in_progress", "blocked", "done", "deferred"]),
+      acceptanceCriteria: zod.array(zod.string()),
+      expectedArtifact: zod.string().nullable(),
+      verificationMethod: zod.string(),
+      riskIfSkipped: zod.string(),
+      mandatory: zod.boolean(),
+      verification: zod.object({
+        state: zod.enum([
+          "not_started",
+          "in_progress",
+          "blocked",
+          "done",
+          "verified",
+        ]),
+        verified: zod.boolean(),
+        requiredTypes: zod.array(zod.string()),
+        satisfiedTypes: zod.array(zod.string()),
+        missingTypes: zod.array(zod.string()),
+        failedTypes: zod.array(zod.string()),
+        evidenceCount: zod
+          .number()
+          .int()
+          .min(generatePlanResponseTasksItemVerificationEvidenceCountMin),
+        supportingEvidenceIds: zod.array(zod.string()),
+        unusableEvidenceIds: zod.array(zod.string()),
+        blockedByFailure: zod.boolean(),
+        hasStaleEvidence: zod.boolean(),
+        reason: zod.string(),
+      }),
+    }),
+  ),
+});
 
 /**
  * @summary Get a saved plan version and its tasks
  */
 export const GetPlanParams = zod.object({
-  "competitionId": zod.coerce.string().uuid(),
-  "planId": zod.coerce.string().uuid()
-})
+  competitionId: zod.coerce.string().uuid(),
+  planId: zod.coerce.string().uuid(),
+});
 
-
-
+export const getPlanResponseTasksItemVerificationEvidenceCountMin = 0;
 
 export const GetPlanResponse = zod.object({
-  "id": zod.string().uuid(),
-  "competitionId": zod.string().uuid(),
-  "version": zod.number().int(),
-  "generatedAt": zod.coerce.date(),
-  "deadline": zod.coerce.date(),
-  "availableMinutes": zod.number().int(),
-  "bufferMinutes": zod.number().int(),
-  "status": zod.enum(['feasible', 'at_risk', 'infeasible']),
-  "warnings": zod.array(zod.string()),
-  "trigger": zod.enum(['manual', 'deadline_changed', 'task_failed', 'progress_changed']),
-  "taskCount": zod.number().int(),
-  "completedTaskCount": zod.number().int(),
-  "tasks": zod.array(zod.object({
-  "id": zod.string().uuid(),
-  "planId": zod.string().uuid(),
-  "taskKey": zod.string(),
-  "title": zod.string(),
-  "description": zod.string(),
-  "phase": zod.enum(['intake', 'problem', 'research', 'track_selection', 'idea_selection', 'specification', 'architecture', 'implementation', 'testing', 'security', 'deployment', 'demo', 'pitch', 'submission']),
-  "priority": zod.enum(['critical', 'high', 'medium', 'low']),
-  "estimatedMinutes": zod.number().int().min(1),
-  "plannedStartAt": zod.coerce.date(),
-  "plannedEndAt": zod.coerce.date(),
-  "dependencies": zod.array(zod.string()),
-  "owner": zod.string().nullable(),
-  "status": zod.enum(['todo', 'in_progress', 'blocked', 'done', 'deferred']),
-  "acceptanceCriteria": zod.array(zod.string()),
-  "expectedArtifact": zod.string().nullable(),
-  "verificationMethod": zod.string(),
-  "riskIfSkipped": zod.string(),
-  "mandatory": zod.boolean()
-}))
-})
-
+  id: zod.string().uuid(),
+  competitionId: zod.string().uuid(),
+  version: zod.number().int(),
+  generatedAt: zod.coerce.date(),
+  deadline: zod.coerce.date(),
+  availableMinutes: zod.number().int(),
+  bufferMinutes: zod.number().int(),
+  status: zod.enum(["feasible", "at_risk", "infeasible"]),
+  warnings: zod.array(zod.string()),
+  trigger: zod.enum([
+    "manual",
+    "deadline_changed",
+    "task_failed",
+    "progress_changed",
+  ]),
+  taskCount: zod.number().int(),
+  completedTaskCount: zod.number().int(),
+  tasks: zod.array(
+    zod.object({
+      id: zod.string().uuid(),
+      planId: zod.string().uuid(),
+      taskKey: zod.string(),
+      title: zod.string(),
+      description: zod.string(),
+      phase: zod.enum([
+        "intake",
+        "problem",
+        "research",
+        "track_selection",
+        "idea_selection",
+        "specification",
+        "architecture",
+        "implementation",
+        "testing",
+        "security",
+        "deployment",
+        "demo",
+        "pitch",
+        "submission",
+      ]),
+      priority: zod.enum(["critical", "high", "medium", "low"]),
+      estimatedMinutes: zod.number().int().min(1),
+      plannedStartAt: zod.coerce.date(),
+      plannedEndAt: zod.coerce.date(),
+      dependencies: zod.array(zod.string()),
+      owner: zod.string().nullable(),
+      status: zod.enum(["todo", "in_progress", "blocked", "done", "deferred"]),
+      acceptanceCriteria: zod.array(zod.string()),
+      expectedArtifact: zod.string().nullable(),
+      verificationMethod: zod.string(),
+      riskIfSkipped: zod.string(),
+      mandatory: zod.boolean(),
+      verification: zod.object({
+        state: zod.enum([
+          "not_started",
+          "in_progress",
+          "blocked",
+          "done",
+          "verified",
+        ]),
+        verified: zod.boolean(),
+        requiredTypes: zod.array(zod.string()),
+        satisfiedTypes: zod.array(zod.string()),
+        missingTypes: zod.array(zod.string()),
+        failedTypes: zod.array(zod.string()),
+        evidenceCount: zod
+          .number()
+          .int()
+          .min(getPlanResponseTasksItemVerificationEvidenceCountMin),
+        supportingEvidenceIds: zod.array(zod.string()),
+        unusableEvidenceIds: zod.array(zod.string()),
+        blockedByFailure: zod.boolean(),
+        hasStaleEvidence: zod.boolean(),
+        reason: zod.string(),
+      }),
+    }),
+  ),
+});
 
 /**
  * @summary Update a task's status
  */
 export const UpdateTaskParams = zod.object({
-  "competitionId": zod.coerce.string().uuid(),
-  "taskId": zod.coerce.string().uuid()
-})
+  competitionId: zod.coerce.string().uuid(),
+  taskId: zod.coerce.string().uuid(),
+});
 
 export const UpdateTaskBody = zod.object({
-  "status": zod.enum(['todo', 'in_progress', 'blocked', 'done', 'deferred'])
-})
+  status: zod.enum(["todo", "in_progress", "blocked", "done", "deferred"]),
+});
 
-
-
+export const updateTaskResponseVerificationEvidenceCountMin = 0;
 
 export const UpdateTaskResponse = zod.object({
-  "id": zod.string().uuid(),
-  "planId": zod.string().uuid(),
-  "taskKey": zod.string(),
-  "title": zod.string(),
-  "description": zod.string(),
-  "phase": zod.enum(['intake', 'problem', 'research', 'track_selection', 'idea_selection', 'specification', 'architecture', 'implementation', 'testing', 'security', 'deployment', 'demo', 'pitch', 'submission']),
-  "priority": zod.enum(['critical', 'high', 'medium', 'low']),
-  "estimatedMinutes": zod.number().int().min(1),
-  "plannedStartAt": zod.coerce.date(),
-  "plannedEndAt": zod.coerce.date(),
-  "dependencies": zod.array(zod.string()),
-  "owner": zod.string().nullable(),
-  "status": zod.enum(['todo', 'in_progress', 'blocked', 'done', 'deferred']),
-  "acceptanceCriteria": zod.array(zod.string()),
-  "expectedArtifact": zod.string().nullable(),
-  "verificationMethod": zod.string(),
-  "riskIfSkipped": zod.string(),
-  "mandatory": zod.boolean()
-})
+  id: zod.string().uuid(),
+  planId: zod.string().uuid(),
+  taskKey: zod.string(),
+  title: zod.string(),
+  description: zod.string(),
+  phase: zod.enum([
+    "intake",
+    "problem",
+    "research",
+    "track_selection",
+    "idea_selection",
+    "specification",
+    "architecture",
+    "implementation",
+    "testing",
+    "security",
+    "deployment",
+    "demo",
+    "pitch",
+    "submission",
+  ]),
+  priority: zod.enum(["critical", "high", "medium", "low"]),
+  estimatedMinutes: zod.number().int().min(1),
+  plannedStartAt: zod.coerce.date(),
+  plannedEndAt: zod.coerce.date(),
+  dependencies: zod.array(zod.string()),
+  owner: zod.string().nullable(),
+  status: zod.enum(["todo", "in_progress", "blocked", "done", "deferred"]),
+  acceptanceCriteria: zod.array(zod.string()),
+  expectedArtifact: zod.string().nullable(),
+  verificationMethod: zod.string(),
+  riskIfSkipped: zod.string(),
+  mandatory: zod.boolean(),
+  verification: zod.object({
+    state: zod.enum([
+      "not_started",
+      "in_progress",
+      "blocked",
+      "done",
+      "verified",
+    ]),
+    verified: zod.boolean(),
+    requiredTypes: zod.array(zod.string()),
+    satisfiedTypes: zod.array(zod.string()),
+    missingTypes: zod.array(zod.string()),
+    failedTypes: zod.array(zod.string()),
+    evidenceCount: zod
+      .number()
+      .int()
+      .min(updateTaskResponseVerificationEvidenceCountMin),
+    supportingEvidenceIds: zod.array(zod.string()),
+    unusableEvidenceIds: zod.array(zod.string()),
+    blockedByFailure: zod.boolean(),
+    hasStaleEvidence: zod.boolean(),
+    reason: zod.string(),
+  }),
+});
 
+/**
+ * @summary List verification evidence recorded for a competition
+ */
+export const ListEvidenceParams = zod.object({
+  competitionId: zod.coerce.string().uuid(),
+});
 
+export const ListEvidenceResponseItem = zod.object({
+  id: zod.string().uuid(),
+  competitionId: zod.string().uuid(),
+  taskId: zod.string().uuid().nullable(),
+  taskKey: zod.string(),
+  type: zod.enum([
+    "TEST_RESULT",
+    "BUILD_RESULT",
+    "DEPLOYMENT_URL",
+    "HTTP_CHECK",
+    "MANUAL_REVIEW",
+    "SUBMISSION_CONFIRMATION",
+  ]),
+  summary: zod.string(),
+  sourceUrl: zod.string().nullable(),
+  commandName: zod.string().nullable(),
+  result: zod.enum(["passed", "failed"]),
+  observedAt: zod.coerce.date(),
+  reviewerNote: zod.string().nullable(),
+  source: zod.enum(["manual"]),
+  phaseSnapshot: zod.string(),
+  verificationMethodSnapshot: zod.string(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const ListEvidenceResponse = zod.array(ListEvidenceResponseItem);
+
+/**
+ * @summary Record a verification evidence entry for a task
+ */
+export const CreateEvidenceParams = zod.object({
+  competitionId: zod.coerce.string().uuid(),
+  taskId: zod.coerce.string().uuid(),
+});
+
+export const createEvidenceBodySummaryMax = 2000;
+
+export const createEvidenceBodySourceUrlMax = 2000;
+
+export const createEvidenceBodyCommandNameMax = 300;
+
+export const createEvidenceBodyReviewerNoteMax = 4000;
+
+export const CreateEvidenceBody = zod.object({
+  type: zod.enum([
+    "TEST_RESULT",
+    "BUILD_RESULT",
+    "DEPLOYMENT_URL",
+    "HTTP_CHECK",
+    "MANUAL_REVIEW",
+    "SUBMISSION_CONFIRMATION",
+  ]),
+  summary: zod.string().min(1).max(createEvidenceBodySummaryMax),
+  result: zod.enum(["passed", "failed"]),
+  sourceUrl: zod.string().max(createEvidenceBodySourceUrlMax).nullish(),
+  commandName: zod.string().max(createEvidenceBodyCommandNameMax).nullish(),
+  observedAt: zod.coerce.date().nullish(),
+  reviewerNote: zod.string().max(createEvidenceBodyReviewerNoteMax).nullish(),
+});
+
+export const CreateEvidenceResponse = zod.object({
+  id: zod.string().uuid(),
+  competitionId: zod.string().uuid(),
+  taskId: zod.string().uuid().nullable(),
+  taskKey: zod.string(),
+  type: zod.enum([
+    "TEST_RESULT",
+    "BUILD_RESULT",
+    "DEPLOYMENT_URL",
+    "HTTP_CHECK",
+    "MANUAL_REVIEW",
+    "SUBMISSION_CONFIRMATION",
+  ]),
+  summary: zod.string(),
+  sourceUrl: zod.string().nullable(),
+  commandName: zod.string().nullable(),
+  result: zod.enum(["passed", "failed"]),
+  observedAt: zod.coerce.date(),
+  reviewerNote: zod.string().nullable(),
+  source: zod.enum(["manual"]),
+  phaseSnapshot: zod.string(),
+  verificationMethodSnapshot: zod.string(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Remove a verification evidence entry
+ */
+export const DeleteEvidenceParams = zod.object({
+  competitionId: zod.coerce.string().uuid(),
+  evidenceId: zod.coerce.string().uuid(),
+});
+
+export const DeleteEvidenceResponse = zod.object({
+  id: zod.string().uuid(),
+  deleted: zod.boolean(),
+});
+
+/**
+ * @summary Get the latest problem analysis for a competition
+ */
+export const GetAnalysisParams = zod.object({
+  competitionId: zod.coerce.string().uuid(),
+});
+
+export const GetAnalysisResponse = zod.object({
+  analysis: zod
+    .object({
+      id: zod.string().uuid(),
+      competitionId: zod.string().uuid(),
+      version: zod.number().int(),
+      coreProblem: zod.string(),
+      missingFields: zod.array(zod.string()),
+      unansweredQuestions: zod.array(zod.string()),
+      method: zod.string(),
+      provider: zod.string().nullable(),
+      model: zod.string().nullable(),
+      createdAt: zod.coerce.date(),
+      updatedAt: zod.coerce.date(),
+    })
+    .optional(),
+  requirements: zod.array(
+    zod.object({
+      id: zod.string().uuid(),
+      analysisId: zod.string().uuid(),
+      category: zod.string(),
+      text: zod.string(),
+      claimKind: zod.enum([
+        "VERIFIED_FACT",
+        "SOURCE_SUPPORTED",
+        "INFERENCE",
+        "HYPOTHESIS",
+        "UNKNOWN",
+      ]),
+      source: zod.string(),
+      origin: zod.string().nullable(),
+      reviewed: zod.boolean(),
+      createdAt: zod.coerce.date(),
+      updatedAt: zod.coerce.date(),
+    }),
+  ),
+  note: zod.string().nullish(),
+});
+
+/**
+ * @summary Analyse the stored competition record into reviewable requirements
+ */
+export const CreateAnalysisParams = zod.object({
+  competitionId: zod.coerce.string().uuid(),
+});
+
+export const CreateAnalysisResponse = zod.object({
+  analysis: zod
+    .object({
+      id: zod.string().uuid(),
+      competitionId: zod.string().uuid(),
+      version: zod.number().int(),
+      coreProblem: zod.string(),
+      missingFields: zod.array(zod.string()),
+      unansweredQuestions: zod.array(zod.string()),
+      method: zod.string(),
+      provider: zod.string().nullable(),
+      model: zod.string().nullable(),
+      createdAt: zod.coerce.date(),
+      updatedAt: zod.coerce.date(),
+    })
+    .optional(),
+  requirements: zod.array(
+    zod.object({
+      id: zod.string().uuid(),
+      analysisId: zod.string().uuid(),
+      category: zod.string(),
+      text: zod.string(),
+      claimKind: zod.enum([
+        "VERIFIED_FACT",
+        "SOURCE_SUPPORTED",
+        "INFERENCE",
+        "HYPOTHESIS",
+        "UNKNOWN",
+      ]),
+      source: zod.string(),
+      origin: zod.string().nullable(),
+      reviewed: zod.boolean(),
+      createdAt: zod.coerce.date(),
+      updatedAt: zod.coerce.date(),
+    }),
+  ),
+  note: zod.string().nullish(),
+});
+
+/**
+ * @summary Edit or review an extracted requirement
+ */
+export const UpdateRequirementParams = zod.object({
+  competitionId: zod.coerce.string().uuid(),
+  requirementId: zod.coerce.string().uuid(),
+});
+
+export const updateRequirementBodyTextMax = 4000;
+
+export const UpdateRequirementBody = zod.object({
+  text: zod.string().min(1).max(updateRequirementBodyTextMax),
+  reviewed: zod.boolean().optional(),
+});
+
+export const UpdateRequirementResponse = zod.object({
+  requirement: zod.object({
+    id: zod.string().uuid(),
+    analysisId: zod.string().uuid(),
+    category: zod.string(),
+    text: zod.string(),
+    claimKind: zod.enum([
+      "VERIFIED_FACT",
+      "SOURCE_SUPPORTED",
+      "INFERENCE",
+      "HYPOTHESIS",
+      "UNKNOWN",
+    ]),
+    source: zod.string(),
+    origin: zod.string().nullable(),
+    reviewed: zod.boolean(),
+    createdAt: zod.coerce.date(),
+    updatedAt: zod.coerce.date(),
+  }),
+});
+
+/**
+ * @summary List the research findings recorded for a competition
+ */
+export const ListResearchParams = zod.object({
+  competitionId: zod.coerce.string().uuid(),
+});
+
+export const ListResearchResponse = zod.object({
+  findings: zod.array(
+    zod.object({
+      id: zod.string().uuid(),
+      competitionId: zod.string().uuid(),
+      title: zod.string(),
+      sourceUrl: zod.string().nullable(),
+      provider: zod.string(),
+      sourceType: zod.string(),
+      retrievedAt: zod.coerce.date(),
+      summary: zod.string(),
+      excerpt: zod.string().nullable(),
+      supports: zod.string().nullable(),
+      limitations: zod.string().nullable(),
+      claimKind: zod.enum([
+        "VERIFIED_FACT",
+        "SOURCE_SUPPORTED",
+        "INFERENCE",
+        "HYPOTHESIS",
+        "UNKNOWN",
+      ]),
+      query: zod.string().nullable(),
+      manual: zod.boolean(),
+      createdAt: zod.coerce.date(),
+      updatedAt: zod.coerce.date(),
+    }),
+  ),
+});
+
+/**
+ * @summary Search real research sources, or record a finding by hand
+ */
+export const CreateResearchParams = zod.object({
+  competitionId: zod.coerce.string().uuid(),
+});
+
+export const createResearchBodyQueryMin = 3;
+export const createResearchBodyQueryMax = 300;
+
+export const createResearchBodyTitleMax = 300;
+
+export const createResearchBodySummaryMax = 4000;
+
+export const createResearchBodySourceUrlMax = 2000;
+
+export const createResearchBodySupportsMax = 2000;
+
+export const createResearchBodyLimitationsMax = 2000;
+
+export const createResearchBodyExcerptMax = 2000;
+
+export const CreateResearchBody = zod.object({
+  query: zod
+    .string()
+    .min(createResearchBodyQueryMin)
+    .max(createResearchBodyQueryMax)
+    .optional(),
+  providers: zod.array(zod.enum(["wikipedia", "arxiv", "github"])).optional(),
+  manual: zod.boolean().optional(),
+  title: zod.string().max(createResearchBodyTitleMax).optional(),
+  summary: zod.string().max(createResearchBodySummaryMax).optional(),
+  sourceUrl: zod.string().max(createResearchBodySourceUrlMax).nullish(),
+  sourceType: zod.string().optional(),
+  supports: zod.string().max(createResearchBodySupportsMax).nullish(),
+  limitations: zod.string().max(createResearchBodyLimitationsMax).nullish(),
+  excerpt: zod.string().max(createResearchBodyExcerptMax).nullish(),
+});
+
+export const CreateResearchResponse = zod.object({
+  findings: zod.array(
+    zod.object({
+      id: zod.string().uuid(),
+      competitionId: zod.string().uuid(),
+      title: zod.string(),
+      sourceUrl: zod.string().nullable(),
+      provider: zod.string(),
+      sourceType: zod.string(),
+      retrievedAt: zod.coerce.date(),
+      summary: zod.string(),
+      excerpt: zod.string().nullable(),
+      supports: zod.string().nullable(),
+      limitations: zod.string().nullable(),
+      claimKind: zod.enum([
+        "VERIFIED_FACT",
+        "SOURCE_SUPPORTED",
+        "INFERENCE",
+        "HYPOTHESIS",
+        "UNKNOWN",
+      ]),
+      query: zod.string().nullable(),
+      manual: zod.boolean(),
+      createdAt: zod.coerce.date(),
+      updatedAt: zod.coerce.date(),
+    }),
+  ),
+  providerOutcomes: zod
+    .array(
+      zod.object({
+        provider: zod.string(),
+        ok: zod.boolean(),
+        count: zod.number().int(),
+        error: zod.string().nullish(),
+      }),
+    )
+    .optional(),
+  retrievedAt: zod.coerce.date().optional(),
+});
+
+/**
+ * @summary Remove a research finding
+ */
+export const DeleteResearchParams = zod.object({
+  competitionId: zod.coerce.string().uuid(),
+  findingId: zod.coerce.string().uuid(),
+});
+
+export const DeleteResearchResponse = zod.object({
+  id: zod.string().uuid(),
+  deleted: zod.boolean(),
+});
+
+/**
+ * @summary List the opportunities identified for a competition
+ */
+export const ListGapsParams = zod.object({
+  competitionId: zod.coerce.string().uuid(),
+});
+
+export const ListGapsResponse = zod.object({
+  gaps: zod.array(
+    zod.object({
+      id: zod.string().uuid(),
+      competitionId: zod.string().uuid(),
+      need: zod.string(),
+      targetUser: zod.string(),
+      supportingFindingIds: zod.array(zod.string()),
+      existingApproaches: zod.string(),
+      insufficiency: zod.string(),
+      opportunity: zod.string(),
+      risks: zod.array(zod.string()),
+      claimKind: zod.enum([
+        "VERIFIED_FACT",
+        "SOURCE_SUPPORTED",
+        "INFERENCE",
+        "HYPOTHESIS",
+        "UNKNOWN",
+      ]),
+      evidenceGaps: zod.array(zod.string()),
+      nextInvestigations: zod.array(zod.string()),
+      createdAt: zod.coerce.date(),
+      updatedAt: zod.coerce.date(),
+    }),
+  ),
+});
+
+/**
+ * @summary Identify opportunities from the analysis and the research findings
+ */
+export const CreateGapsParams = zod.object({
+  competitionId: zod.coerce.string().uuid(),
+});
+
+export const CreateGapsResponse = zod.object({
+  gaps: zod.array(
+    zod.object({
+      id: zod.string().uuid(),
+      competitionId: zod.string().uuid(),
+      need: zod.string(),
+      targetUser: zod.string(),
+      supportingFindingIds: zod.array(zod.string()),
+      existingApproaches: zod.string(),
+      insufficiency: zod.string(),
+      opportunity: zod.string(),
+      risks: zod.array(zod.string()),
+      claimKind: zod.enum([
+        "VERIFIED_FACT",
+        "SOURCE_SUPPORTED",
+        "INFERENCE",
+        "HYPOTHESIS",
+        "UNKNOWN",
+      ]),
+      evidenceGaps: zod.array(zod.string()),
+      nextInvestigations: zod.array(zod.string()),
+      createdAt: zod.coerce.date(),
+      updatedAt: zod.coerce.date(),
+    }),
+  ),
+  evidenceGaps: zod.array(zod.string()),
+  nextInvestigations: zod.array(zod.string()),
+  method: zod.string(),
+  provider: zod.string().nullish(),
+  model: zod.string().nullish(),
+  note: zod.string().nullish(),
+});
+
+/**
+ * @summary List the idea candidates and compare them
+ */
+export const ListIdeasParams = zod.object({
+  competitionId: zod.coerce.string().uuid(),
+});
+
+export const ListIdeasResponse = zod.object({
+  ideas: zod.array(
+    zod.object({
+      id: zod.string().uuid(),
+      competitionId: zod.string().uuid(),
+      name: zod.string(),
+      pitch: zod.string(),
+      targetUser: zod.string(),
+      problemSolved: zod.string(),
+      proposedSolution: zod.string(),
+      differentiator: zod.string(),
+      coreUserJourney: zod.string(),
+      mvpFeatures: zod.array(zod.string()),
+      excludedFeatures: zod.array(zod.string()),
+      architectureSuggestion: zod.string(),
+      dataAndIntegrations: zod.string(),
+      feasibilityNote: zod.string(),
+      risks: zod.array(zod.string()),
+      demoStrategy: zod.string(),
+      supportingEvidence: zod.array(zod.string()),
+      unverifiedAssumptions: zod.array(zod.string()),
+      claimKind: zod.enum([
+        "VERIFIED_FACT",
+        "SOURCE_SUPPORTED",
+        "INFERENCE",
+        "HYPOTHESIS",
+        "UNKNOWN",
+      ]),
+      status: zod.string(),
+      decisionRationale: zod.string().nullable(),
+      createdAt: zod.coerce.date(),
+      updatedAt: zod.coerce.date(),
+    }),
+  ),
+  weights: zod.record(zod.string(), zod.number()),
+  comparison: zod.record(zod.string(), zod.unknown()).optional(),
+});
+
+/**
+ * @summary Generate buildable idea candidates for the competition
+ */
+export const CreateIdeasParams = zod.object({
+  competitionId: zod.coerce.string().uuid(),
+});
+
+export const CreateIdeasResponse = zod.object({
+  ideas: zod.array(
+    zod.object({
+      id: zod.string().uuid(),
+      competitionId: zod.string().uuid(),
+      name: zod.string(),
+      pitch: zod.string(),
+      targetUser: zod.string(),
+      problemSolved: zod.string(),
+      proposedSolution: zod.string(),
+      differentiator: zod.string(),
+      coreUserJourney: zod.string(),
+      mvpFeatures: zod.array(zod.string()),
+      excludedFeatures: zod.array(zod.string()),
+      architectureSuggestion: zod.string(),
+      dataAndIntegrations: zod.string(),
+      feasibilityNote: zod.string(),
+      risks: zod.array(zod.string()),
+      demoStrategy: zod.string(),
+      supportingEvidence: zod.array(zod.string()),
+      unverifiedAssumptions: zod.array(zod.string()),
+      claimKind: zod.enum([
+        "VERIFIED_FACT",
+        "SOURCE_SUPPORTED",
+        "INFERENCE",
+        "HYPOTHESIS",
+        "UNKNOWN",
+      ]),
+      status: zod.string(),
+      decisionRationale: zod.string().nullable(),
+      createdAt: zod.coerce.date(),
+      updatedAt: zod.coerce.date(),
+    }),
+  ),
+  provider: zod.string().nullish(),
+  model: zod.string().nullish(),
+});
+
+/**
+ * @summary Score an idea on the rubric and compute its weighted total
+ */
+export const EvaluateIdeaParams = zod.object({
+  competitionId: zod.coerce.string().uuid(),
+  ideaId: zod.coerce.string().uuid(),
+});
+
+export const evaluateIdeaBodyScoresItemScoreMax = 5;
+
+export const evaluateIdeaBodyScoresItemRationaleMax = 2000;
+
+export const EvaluateIdeaBody = zod.object({
+  scores: zod.array(
+    zod.object({
+      dimension: zod.enum([
+        "PROBLEM_RELEVANCE",
+        "JUDGING_ALIGNMENT",
+        "USER_VALUE",
+        "DIFFERENTIATION",
+        "TECHNICAL_FEASIBILITY",
+        "DEMONSTRABILITY",
+        "IMPLEMENTATION_TIME",
+        "RELIABILITY_RISK",
+        "DATA_AVAILABILITY",
+        "POTENTIAL_IMPACT",
+      ]),
+      score: zod.number().int().min(1).max(evaluateIdeaBodyScoresItemScoreMax),
+      rationale: zod
+        .string()
+        .max(evaluateIdeaBodyScoresItemRationaleMax)
+        .optional(),
+      evidenceRefs: zod.array(zod.string()).optional(),
+      uncertainties: zod.array(zod.string()).optional(),
+      confidence: zod.enum(["LOW", "MEDIUM", "HIGH"]).optional(),
+    }),
+  ),
+});
+
+export const evaluateIdeaResponseEvaluationScoresItemScoreMax = 5;
+
+export const evaluateIdeaResponseEvaluationScoresItemRationaleMax = 2000;
+
+export const EvaluateIdeaResponse = zod.object({
+  evaluation: zod.object({
+    ideaId: zod.string(),
+    scores: zod.array(
+      zod.object({
+        dimension: zod.enum([
+          "PROBLEM_RELEVANCE",
+          "JUDGING_ALIGNMENT",
+          "USER_VALUE",
+          "DIFFERENTIATION",
+          "TECHNICAL_FEASIBILITY",
+          "DEMONSTRABILITY",
+          "IMPLEMENTATION_TIME",
+          "RELIABILITY_RISK",
+          "DATA_AVAILABILITY",
+          "POTENTIAL_IMPACT",
+        ]),
+        score: zod
+          .number()
+          .int()
+          .min(1)
+          .max(evaluateIdeaResponseEvaluationScoresItemScoreMax),
+        rationale: zod
+          .string()
+          .max(evaluateIdeaResponseEvaluationScoresItemRationaleMax)
+          .optional(),
+        evidenceRefs: zod.array(zod.string()).optional(),
+        uncertainties: zod.array(zod.string()).optional(),
+        confidence: zod.enum(["LOW", "MEDIUM", "HIGH"]).optional(),
+      }),
+    ),
+    total: zod.number(),
+    sensitivityRange: zod.record(zod.string(), zod.unknown()).optional(),
+    strongestDimensions: zod.array(zod.string()).optional(),
+    weakestDimensions: zod.array(zod.string()).optional(),
+    uncertainDimensions: zod.array(zod.string()).optional(),
+  }),
+});
+
+/**
+ * @summary Save the weights used to score ideas
+ */
+export const SaveRubricParams = zod.object({
+  competitionId: zod.coerce.string().uuid(),
+});
+
+export const SaveRubricBody = zod.object({
+  weights: zod.record(zod.string(), zod.number()),
+});
+
+export const SaveRubricResponse = zod.object({
+  weights: zod.record(zod.string(), zod.number()),
+});
+
+/**
+ * @summary Record the team's decision about an idea
+ */
+export const DecideIdeaParams = zod.object({
+  competitionId: zod.coerce.string().uuid(),
+  ideaId: zod.coerce.string().uuid(),
+});
+
+export const decideIdeaBodyRationaleMax = 4000;
+
+export const DecideIdeaBody = zod.object({
+  status: zod.enum(["selected", "rejected"]),
+  rationale: zod.string().min(1).max(decideIdeaBodyRationaleMax),
+});
+
+export const DecideIdeaResponse = zod.object({
+  idea: zod.object({
+    id: zod.string().uuid(),
+    competitionId: zod.string().uuid(),
+    name: zod.string(),
+    pitch: zod.string(),
+    targetUser: zod.string(),
+    problemSolved: zod.string(),
+    proposedSolution: zod.string(),
+    differentiator: zod.string(),
+    coreUserJourney: zod.string(),
+    mvpFeatures: zod.array(zod.string()),
+    excludedFeatures: zod.array(zod.string()),
+    architectureSuggestion: zod.string(),
+    dataAndIntegrations: zod.string(),
+    feasibilityNote: zod.string(),
+    risks: zod.array(zod.string()),
+    demoStrategy: zod.string(),
+    supportingEvidence: zod.array(zod.string()),
+    unverifiedAssumptions: zod.array(zod.string()),
+    claimKind: zod.enum([
+      "VERIFIED_FACT",
+      "SOURCE_SUPPORTED",
+      "INFERENCE",
+      "HYPOTHESIS",
+      "UNKNOWN",
+    ]),
+    status: zod.string(),
+    decisionRationale: zod.string().nullable(),
+    createdAt: zod.coerce.date(),
+    updatedAt: zod.coerce.date(),
+  }),
+});
+
+/**
+ * @summary Produce a build brief for the selected idea
+ */
+export const CreateBriefParams = zod.object({
+  competitionId: zod.coerce.string().uuid(),
+  ideaId: zod.coerce.string().uuid(),
+});
+
+export const CreateBriefResponse = zod.object({
+  brief: zod.object({
+    id: zod.string().uuid(),
+    competitionId: zod.string().uuid(),
+    ideaId: zod.string().uuid().nullable(),
+    ideaName: zod.string(),
+    content: zod.record(zod.string(), zod.unknown()),
+    missingSections: zod.array(zod.string()),
+    claimKind: zod.enum([
+      "VERIFIED_FACT",
+      "SOURCE_SUPPORTED",
+      "INFERENCE",
+      "HYPOTHESIS",
+      "UNKNOWN",
+    ]),
+    method: zod.string(),
+    provider: zod.string().nullable(),
+    model: zod.string().nullable(),
+    createdAt: zod.coerce.date(),
+    updatedAt: zod.coerce.date(),
+  }),
+  missingSections: zod.array(zod.string()).optional(),
+  method: zod.string().optional(),
+});
+
+/**
+ * @summary List the build briefs saved for a competition
+ */
+export const ListBriefsParams = zod.object({
+  competitionId: zod.coerce.string().uuid(),
+});
+
+export const ListBriefsResponse = zod.object({
+  briefs: zod.array(
+    zod.object({
+      id: zod.string().uuid(),
+      competitionId: zod.string().uuid(),
+      ideaId: zod.string().uuid().nullable(),
+      ideaName: zod.string(),
+      content: zod.record(zod.string(), zod.unknown()),
+      missingSections: zod.array(zod.string()),
+      claimKind: zod.enum([
+        "VERIFIED_FACT",
+        "SOURCE_SUPPORTED",
+        "INFERENCE",
+        "HYPOTHESIS",
+        "UNKNOWN",
+      ]),
+      method: zod.string(),
+      provider: zod.string().nullable(),
+      model: zod.string().nullable(),
+      createdAt: zod.coerce.date(),
+      updatedAt: zod.coerce.date(),
+    }),
+  ),
+});

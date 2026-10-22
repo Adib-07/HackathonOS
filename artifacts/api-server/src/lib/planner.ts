@@ -1,5 +1,6 @@
 import type { Competition } from "@workspace/db";
 import type { WorkflowTaskRecord } from "@workspace/db";
+import type { TaskVerification } from "./verification";
 
 export type PlanPhase =
   | "intake"
@@ -688,6 +689,7 @@ export function createPlanDraft({
 export function serializeTask(
   task: WorkflowTaskRecord | ScheduledTask,
   planId: string,
+  verification: TaskVerification,
 ): Record<string, unknown> {
   return {
     id: "id" in task && typeof task.id === "string" ? task.id : undefined,
@@ -708,5 +710,6 @@ export function serializeTask(
     verificationMethod: task.verificationMethod,
     riskIfSkipped: task.riskIfSkipped,
     mandatory: task.mandatory,
+    verification,
   };
 }

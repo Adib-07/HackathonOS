@@ -8,9 +8,31 @@ HackathonOS is a private, personal command center for organizing hackathons, bui
 - `pnpm --filter @workspace/hackathon-os run dev` — run the web app on its configured port
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
+- `pnpm test` — run every package's test suite
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
+- `pnpm --filter @workspace/db run generate` — generate a migration from the schema diff
+- `pnpm --filter @workspace/db run migrate` — apply pending migrations in order
+- `pnpm --filter @workspace/db run migrate:baseline` — record the baseline as applied (once, on a database created with `drizzle-kit push`)
+- `pnpm --filter @workspace/db run test:migrations` — apply the migrations to a throwaway database and assert records survive
 - Required runtime env: `DATABASE_URL`; Clerk is managed through the workspace Auth setup
+
+## Environment variables
+
+Names only; never commit values. See `.env.example` for the full list.
+
+| Name | Required | Used by | Notes |
+| --- | --- | --- | --- |
+| `DATABASE_URL` | yes | API, Drizzle | PostgreSQL connection string. The API refuses to start in production without it. |
+| `CLERK_SECRET_KEY` | yes | API | Backend secret key. Required in production. |
+| `CLERK_PUBLISHABLE_KEY` | yes | API | Backend publishable key, resolved per host. Required in production. |
+| `VITE_CLERK_PUBLISHABLE_KEY` | yes | Web | Frontend publishable key, read at build time. |
+| `VITE_CLERK_PROXY_URL` | no | Web | Set to `<origin>/api/__clerk` to proxy Clerk through the API. Leave unset in local development. |
+| `BASE_PATH` | yes | Web build | Base path the web app is served from (`/` in production). |
+| `PORT` | yes | Web build | Port for the web dev/preview server (`19678`). |
+| `LOG_LEVEL` | no | API | Log level, default `info`. |
+| `OPENAI_API_KEY` | no | API | Enables the generative steps of the intelligence engine. The key is read on the server only. |
+| `OPENAI_BASE_URL` | no | API | Optional override for an OpenAI-compatible gateway or self-hosted deployment. |
+| `OPENAI_MODEL` | no | API | Optional. Defaults to `gpt-4o-mini`. |
 
 ## Stack
 
@@ -48,8 +70,17 @@ HackathonOS is a private, personal command center for organizing hackathons, bui
 ## Gotchas
 
 - Regenerate API code after editing `lib/api-spec/openapi.yaml`.
-- `pnpm --filter @workspace/db run push` applies development database schema changes; do not use it as a production migration.
+- **Schema changes go through reviewed migrations, not `drizzle-kit push`.** `push` is authoritative over the schema: it diffs the live database against the TypeScript schema and applies the difference, so it can **drop columns and tables** that are not in the schema. Use `pnpm --filter @workspace/db run generate`, review the generated SQL in `lib/db/drizzle/`, then `pnpm --filter @workspace/db run migrate`.
+- `drizzle-kit push` remains available as a **local development convenience only** (`pnpm --filter @workspace/db run push`). It must not be run against a deployed database.
+- **Back up the database before migrating.** `pg_dump --format=custom --file=backup.dump "$DATABASE_URL"`. There are no down migrations, so recovery is by restore.
+- A database that was created with `drizzle-kit push` has no migration history. Run `pnpm --filter @workspace/db run migrate:baseline` once. It compares the live schema, structurally, against the baseline migration and only records the baseline when the live database already contains it. Run `pnpm --filter @workspace/db run migrate:baseline:check` first for a read-only preflight.
+- `scripts/post-merge.sh` is the Replit post-merge hook. It now runs `migrate:baseline` and then `migrate`. It no longer runs `drizzle-kit push`.
 - The Clerk proxy is production-only. Leave `VITE_CLERK_PROXY_URL` unset in the local preview so Clerk uses its development flow.
+- `vite dev` proxies `/api` to `http://127.0.0.1:8080` so the web app can reach the API locally. Override with `API_PROXY_ORIGIN`. In the Replit deployment the application router performs that split instead, and no proxy is involved.
+- `PORT` and `BASE_PATH` are required by both Vite configs, so `pnpm run build` needs them: `PORT=19678 BASE_PATH=/ pnpm run build`.
+- The API derives the owner from the Clerk session. The `x-test-user-id` header is honoured only when `NODE_ENV=test`; it is ignored in every other environment.
+- **Verification evidence is always manually supplied or retrieved from a public source.** Nothing in this codebase runs a user's commands for them, so the API refuses client-supplied machine provenance and every record is labelled with how it was obtained.
+- **The intelligence engine works without `OPENAI_API_KEY`.** The problem analysis, research search, gap analysis, scoring rubric, and build brief all run from stored data. Only the generative steps need a provider, and they fail with a clear configuration error when it is missing.
 
 ## Pointers
 

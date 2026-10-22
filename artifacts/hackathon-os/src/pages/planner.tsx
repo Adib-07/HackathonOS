@@ -25,25 +25,10 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { Button, EmptyState, ErrorState, LoadingBlock, PageHeading, Panel, StatusPill } from '@/components/workspace';
+import { EvidencePanel } from '@/components/EvidencePanel';
+import { phaseLabel } from '@/lib/workflow';
 
 const taskStatuses: TaskUpdateStatus[] = ['todo', 'in_progress', 'blocked', 'done', 'deferred'];
-
-const phaseNames: Record<string, string> = {
-  intake: 'Intake',
-  problem: 'Problem definition',
-  research: 'Research',
-  track_selection: 'Track selection',
-  idea_selection: 'Idea selection',
-  specification: 'Specification',
-  architecture: 'Architecture',
-  implementation: 'Implementation',
-  testing: 'Testing',
-  security: 'Security',
-  deployment: 'Deployment',
-  demo: 'Demo',
-  pitch: 'Pitch',
-  submission: 'Submission',
-};
 
 export default function PlannerPage() {
   const [, params] = useRoute('/competitions/:id/planner');
@@ -148,6 +133,11 @@ export default function PlannerPage() {
             <RefreshCw size={14} className={generatePlan.isPending ? 'spin-once' : ''} />
             {generatePlan.isPending ? 'Recalculating…' : plan ? 'Recalculate plan' : 'Generate plan'}
           </Button>
+          {plan && (
+            <Link href={`/competitions/${competitionId}/workflow`} className="button button-secondary" data-testid="link-planner-workflow">
+              <ListChecks size={14} /> Lifecycle view
+            </Link>
+          )}
         </div>
       </div>
       <div className="planner-detail-grid">
@@ -200,13 +190,15 @@ export default function PlannerPage() {
                     <section className="task-phase" key={phase}>
                       <div className="phase-heading">
                         <span className="phase-index mono">{String(index + 1).padStart(2, '0')}</span>
-                        <h2>{phaseNames[phase] ?? phase.replaceAll('_', ' ')}</h2>
+                        <h2>{phaseLabel(phase)}</h2>
                         <span>{tasks.length} {tasks.length === 1 ? 'task' : 'tasks'}</span>
                       </div>
                       <div className="phase-task-list">
                         {tasks.map((task) => (
                           <TaskCard
                             task={task}
+                            competitionId={competitionId}
+                            planId={planId}
                             key={task.id}
                             pending={updateTask.isPending && updateTask.variables?.taskId === task.id}
                             readOnly={planId !== latestVersionId}
@@ -267,15 +259,21 @@ export default function PlannerPage() {
 
 function TaskCard({
   task,
+  competitionId,
+  planId,
   pending,
   readOnly,
   onStatus,
 }: {
   task: PlanTask;
+  competitionId: string;
+  planId: string;
   pending: boolean;
   readOnly: boolean;
   onStatus: (status: TaskUpdateStatus) => void;
 }) {
+  const verification = task.verification;
+
   return (
     <article className={`task-card task-${task.status}`} data-testid={`task-card-${task.id}`}>
       <div className="task-status-rail"><span className="task-status-symbol">{task.status === 'done' ? <Check size={12} /> : <Circle size={12} />}</span></div>
@@ -309,6 +307,17 @@ function TaskCard({
           {task.dependencies.length > 0 && <span>Depends on {task.dependencies.join(', ')}</span>}
           {task.riskIfSkipped && <span className="risk-text">Risk if skipped: {task.riskIfSkipped}</span>}
         </div>
+        {verification && (
+          <EvidencePanel
+            competitionId={competitionId}
+            planId={planId}
+            taskId={task.id}
+            taskKey={task.taskKey}
+            taskTitle={task.title}
+            verification={verification}
+            verificationMethod={task.verificationMethod}
+          />
+        )}
       </div>
     </article>
   );

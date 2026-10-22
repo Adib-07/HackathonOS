@@ -3,8 +3,9 @@ import { Link, useRoute } from 'wouter';
 import { useQueryClient } from '@tanstack/react-query';
 import { getGetCompetitionQueryKey, getListCompetitionsQueryKey, useGetCompetition, useUpdateCompetition } from '@workspace/api-client-react';
 import type { CompetitionUpdate } from '@workspace/api-client-react';
-import { ArrowLeft, ArrowRight, Check, ExternalLink, FileText, Save, ShieldCheck, Users } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, CircleHelp, Clock3, ExternalLink, FileText, Save, ShieldCheck, Users } from 'lucide-react';
 import { Button, ErrorState, FormField, LoadingBlock, PageHeading, Panel, StatusPill } from '@/components/workspace';
+import { computeRemaining } from '@/lib/workflow';
 
 function toDateTimeLocal(value: string | null | undefined) {
   if (!value) return '';
@@ -51,6 +52,7 @@ export default function CompetitionDetailPage() {
 
   const save = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (update.isPending) return;
     setSaved(false);
     const data: CompetitionUpdate = {
       ...draft,
@@ -76,6 +78,10 @@ export default function CompetitionDetailPage() {
 
   if (query.isLoading) return <LoadingBlock label="Loading competition details" />;
   if (query.isError || !competition) return <ErrorState title="Competition details unavailable" retry={() => query.refetch()} />;
+
+  const remaining = computeRemaining(competition.deadline);
+  const deliverables = competition.mandatoryDeliverables;
+  const missingSources = !competition.officialUrl && !competition.rulesUrl;
 
   return (
     <div className="reveal">
@@ -161,21 +167,29 @@ export default function CompetitionDetailPage() {
           <Panel className="detail-context">
             <div className="eyebrow">WORKSPACE CONTEXT</div>
             <div className="context-stat"><Users size={15} /><span>Team size</span><strong>{competition.teamSize}</strong></div>
-            <div className="context-stat"><FileText size={15} /><span>Required deliverables</span><strong>{competition.mandatoryDeliverables.length}</strong></div>
+            <div className="context-stat"><FileText size={15} /><span>Required deliverables</span><strong>{deliverables.length}</strong></div>
+            <div className="context-stat"><Clock3 size={15} /><span>Time remaining</span><strong className={remaining.isPast ? 'context-stat-danger' : remaining.isUrgent ? 'context-stat-warning' : ''}>{remaining.isPast ? 'Overdue' : remaining.label}</strong></div>
             <div className="context-stat"><ShieldCheck size={15} /><span>Quality checks</span><strong>not_run</strong></div>
             <div className="context-sources">
               {competition.officialUrl && <a href={competition.officialUrl} target="_blank" rel="noreferrer" data-testid="link-detail-official"><ExternalLink size={13} /> Official event</a>}
               {competition.rulesUrl && <a href={competition.rulesUrl} target="_blank" rel="noreferrer" data-testid="link-detail-rules"><ExternalLink size={13} /> Official rules</a>}
-              {!competition.officialUrl && !competition.rulesUrl && <span className="context-empty">No source links added yet.</span>}
+              {missingSources && <span className="context-empty">No source links added yet.</span>}
             </div>
+            {missingSources && (
+              <div className="context-warning">
+                <CircleHelp size={13} />
+                <span>Without a rules or event link, the plan cannot check your details against the official source.</span>
+              </div>
+            )}
           </Panel>
           <Panel className="detail-next-panel">
             <span className="eyebrow">NEXT</span>
             <h3>Turn these constraints into a working plan.</h3>
             <p>Plan versions are saved so changes and recalculations stay reviewable.</p>
-            <Link href={`/competitions/${competitionId}/planner`} className="button button-primary full-button" data-testid="link-detail-planner">Open planner <ArrowRight size={14} /></Link>
+            <Link href={`/competitions/${competitionId}/intel`} className="button button-primary full-button" data-testid="link-detail-intel">Research &amp; ideas <ArrowRight size={14} /></Link>
+            <Link href={`/competitions/${competitionId}/workflow`} className="button button-secondary full-button detail-next-secondary" data-testid="link-detail-workflow">Open workflow <ArrowRight size={14} /></Link>
+            <Link href={`/competitions/${competitionId}/planner`} className="button button-quiet full-button detail-next-secondary" data-testid="link-detail-planner">Open planner <ArrowRight size={14} /></Link>
           </Panel>
-          <Link href={`/competitions/${competitionId}/planner`} className="small-route-link" data-testid="link-open-planner-from-detail">Planner <ArrowRight size={13} /></Link>
         </aside>
       </div>
     </div>

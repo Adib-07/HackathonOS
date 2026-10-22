@@ -5,9 +5,10 @@
  * Authenticated HackathonOS competition planning API.
  * OpenAPI spec version: 0.1.0
  */
-import type { PlanTaskPhase } from './planTaskPhase';
-import type { PlanTaskPriority } from './planTaskPriority';
-import type { PlanTaskStatus } from './planTaskStatus';
+import type { PlanTaskPhase } from "./planTaskPhase";
+import type { PlanTaskPriority } from "./planTaskPriority";
+import type { PlanTaskStatus } from "./planTaskStatus";
+import type { TaskVerification } from "./taskVerification";
 
 export interface PlanTask {
   id: string;
@@ -31,4 +32,5 @@ export interface PlanTask {
   verificationMethod: string;
   riskIfSkipped: string;
   mandatory: boolean;
+  verification: TaskVerification;
 }

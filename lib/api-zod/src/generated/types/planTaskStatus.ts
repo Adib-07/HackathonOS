@@ -6,13 +6,13 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type PlanTaskStatus = typeof PlanTaskStatus[keyof typeof PlanTaskStatus];
-
+export type PlanTaskStatus =
+  (typeof PlanTaskStatus)[keyof typeof PlanTaskStatus];
 
 export const PlanTaskStatus = {
-  todo: 'todo',
-  in_progress: 'in_progress',
-  blocked: 'blocked',
-  done: 'done',
-  deferred: 'deferred',
+  todo: "todo",
+  in_progress: "in_progress",
+  blocked: "blocked",
+  done: "done",
+  deferred: "deferred",
 } as const;

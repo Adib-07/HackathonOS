@@ -1,39 +1,23 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, useLocation } from 'wouter';
 import { useClerk, useUser } from '@clerk/react';
-import { useHealthCheck } from '@workspace/api-client-react';
+import { useGetOverview, useHealthCheck } from '@workspace/api-client-react';
+import { LIFECYCLE_STAGES } from '@/lib/workflow';
 import {
   Activity,
-  ArrowDownRight,
   ArrowLeft,
   ArrowRight,
-  ArrowUpRight,
-  BadgeCheck,
-  Bolt,
-  CalendarClock,
   Check,
   ChevronDown,
-  Circle,
   CircleHelp,
   Clock3,
-  Command,
-  ExternalLink,
-  FileCheck2,
-  Flag,
   FolderKanban,
-  Gauge,
   LayoutDashboard,
-  LifeBuoy,
   ListTodo,
   LockKeyhole,
   LogOut,
   Menu,
-  MoreHorizontal,
-  Plus,
   RefreshCw,
-  Rocket,
-  ShieldCheck,
-  Sparkles,
   TerminalSquare,
   X,
 } from 'lucide-react';
@@ -53,25 +37,44 @@ export function Brand({ compact = false }: { compact?: boolean }) {
   );
 }
 
-const plannedModules = [
-  'Research',
-  'Ideas',
-  'Agent Command',
-  'Testing / Security',
-  'Deployment',
-  'Demo / Pitch',
-  'Submission',
-  'Learning',
-  'Integrations',
-];
+/**
+ * Lifecycle stages shown in the sidebar. Stages that a saved plan can back
+ * are marked as such; the rest are shown as planned and never as complete.
+ */
+const lifecycleStages = LIFECYCLE_STAGES.map((stage) => ({
+  id: stage.id,
+  label: stage.label,
+  planned: stage.planned,
+}));
 
 export function WorkspaceShell({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const { user } = useUser();
   const { signOut } = useClerk();
   const healthQuery = useHealthCheck();
+  const overviewQuery = useGetOverview();
   const apiStatus = healthQuery.isError ? 'OFFLINE' : healthQuery.data ? 'HEALTHY' : 'CHECKING';
   const [mobileOpen, setMobileOpen] = useState(false);
+  const activeCompetitionId = overviewQuery.data?.currentCompetition?.id ?? '';
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Close the mobile drawer on Escape and return focus to the trigger.
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMobileOpen(false);
+        menuButtonRef.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [mobileOpen]);
+
+  // Close the drawer whenever the route changes.
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location]);
 
   return (
     <div className="workspace-frame">
@@ -100,6 +103,7 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
           <Link
             href="/"
             className={`nav-link ${location === '/' ? 'nav-active' : ''}`}
+            aria-current={location === '/' ? 'page' : undefined}
             data-testid="link-overview"
           >
             <LayoutDashboard size={16} />
@@ -107,26 +111,42 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
           </Link>
           <Link
             href="/competitions"
-            className={`nav-link ${location.startsWith('/competitions') ? 'nav-active' : ''}`}
+            className={`nav-link ${location === '/competitions' ? 'nav-active' : ''}`}
+            aria-current={location === '/competitions' ? 'page' : undefined}
             data-testid="link-competitions"
           >
             <FolderKanban size={16} />
             <span>Competitions</span>
-            <span className="nav-key">⌘ 1</span>
           </Link>
-          <div className="nav-link nav-disabled" aria-disabled="true">
+          <Link
+            href={activeCompetitionId ? `/competitions/${activeCompetitionId}/workflow` : '/competitions'}
+            className={`nav-link ${location.includes('/workflow') ? 'nav-active' : ''}`}
+            aria-current={location.includes('/workflow') ? 'page' : undefined}
+            data-testid="link-workflow"
+          >
             <ListTodo size={16} />
-            <span>Plan queue</span>
-            <span className="planned-chip">PLANNED</span>
-          </div>
+            <span>Workflow</span>
+          </Link>
         </nav>
-        <div className="sidebar-caption module-caption">PLANNED MODULES</div>
+        <div className="sidebar-caption module-caption">LIFECYCLE</div>
         <div className="planned-list">
-          {plannedModules.map((module) => (
-            <div className="planned-row" key={module} aria-label={`${module} unavailable`}>
+          {lifecycleStages.map((stage) => (
+            <div
+              className={`planned-row ${stage.planned ? '' : 'planned-row-backed'}`}
+              key={stage.id}
+              aria-label={
+                stage.planned
+                  ? `${stage.label} is not implemented yet`
+                  : `${stage.label} stage, available in the workflow view`
+              }
+            >
               <span className="planned-dot" />
-              <span>{module}</span>
-              <LockKeyhole size={11} />
+              <span>{stage.label}</span>
+              {stage.planned ? (
+                <LockKeyhole size={11} />
+              ) : (
+                <span className="planned-chip">IN PLAN</span>
+              )}
             </div>
           ))}
         </div>
@@ -167,15 +187,37 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
             className="icon-button mobile-menu"
             onClick={() => setMobileOpen(true)}
             aria-label="Open navigation"
+            aria-expanded={mobileOpen}
+            ref={menuButtonRef}
             data-testid="button-open-navigation"
           >
             <Menu size={19} />
           </button>
-          <div className="breadcrumbs">
-            <span className="breadcrumb-root">HackathonOS</span>
-            <span className="breadcrumb-slash">/</span>
-            <span className="breadcrumb-current">{getPageLabel(location)}</span>
-          </div>
+          <nav className="breadcrumbs" aria-label="Breadcrumb">
+            <ol className="breadcrumb-list">
+              <li>
+                <Link href="/" className="breadcrumb-root">
+                  HackathonOS
+                </Link>
+              </li>
+              {breadcrumbTrail(location).map((crumb, index) => (
+                <li key={crumb.label} className="breadcrumb-item">
+                  <span className="breadcrumb-slash" aria-hidden="true">
+                    /
+                  </span>
+                  {index === breadcrumbTrail(location).length - 1 || !crumb.href ? (
+                    <span className="breadcrumb-current" aria-current="page">
+                      {crumb.label}
+                    </span>
+                  ) : (
+                    <Link href={crumb.href} className="breadcrumb-link">
+                      {crumb.label}
+                    </Link>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </nav>
           <div className="topbar-right">
             <span className="environment-label"><span /> PRIVATE WORKSPACE</span>
             <div className="topbar-divider" />
@@ -188,11 +230,36 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
   );
 }
 
-function getPageLabel(location: string) {
-  if (location === '/') return 'Overview';
-  if (location === '/competitions') return 'Competitions';
-  if (location.endsWith('/planner')) return 'Planner';
-  return 'Competition details';
+interface Breadcrumb {
+  label: string;
+  href?: string;
+}
+
+/**
+ * Build the breadcrumb trail for a location. The competition name is not
+ * known here, so competition routes fall back to a generic label rather than
+ * inventing one.
+ */
+function breadcrumbTrail(location: string): Breadcrumb[] {
+  if (location === '/') return [{ label: 'Overview' }];
+  if (location === '/competitions') return [{ label: 'Competitions' }];
+
+  const competitionMatch = location.match(/^\/competitions\/([^/]+)(\/(.+))?$/);
+  if (competitionMatch) {
+    const [, competitionId, , section] = competitionMatch;
+    const trail: Breadcrumb[] = [
+      { label: 'Competitions', href: '/competitions' },
+      { label: 'Competition', href: `/competitions/${competitionId}` },
+    ];
+    if (section === 'planner') {
+      trail.push({ label: 'Planner' });
+    } else if (section === 'workflow') {
+      trail.push({ label: 'Workflow' });
+    }
+    return trail;
+  }
+
+  return [{ label: 'Overview' }];
 }
 
 export function PageHeading({
@@ -369,18 +436,25 @@ export function FormField({
   label,
   hint,
   error,
+  errorId,
   children,
 }: {
   label: string;
   hint?: string;
   error?: string;
+  /** Id for the error message so the control can reference it via aria-describedby. */
+  errorId?: string;
   children: ReactNode;
 }) {
   return (
     <label className="form-field">
       <span className="field-label">{label}</span>
       {children}
-      {error && <span className="field-error" role="alert">{error}</span>}
+      {error && (
+        <span className="field-error" id={errorId} role="alert">
+          {error}
+        </span>
+      )}
       {hint && !error && <span className="field-hint">{hint}</span>}
     </label>
   );
@@ -400,26 +474,3 @@ export function ActionLink({
     </Link>
   );
 }
-
-export const dashboardIcons = {
-  ArrowDownRight,
-  ArrowUpRight,
-  BadgeCheck,
-  Bolt,
-  CalendarClock,
-  Check,
-  Circle,
-  CircleHelp,
-  Clock3,
-  Command,
-  ExternalLink,
-  FileCheck2,
-  Flag,
-  Gauge,
-  LifeBuoy,
-  MoreHorizontal,
-  Plus,
-  Rocket,
-  ShieldCheck,
-  Sparkles,
-};

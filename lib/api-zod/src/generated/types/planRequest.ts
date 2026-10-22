@@ -5,13 +5,13 @@
  * Authenticated HackathonOS competition planning API.
  * OpenAPI spec version: 0.1.0
  */
-import type { PlanRequestTrigger } from './planRequestTrigger';
+import type { PlanRequestTrigger } from "./planRequestTrigger";
 
 export interface PlanRequest {
   /**
-     * @minimum 0.25
-     * @maximum 1000
-     */
+   * @minimum 0.25
+   * @maximum 1000
+   */
   remainingHours?: number;
   trigger: PlanRequestTrigger;
 }

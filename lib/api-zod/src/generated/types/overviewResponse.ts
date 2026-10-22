@@ -5,10 +5,10 @@
  * Authenticated HackathonOS competition planning API.
  * OpenAPI spec version: 0.1.0
  */
-import type { Competition } from './competition';
-import type { PlanTask } from './planTask';
-import type { QualitySignals } from './qualitySignals';
-import type { WorkflowPlan } from './workflowPlan';
+import type { Competition } from "./competition";
+import type { PlanTask } from "./planTask";
+import type { QualitySignals } from "./qualitySignals";
+import type { WorkflowPlan } from "./workflowPlan";
 
 export interface OverviewResponse {
   currentCompetition: Competition | null;

@@ -78,9 +78,14 @@ overrides:
   # because the upstream advisory has no patched npm release yet.
   brace-expansion: 5.0.12
   fast-uri: 3.1.8
+  # markdown-it 14.3.3 is a patch release that satisfies typedoc's `^14.3.0`
+  # range and fixes GHSA-r7fv-28h4-cvq7, GHSA-gfr2-rv44-r23c, GHSA-vfgh-jcmw-g37q.
+  markdown-it: 14.3.3
   postcss-selector-parser: 7.1.6
   proxy-addr: 2.0.8
   source-map-js: 1.2.2
+  # Security fix for vite vulnerabilities (GHSA-587h-7wmj-h5pm, GHSA-698v-4r3x-3vcv, GHSA-r825-w8mm-5pxw)
+  vite: 7.3.7
   # replit uses linux-x64 only, we can exclude all other platforms
   # "esbuild>@esbuild/darwin-arm64": "-"
   "esbuild>@esbuild/darwin-x64": "-"

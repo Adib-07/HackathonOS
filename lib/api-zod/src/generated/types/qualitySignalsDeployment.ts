@@ -6,11 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type QualitySignalsDeployment = typeof QualitySignalsDeployment[keyof typeof QualitySignalsDeployment];
-
+export type QualitySignalsDeployment =
+  (typeof QualitySignalsDeployment)[keyof typeof QualitySignalsDeployment];
 
 export const QualitySignalsDeployment = {
-  not_run: 'not_run',
-  passed: 'passed',
-  failed: 'failed',
+  not_run: "not_run",
+  passed: "passed",
+  failed: "failed",
 } as const;

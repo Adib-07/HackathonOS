@@ -43,6 +43,13 @@ if (process.env.CLERK_SECRET_KEY || process.env.CLERK_PUBLISHABLE_KEY) {
       ),
     })),
   );
+} else if (process.env.NODE_ENV === "production") {
+  // Without Clerk keys every authenticated route would answer 401 for every
+  // user. Fail fast so the misconfiguration is visible at deploy time rather
+  // than as a silent sign-in outage.
+  throw new Error(
+    "CLERK_SECRET_KEY (or CLERK_PUBLISHABLE_KEY) is required in production but was not provided.",
+  );
 } else {
   logger.warn("Clerk keys not configured; running in development/test mode without Clerk middleware");
 }
@@ -51,4 +58,17 @@ app.use("/api", router);
 
 export default app;
 
-export { db, pool, competitionsTable } from "@workspace/db";
+export {
+  db,
+  pool,
+  competitionsTable,
+  workflowEvidenceTable,
+  competitionAnalysesTable,
+  analysisRequirementsTable,
+  researchFindingsTable,
+  researchGapsTable,
+  ideaCandidatesTable,
+  ideaEvaluationsTable,
+  ideaRubricsTable,
+  buildBriefsTable,
+} from "@workspace/db";

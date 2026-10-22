@@ -6,12 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type PlanTaskPriority = typeof PlanTaskPriority[keyof typeof PlanTaskPriority];
-
+export type PlanTaskPriority =
+  (typeof PlanTaskPriority)[keyof typeof PlanTaskPriority];
 
 export const PlanTaskPriority = {
-  critical: 'critical',
-  high: 'high',
-  medium: 'medium',
-  low: 'low',
+  critical: "critical",
+  high: "high",
+  medium: "medium",
+  low: "low",
 } as const;
