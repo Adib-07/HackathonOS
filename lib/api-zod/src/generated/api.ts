@@ -26,13 +26,13 @@ export const getOverviewResponseNextActionOneVerificationEvidenceCountMin = 0;
 export const GetOverviewResponse = zod.object({
   currentCompetition: zod.union([
     zod.object({
-      id: zod.string().uuid(),
+      id: zod.uuid(),
       name: zod.string(),
       organizer: zod.string().nullable(),
       competitionType: zod.enum(["online", "in_person", "hybrid", "unknown"]),
       startAt: zod.coerce.date().nullable(),
       deadline: zod.coerce.date(),
-      teamSize: zod.number().int(),
+      teamSize: zod.int(),
       trackMode: zod.enum(["assigned", "choose"]),
       currentTrack: zod.string().nullable(),
       problemStatement: zod.string().nullable(),
@@ -40,7 +40,7 @@ export const GetOverviewResponse = zod.object({
       rulesUrl: zod.string().nullable(),
       mandatoryDeliverables: zod.array(zod.string()),
       teamSkills: zod.array(zod.string()),
-      ideaComplexity: zod.number().int(),
+      ideaComplexity: zod.int(),
       status: zod.enum(["preparing", "active", "submitted", "completed"]),
       createdAt: zod.coerce.date(),
       updatedAt: zod.coerce.date(),
@@ -49,13 +49,13 @@ export const GetOverviewResponse = zod.object({
   ]),
   currentPlan: zod.union([
     zod.object({
-      id: zod.string().uuid(),
-      competitionId: zod.string().uuid(),
-      version: zod.number().int(),
+      id: zod.uuid(),
+      competitionId: zod.uuid(),
+      version: zod.int(),
       generatedAt: zod.coerce.date(),
       deadline: zod.coerce.date(),
-      availableMinutes: zod.number().int(),
-      bufferMinutes: zod.number().int(),
+      availableMinutes: zod.int(),
+      bufferMinutes: zod.int(),
       status: zod.enum(["feasible", "at_risk", "infeasible"]),
       warnings: zod.array(zod.string()),
       trigger: zod.enum([
@@ -64,12 +64,12 @@ export const GetOverviewResponse = zod.object({
         "task_failed",
         "progress_changed",
       ]),
-      taskCount: zod.number().int(),
-      completedTaskCount: zod.number().int(),
+      taskCount: zod.int(),
+      completedTaskCount: zod.int(),
       tasks: zod.array(
         zod.object({
-          id: zod.string().uuid(),
-          planId: zod.string().uuid(),
+          id: zod.uuid(),
+          planId: zod.uuid(),
           taskKey: zod.string(),
           title: zod.string(),
           description: zod.string(),
@@ -90,7 +90,7 @@ export const GetOverviewResponse = zod.object({
             "submission",
           ]),
           priority: zod.enum(["critical", "high", "medium", "low"]),
-          estimatedMinutes: zod.number().int().min(1),
+          estimatedMinutes: zod.int().min(1),
           plannedStartAt: zod.coerce.date(),
           plannedEndAt: zod.coerce.date(),
           dependencies: zod.array(zod.string()),
@@ -121,7 +121,6 @@ export const GetOverviewResponse = zod.object({
             missingTypes: zod.array(zod.string()),
             failedTypes: zod.array(zod.string()),
             evidenceCount: zod
-              .number()
               .int()
               .min(
                 getOverviewResponseCurrentPlanOneTasksItemVerificationEvidenceCountMin,
@@ -137,13 +136,13 @@ export const GetOverviewResponse = zod.object({
     }),
     zod.null(),
   ]),
-  competitionCount: zod.number().int(),
-  openTaskCount: zod.number().int(),
-  completedTaskCount: zod.number().int(),
+  competitionCount: zod.int(),
+  openTaskCount: zod.int(),
+  completedTaskCount: zod.int(),
   nextAction: zod.union([
     zod.object({
-      id: zod.string().uuid(),
-      planId: zod.string().uuid(),
+      id: zod.uuid(),
+      planId: zod.uuid(),
       taskKey: zod.string(),
       title: zod.string(),
       description: zod.string(),
@@ -164,7 +163,7 @@ export const GetOverviewResponse = zod.object({
         "submission",
       ]),
       priority: zod.enum(["critical", "high", "medium", "low"]),
-      estimatedMinutes: zod.number().int().min(1),
+      estimatedMinutes: zod.int().min(1),
       plannedStartAt: zod.coerce.date(),
       plannedEndAt: zod.coerce.date(),
       dependencies: zod.array(zod.string()),
@@ -189,7 +188,6 @@ export const GetOverviewResponse = zod.object({
         missingTypes: zod.array(zod.string()),
         failedTypes: zod.array(zod.string()),
         evidenceCount: zod
-          .number()
           .int()
           .min(getOverviewResponseNextActionOneVerificationEvidenceCountMin),
         supportingEvidenceIds: zod.array(zod.string()),
@@ -216,13 +214,13 @@ export const GetOverviewResponse = zod.object({
  * @summary List the owner's competitions
  */
 export const ListCompetitionsResponseItem = zod.object({
-  id: zod.string().uuid(),
+  id: zod.uuid(),
   name: zod.string(),
   organizer: zod.string().nullable(),
   competitionType: zod.enum(["online", "in_person", "hybrid", "unknown"]),
   startAt: zod.coerce.date().nullable(),
   deadline: zod.coerce.date(),
-  teamSize: zod.number().int(),
+  teamSize: zod.int(),
   trackMode: zod.enum(["assigned", "choose"]),
   currentTrack: zod.string().nullable(),
   problemStatement: zod.string().nullable(),
@@ -230,7 +228,7 @@ export const ListCompetitionsResponseItem = zod.object({
   rulesUrl: zod.string().nullable(),
   mandatoryDeliverables: zod.array(zod.string()),
   teamSkills: zod.array(zod.string()),
-  ideaComplexity: zod.number().int(),
+  ideaComplexity: zod.int(),
   status: zod.enum(["preparing", "active", "submitted", "completed"]),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
@@ -268,12 +266,7 @@ export const CreateCompetitionBody = zod.object({
     .optional(),
   startAt: zod.coerce.date().nullish(),
   deadline: zod.coerce.date(),
-  teamSize: zod
-    .number()
-    .int()
-    .min(1)
-    .max(createCompetitionBodyTeamSizeMax)
-    .optional(),
+  teamSize: zod.int().min(1).max(createCompetitionBodyTeamSizeMax).optional(),
   trackMode: zod.enum(["assigned", "choose"]).optional(),
   currentTrack: zod
     .string()
@@ -283,8 +276,8 @@ export const CreateCompetitionBody = zod.object({
     .string()
     .max(createCompetitionBodyProblemStatementMax)
     .nullish(),
-  officialUrl: zod.string().url().nullish(),
-  rulesUrl: zod.string().url().nullish(),
+  officialUrl: zod.url().nullish(),
+  rulesUrl: zod.url().nullish(),
   mandatoryDeliverables: zod
     .array(
       zod
@@ -299,7 +292,6 @@ export const CreateCompetitionBody = zod.object({
     .max(createCompetitionBodyTeamSkillsMax)
     .optional(),
   ideaComplexity: zod
-    .number()
     .int()
     .min(1)
     .max(createCompetitionBodyIdeaComplexityMax)
@@ -310,13 +302,13 @@ export const CreateCompetitionBody = zod.object({
 });
 
 export const CreateCompetitionResponse = zod.object({
-  id: zod.string().uuid(),
+  id: zod.uuid(),
   name: zod.string(),
   organizer: zod.string().nullable(),
   competitionType: zod.enum(["online", "in_person", "hybrid", "unknown"]),
   startAt: zod.coerce.date().nullable(),
   deadline: zod.coerce.date(),
-  teamSize: zod.number().int(),
+  teamSize: zod.int(),
   trackMode: zod.enum(["assigned", "choose"]),
   currentTrack: zod.string().nullable(),
   problemStatement: zod.string().nullable(),
@@ -324,7 +316,7 @@ export const CreateCompetitionResponse = zod.object({
   rulesUrl: zod.string().nullable(),
   mandatoryDeliverables: zod.array(zod.string()),
   teamSkills: zod.array(zod.string()),
-  ideaComplexity: zod.number().int(),
+  ideaComplexity: zod.int(),
   status: zod.enum(["preparing", "active", "submitted", "completed"]),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
@@ -334,17 +326,17 @@ export const CreateCompetitionResponse = zod.object({
  * @summary Get a competition workspace
  */
 export const GetCompetitionParams = zod.object({
-  competitionId: zod.coerce.string().uuid(),
+  competitionId: zod.uuid(),
 });
 
 export const GetCompetitionResponse = zod.object({
-  id: zod.string().uuid(),
+  id: zod.uuid(),
   name: zod.string(),
   organizer: zod.string().nullable(),
   competitionType: zod.enum(["online", "in_person", "hybrid", "unknown"]),
   startAt: zod.coerce.date().nullable(),
   deadline: zod.coerce.date(),
-  teamSize: zod.number().int(),
+  teamSize: zod.int(),
   trackMode: zod.enum(["assigned", "choose"]),
   currentTrack: zod.string().nullable(),
   problemStatement: zod.string().nullable(),
@@ -352,7 +344,7 @@ export const GetCompetitionResponse = zod.object({
   rulesUrl: zod.string().nullable(),
   mandatoryDeliverables: zod.array(zod.string()),
   teamSkills: zod.array(zod.string()),
-  ideaComplexity: zod.number().int(),
+  ideaComplexity: zod.int(),
   status: zod.enum(["preparing", "active", "submitted", "completed"]),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
@@ -362,7 +354,7 @@ export const GetCompetitionResponse = zod.object({
  * @summary Update competition details
  */
 export const UpdateCompetitionParams = zod.object({
-  competitionId: zod.coerce.string().uuid(),
+  competitionId: zod.uuid(),
 });
 
 export const updateCompetitionBodyNameMax = 160;
@@ -393,12 +385,7 @@ export const UpdateCompetitionBody = zod.object({
     .optional(),
   startAt: zod.coerce.date().nullish(),
   deadline: zod.coerce.date().optional(),
-  teamSize: zod
-    .number()
-    .int()
-    .min(1)
-    .max(updateCompetitionBodyTeamSizeMax)
-    .optional(),
+  teamSize: zod.int().min(1).max(updateCompetitionBodyTeamSizeMax).optional(),
   trackMode: zod.enum(["assigned", "choose"]).optional(),
   currentTrack: zod
     .string()
@@ -408,8 +395,8 @@ export const UpdateCompetitionBody = zod.object({
     .string()
     .max(updateCompetitionBodyProblemStatementMax)
     .nullish(),
-  officialUrl: zod.string().url().nullish(),
-  rulesUrl: zod.string().url().nullish(),
+  officialUrl: zod.url().nullish(),
+  rulesUrl: zod.url().nullish(),
   mandatoryDeliverables: zod
     .array(
       zod
@@ -424,7 +411,6 @@ export const UpdateCompetitionBody = zod.object({
     .max(updateCompetitionBodyTeamSkillsMax)
     .optional(),
   ideaComplexity: zod
-    .number()
     .int()
     .min(1)
     .max(updateCompetitionBodyIdeaComplexityMax)
@@ -435,13 +421,13 @@ export const UpdateCompetitionBody = zod.object({
 });
 
 export const UpdateCompetitionResponse = zod.object({
-  id: zod.string().uuid(),
+  id: zod.uuid(),
   name: zod.string(),
   organizer: zod.string().nullable(),
   competitionType: zod.enum(["online", "in_person", "hybrid", "unknown"]),
   startAt: zod.coerce.date().nullable(),
   deadline: zod.coerce.date(),
-  teamSize: zod.number().int(),
+  teamSize: zod.int(),
   trackMode: zod.enum(["assigned", "choose"]),
   currentTrack: zod.string().nullable(),
   problemStatement: zod.string().nullable(),
@@ -449,7 +435,7 @@ export const UpdateCompetitionResponse = zod.object({
   rulesUrl: zod.string().nullable(),
   mandatoryDeliverables: zod.array(zod.string()),
   teamSkills: zod.array(zod.string()),
-  ideaComplexity: zod.number().int(),
+  ideaComplexity: zod.int(),
   status: zod.enum(["preparing", "active", "submitted", "completed"]),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
@@ -459,17 +445,17 @@ export const UpdateCompetitionResponse = zod.object({
  * @summary List saved plan versions
  */
 export const ListPlanVersionsParams = zod.object({
-  competitionId: zod.coerce.string().uuid(),
+  competitionId: zod.uuid(),
 });
 
 export const ListPlanVersionsResponseItem = zod.object({
-  id: zod.string().uuid(),
-  competitionId: zod.string().uuid(),
-  version: zod.number().int(),
+  id: zod.uuid(),
+  competitionId: zod.uuid(),
+  version: zod.int(),
   generatedAt: zod.coerce.date(),
   deadline: zod.coerce.date(),
-  availableMinutes: zod.number().int(),
-  bufferMinutes: zod.number().int(),
+  availableMinutes: zod.int(),
+  bufferMinutes: zod.int(),
   status: zod.enum(["feasible", "at_risk", "infeasible"]),
   warnings: zod.array(zod.string()),
   trigger: zod.enum([
@@ -478,8 +464,8 @@ export const ListPlanVersionsResponseItem = zod.object({
     "task_failed",
     "progress_changed",
   ]),
-  taskCount: zod.number().int(),
-  completedTaskCount: zod.number().int(),
+  taskCount: zod.int(),
+  completedTaskCount: zod.int(),
 });
 export const ListPlanVersionsResponse = zod.array(ListPlanVersionsResponseItem);
 
@@ -487,7 +473,7 @@ export const ListPlanVersionsResponse = zod.array(ListPlanVersionsResponseItem);
  * @summary Generate a deadline-aware plan and save a new version
  */
 export const GeneratePlanParams = zod.object({
-  competitionId: zod.coerce.string().uuid(),
+  competitionId: zod.uuid(),
 });
 
 export const generatePlanBodyRemainingHoursMin = 0.25;
@@ -510,13 +496,13 @@ export const GeneratePlanBody = zod.object({
 export const generatePlanResponseTasksItemVerificationEvidenceCountMin = 0;
 
 export const GeneratePlanResponse = zod.object({
-  id: zod.string().uuid(),
-  competitionId: zod.string().uuid(),
-  version: zod.number().int(),
+  id: zod.uuid(),
+  competitionId: zod.uuid(),
+  version: zod.int(),
   generatedAt: zod.coerce.date(),
   deadline: zod.coerce.date(),
-  availableMinutes: zod.number().int(),
-  bufferMinutes: zod.number().int(),
+  availableMinutes: zod.int(),
+  bufferMinutes: zod.int(),
   status: zod.enum(["feasible", "at_risk", "infeasible"]),
   warnings: zod.array(zod.string()),
   trigger: zod.enum([
@@ -525,12 +511,12 @@ export const GeneratePlanResponse = zod.object({
     "task_failed",
     "progress_changed",
   ]),
-  taskCount: zod.number().int(),
-  completedTaskCount: zod.number().int(),
+  taskCount: zod.int(),
+  completedTaskCount: zod.int(),
   tasks: zod.array(
     zod.object({
-      id: zod.string().uuid(),
-      planId: zod.string().uuid(),
+      id: zod.uuid(),
+      planId: zod.uuid(),
       taskKey: zod.string(),
       title: zod.string(),
       description: zod.string(),
@@ -551,7 +537,7 @@ export const GeneratePlanResponse = zod.object({
         "submission",
       ]),
       priority: zod.enum(["critical", "high", "medium", "low"]),
-      estimatedMinutes: zod.number().int().min(1),
+      estimatedMinutes: zod.int().min(1),
       plannedStartAt: zod.coerce.date(),
       plannedEndAt: zod.coerce.date(),
       dependencies: zod.array(zod.string()),
@@ -576,7 +562,6 @@ export const GeneratePlanResponse = zod.object({
         missingTypes: zod.array(zod.string()),
         failedTypes: zod.array(zod.string()),
         evidenceCount: zod
-          .number()
           .int()
           .min(generatePlanResponseTasksItemVerificationEvidenceCountMin),
         supportingEvidenceIds: zod.array(zod.string()),
@@ -593,20 +578,20 @@ export const GeneratePlanResponse = zod.object({
  * @summary Get a saved plan version and its tasks
  */
 export const GetPlanParams = zod.object({
-  competitionId: zod.coerce.string().uuid(),
-  planId: zod.coerce.string().uuid(),
+  competitionId: zod.uuid(),
+  planId: zod.uuid(),
 });
 
 export const getPlanResponseTasksItemVerificationEvidenceCountMin = 0;
 
 export const GetPlanResponse = zod.object({
-  id: zod.string().uuid(),
-  competitionId: zod.string().uuid(),
-  version: zod.number().int(),
+  id: zod.uuid(),
+  competitionId: zod.uuid(),
+  version: zod.int(),
   generatedAt: zod.coerce.date(),
   deadline: zod.coerce.date(),
-  availableMinutes: zod.number().int(),
-  bufferMinutes: zod.number().int(),
+  availableMinutes: zod.int(),
+  bufferMinutes: zod.int(),
   status: zod.enum(["feasible", "at_risk", "infeasible"]),
   warnings: zod.array(zod.string()),
   trigger: zod.enum([
@@ -615,12 +600,12 @@ export const GetPlanResponse = zod.object({
     "task_failed",
     "progress_changed",
   ]),
-  taskCount: zod.number().int(),
-  completedTaskCount: zod.number().int(),
+  taskCount: zod.int(),
+  completedTaskCount: zod.int(),
   tasks: zod.array(
     zod.object({
-      id: zod.string().uuid(),
-      planId: zod.string().uuid(),
+      id: zod.uuid(),
+      planId: zod.uuid(),
       taskKey: zod.string(),
       title: zod.string(),
       description: zod.string(),
@@ -641,7 +626,7 @@ export const GetPlanResponse = zod.object({
         "submission",
       ]),
       priority: zod.enum(["critical", "high", "medium", "low"]),
-      estimatedMinutes: zod.number().int().min(1),
+      estimatedMinutes: zod.int().min(1),
       plannedStartAt: zod.coerce.date(),
       plannedEndAt: zod.coerce.date(),
       dependencies: zod.array(zod.string()),
@@ -666,7 +651,6 @@ export const GetPlanResponse = zod.object({
         missingTypes: zod.array(zod.string()),
         failedTypes: zod.array(zod.string()),
         evidenceCount: zod
-          .number()
           .int()
           .min(getPlanResponseTasksItemVerificationEvidenceCountMin),
         supportingEvidenceIds: zod.array(zod.string()),
@@ -683,8 +667,8 @@ export const GetPlanResponse = zod.object({
  * @summary Update a task's status
  */
 export const UpdateTaskParams = zod.object({
-  competitionId: zod.coerce.string().uuid(),
-  taskId: zod.coerce.string().uuid(),
+  competitionId: zod.uuid(),
+  taskId: zod.uuid(),
 });
 
 export const UpdateTaskBody = zod.object({
@@ -694,8 +678,8 @@ export const UpdateTaskBody = zod.object({
 export const updateTaskResponseVerificationEvidenceCountMin = 0;
 
 export const UpdateTaskResponse = zod.object({
-  id: zod.string().uuid(),
-  planId: zod.string().uuid(),
+  id: zod.uuid(),
+  planId: zod.uuid(),
   taskKey: zod.string(),
   title: zod.string(),
   description: zod.string(),
@@ -716,7 +700,7 @@ export const UpdateTaskResponse = zod.object({
     "submission",
   ]),
   priority: zod.enum(["critical", "high", "medium", "low"]),
-  estimatedMinutes: zod.number().int().min(1),
+  estimatedMinutes: zod.int().min(1),
   plannedStartAt: zod.coerce.date(),
   plannedEndAt: zod.coerce.date(),
   dependencies: zod.array(zod.string()),
@@ -741,7 +725,6 @@ export const UpdateTaskResponse = zod.object({
     missingTypes: zod.array(zod.string()),
     failedTypes: zod.array(zod.string()),
     evidenceCount: zod
-      .number()
       .int()
       .min(updateTaskResponseVerificationEvidenceCountMin),
     supportingEvidenceIds: zod.array(zod.string()),
@@ -756,13 +739,13 @@ export const UpdateTaskResponse = zod.object({
  * @summary List verification evidence recorded for a competition
  */
 export const ListEvidenceParams = zod.object({
-  competitionId: zod.coerce.string().uuid(),
+  competitionId: zod.uuid(),
 });
 
 export const ListEvidenceResponseItem = zod.object({
-  id: zod.string().uuid(),
-  competitionId: zod.string().uuid(),
-  taskId: zod.string().uuid().nullable(),
+  id: zod.uuid(),
+  competitionId: zod.uuid(),
+  taskId: zod.uuid().nullable(),
   taskKey: zod.string(),
   type: zod.enum([
     "TEST_RESULT",
@@ -790,8 +773,8 @@ export const ListEvidenceResponse = zod.array(ListEvidenceResponseItem);
  * @summary Record a verification evidence entry for a task
  */
 export const CreateEvidenceParams = zod.object({
-  competitionId: zod.coerce.string().uuid(),
-  taskId: zod.coerce.string().uuid(),
+  competitionId: zod.uuid(),
+  taskId: zod.uuid(),
 });
 
 export const createEvidenceBodySummaryMax = 2000;
@@ -820,9 +803,9 @@ export const CreateEvidenceBody = zod.object({
 });
 
 export const CreateEvidenceResponse = zod.object({
-  id: zod.string().uuid(),
-  competitionId: zod.string().uuid(),
-  taskId: zod.string().uuid().nullable(),
+  id: zod.uuid(),
+  competitionId: zod.uuid(),
+  taskId: zod.uuid().nullable(),
   taskKey: zod.string(),
   type: zod.enum([
     "TEST_RESULT",
@@ -849,12 +832,12 @@ export const CreateEvidenceResponse = zod.object({
  * @summary Remove a verification evidence entry
  */
 export const DeleteEvidenceParams = zod.object({
-  competitionId: zod.coerce.string().uuid(),
-  evidenceId: zod.coerce.string().uuid(),
+  competitionId: zod.uuid(),
+  evidenceId: zod.uuid(),
 });
 
 export const DeleteEvidenceResponse = zod.object({
-  id: zod.string().uuid(),
+  id: zod.uuid(),
   deleted: zod.boolean(),
 });
 
@@ -862,15 +845,15 @@ export const DeleteEvidenceResponse = zod.object({
  * @summary Get the latest problem analysis for a competition
  */
 export const GetAnalysisParams = zod.object({
-  competitionId: zod.coerce.string().uuid(),
+  competitionId: zod.uuid(),
 });
 
 export const GetAnalysisResponse = zod.object({
   analysis: zod
     .object({
-      id: zod.string().uuid(),
-      competitionId: zod.string().uuid(),
-      version: zod.number().int(),
+      id: zod.uuid(),
+      competitionId: zod.uuid(),
+      version: zod.int(),
       coreProblem: zod.string(),
       missingFields: zod.array(zod.string()),
       unansweredQuestions: zod.array(zod.string()),
@@ -883,8 +866,8 @@ export const GetAnalysisResponse = zod.object({
     .optional(),
   requirements: zod.array(
     zod.object({
-      id: zod.string().uuid(),
-      analysisId: zod.string().uuid(),
+      id: zod.uuid(),
+      analysisId: zod.uuid(),
       category: zod.string(),
       text: zod.string(),
       claimKind: zod.enum([
@@ -908,15 +891,15 @@ export const GetAnalysisResponse = zod.object({
  * @summary Analyse the stored competition record into reviewable requirements
  */
 export const CreateAnalysisParams = zod.object({
-  competitionId: zod.coerce.string().uuid(),
+  competitionId: zod.uuid(),
 });
 
 export const CreateAnalysisResponse = zod.object({
   analysis: zod
     .object({
-      id: zod.string().uuid(),
-      competitionId: zod.string().uuid(),
-      version: zod.number().int(),
+      id: zod.uuid(),
+      competitionId: zod.uuid(),
+      version: zod.int(),
       coreProblem: zod.string(),
       missingFields: zod.array(zod.string()),
       unansweredQuestions: zod.array(zod.string()),
@@ -929,8 +912,8 @@ export const CreateAnalysisResponse = zod.object({
     .optional(),
   requirements: zod.array(
     zod.object({
-      id: zod.string().uuid(),
-      analysisId: zod.string().uuid(),
+      id: zod.uuid(),
+      analysisId: zod.uuid(),
       category: zod.string(),
       text: zod.string(),
       claimKind: zod.enum([
@@ -954,8 +937,8 @@ export const CreateAnalysisResponse = zod.object({
  * @summary Edit or review an extracted requirement
  */
 export const UpdateRequirementParams = zod.object({
-  competitionId: zod.coerce.string().uuid(),
-  requirementId: zod.coerce.string().uuid(),
+  competitionId: zod.uuid(),
+  requirementId: zod.uuid(),
 });
 
 export const updateRequirementBodyTextMax = 4000;
@@ -967,8 +950,8 @@ export const UpdateRequirementBody = zod.object({
 
 export const UpdateRequirementResponse = zod.object({
   requirement: zod.object({
-    id: zod.string().uuid(),
-    analysisId: zod.string().uuid(),
+    id: zod.uuid(),
+    analysisId: zod.uuid(),
     category: zod.string(),
     text: zod.string(),
     claimKind: zod.enum([
@@ -990,14 +973,14 @@ export const UpdateRequirementResponse = zod.object({
  * @summary List the research findings recorded for a competition
  */
 export const ListResearchParams = zod.object({
-  competitionId: zod.coerce.string().uuid(),
+  competitionId: zod.uuid(),
 });
 
 export const ListResearchResponse = zod.object({
   findings: zod.array(
     zod.object({
-      id: zod.string().uuid(),
-      competitionId: zod.string().uuid(),
+      id: zod.uuid(),
+      competitionId: zod.uuid(),
       title: zod.string(),
       sourceUrl: zod.string().nullable(),
       provider: zod.string(),
@@ -1026,7 +1009,7 @@ export const ListResearchResponse = zod.object({
  * @summary Search real research sources, or record a finding by hand
  */
 export const CreateResearchParams = zod.object({
-  competitionId: zod.coerce.string().uuid(),
+  competitionId: zod.uuid(),
 });
 
 export const createResearchBodyQueryMin = 3;
@@ -1064,8 +1047,8 @@ export const CreateResearchBody = zod.object({
 export const CreateResearchResponse = zod.object({
   findings: zod.array(
     zod.object({
-      id: zod.string().uuid(),
-      competitionId: zod.string().uuid(),
+      id: zod.uuid(),
+      competitionId: zod.uuid(),
       title: zod.string(),
       sourceUrl: zod.string().nullable(),
       provider: zod.string(),
@@ -1093,7 +1076,7 @@ export const CreateResearchResponse = zod.object({
       zod.object({
         provider: zod.string(),
         ok: zod.boolean(),
-        count: zod.number().int(),
+        count: zod.int(),
         error: zod.string().nullish(),
       }),
     )
@@ -1105,12 +1088,12 @@ export const CreateResearchResponse = zod.object({
  * @summary Remove a research finding
  */
 export const DeleteResearchParams = zod.object({
-  competitionId: zod.coerce.string().uuid(),
-  findingId: zod.coerce.string().uuid(),
+  competitionId: zod.uuid(),
+  findingId: zod.uuid(),
 });
 
 export const DeleteResearchResponse = zod.object({
-  id: zod.string().uuid(),
+  id: zod.uuid(),
   deleted: zod.boolean(),
 });
 
@@ -1118,14 +1101,14 @@ export const DeleteResearchResponse = zod.object({
  * @summary List the opportunities identified for a competition
  */
 export const ListGapsParams = zod.object({
-  competitionId: zod.coerce.string().uuid(),
+  competitionId: zod.uuid(),
 });
 
 export const ListGapsResponse = zod.object({
   gaps: zod.array(
     zod.object({
-      id: zod.string().uuid(),
-      competitionId: zod.string().uuid(),
+      id: zod.uuid(),
+      competitionId: zod.uuid(),
       need: zod.string(),
       targetUser: zod.string(),
       supportingFindingIds: zod.array(zod.string()),
@@ -1152,14 +1135,14 @@ export const ListGapsResponse = zod.object({
  * @summary Identify opportunities from the analysis and the research findings
  */
 export const CreateGapsParams = zod.object({
-  competitionId: zod.coerce.string().uuid(),
+  competitionId: zod.uuid(),
 });
 
 export const CreateGapsResponse = zod.object({
   gaps: zod.array(
     zod.object({
-      id: zod.string().uuid(),
-      competitionId: zod.string().uuid(),
+      id: zod.uuid(),
+      competitionId: zod.uuid(),
       need: zod.string(),
       targetUser: zod.string(),
       supportingFindingIds: zod.array(zod.string()),
@@ -1192,14 +1175,14 @@ export const CreateGapsResponse = zod.object({
  * @summary List the idea candidates and compare them
  */
 export const ListIdeasParams = zod.object({
-  competitionId: zod.coerce.string().uuid(),
+  competitionId: zod.uuid(),
 });
 
 export const ListIdeasResponse = zod.object({
   ideas: zod.array(
     zod.object({
-      id: zod.string().uuid(),
-      competitionId: zod.string().uuid(),
+      id: zod.uuid(),
+      competitionId: zod.uuid(),
       name: zod.string(),
       pitch: zod.string(),
       targetUser: zod.string(),
@@ -1237,14 +1220,14 @@ export const ListIdeasResponse = zod.object({
  * @summary Generate buildable idea candidates for the competition
  */
 export const CreateIdeasParams = zod.object({
-  competitionId: zod.coerce.string().uuid(),
+  competitionId: zod.uuid(),
 });
 
 export const CreateIdeasResponse = zod.object({
   ideas: zod.array(
     zod.object({
-      id: zod.string().uuid(),
-      competitionId: zod.string().uuid(),
+      id: zod.uuid(),
+      competitionId: zod.uuid(),
       name: zod.string(),
       pitch: zod.string(),
       targetUser: zod.string(),
@@ -1282,8 +1265,8 @@ export const CreateIdeasResponse = zod.object({
  * @summary Score an idea on the rubric and compute its weighted total
  */
 export const EvaluateIdeaParams = zod.object({
-  competitionId: zod.coerce.string().uuid(),
-  ideaId: zod.coerce.string().uuid(),
+  competitionId: zod.uuid(),
+  ideaId: zod.uuid(),
 });
 
 export const evaluateIdeaBodyScoresItemScoreMax = 5;
@@ -1305,7 +1288,7 @@ export const EvaluateIdeaBody = zod.object({
         "DATA_AVAILABILITY",
         "POTENTIAL_IMPACT",
       ]),
-      score: zod.number().int().min(1).max(evaluateIdeaBodyScoresItemScoreMax),
+      score: zod.int().min(1).max(evaluateIdeaBodyScoresItemScoreMax),
       rationale: zod
         .string()
         .max(evaluateIdeaBodyScoresItemRationaleMax)
@@ -1339,7 +1322,6 @@ export const EvaluateIdeaResponse = zod.object({
           "POTENTIAL_IMPACT",
         ]),
         score: zod
-          .number()
           .int()
           .min(1)
           .max(evaluateIdeaResponseEvaluationScoresItemScoreMax),
@@ -1364,7 +1346,7 @@ export const EvaluateIdeaResponse = zod.object({
  * @summary Save the weights used to score ideas
  */
 export const SaveRubricParams = zod.object({
-  competitionId: zod.coerce.string().uuid(),
+  competitionId: zod.uuid(),
 });
 
 export const SaveRubricBody = zod.object({
@@ -1379,8 +1361,8 @@ export const SaveRubricResponse = zod.object({
  * @summary Record the team's decision about an idea
  */
 export const DecideIdeaParams = zod.object({
-  competitionId: zod.coerce.string().uuid(),
-  ideaId: zod.coerce.string().uuid(),
+  competitionId: zod.uuid(),
+  ideaId: zod.uuid(),
 });
 
 export const decideIdeaBodyRationaleMax = 4000;
@@ -1392,8 +1374,8 @@ export const DecideIdeaBody = zod.object({
 
 export const DecideIdeaResponse = zod.object({
   idea: zod.object({
-    id: zod.string().uuid(),
-    competitionId: zod.string().uuid(),
+    id: zod.uuid(),
+    competitionId: zod.uuid(),
     name: zod.string(),
     pitch: zod.string(),
     targetUser: zod.string(),
@@ -1428,15 +1410,15 @@ export const DecideIdeaResponse = zod.object({
  * @summary Produce a build brief for the selected idea
  */
 export const CreateBriefParams = zod.object({
-  competitionId: zod.coerce.string().uuid(),
-  ideaId: zod.coerce.string().uuid(),
+  competitionId: zod.uuid(),
+  ideaId: zod.uuid(),
 });
 
 export const CreateBriefResponse = zod.object({
   brief: zod.object({
-    id: zod.string().uuid(),
-    competitionId: zod.string().uuid(),
-    ideaId: zod.string().uuid().nullable(),
+    id: zod.uuid(),
+    competitionId: zod.uuid(),
+    ideaId: zod.uuid().nullable(),
     ideaName: zod.string(),
     content: zod.record(zod.string(), zod.unknown()),
     missingSections: zod.array(zod.string()),
@@ -1461,15 +1443,15 @@ export const CreateBriefResponse = zod.object({
  * @summary List the build briefs saved for a competition
  */
 export const ListBriefsParams = zod.object({
-  competitionId: zod.coerce.string().uuid(),
+  competitionId: zod.uuid(),
 });
 
 export const ListBriefsResponse = zod.object({
   briefs: zod.array(
     zod.object({
-      id: zod.string().uuid(),
-      competitionId: zod.string().uuid(),
-      ideaId: zod.string().uuid().nullable(),
+      id: zod.uuid(),
+      competitionId: zod.uuid(),
+      ideaId: zod.uuid().nullable(),
       ideaName: zod.string(),
       content: zod.record(zod.string(), zod.unknown()),
       missingSections: zod.array(zod.string()),
