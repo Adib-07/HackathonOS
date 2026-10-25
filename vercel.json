@@ -5,7 +5,7 @@
   "framework": "vite",
   "regions": ["iad1"],
   "functions": {
-    "artifacts/api-server/src/vercel.ts": {
+    "artifacts/api-server/dist/app.mjs": {
       "maxDuration": 30,
       "runtime": "nodejs20.x"
     }
@@ -13,7 +13,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/artifacts/api-server/src/vercel.ts"
+      "destination": "/artifacts/api-server/dist/app.mjs"
     },
     {
       "source": "/(.*)",
