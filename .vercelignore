@@ -1,0 +1,46 @@
+# Vercel ignore file
+# Exclude development and build artifacts
+node_modules
+.git
+.gitignore
+.env
+.env.*
+*.log
+*.tsbuildinfo
+dist
+*.mjs.map
+*.mjs
+!artifacts/hackathon-os/dist/public
+!artifacts/api-server/src/vercel.ts
+!vercel.json
+
+# Exclude mockup-sandbox and other non-deployed workspaces
+artifacts/mockup-sandbox
+lib/api-spec
+lib/api-zod
+lib/api-client-react
+lib/db
+scripts
+attached_assets
+.gstack
+.agents
+.github
+.replit
+.replitignore
+PROJECT_STATUS.md
+replit.md
+pnpm-workspace.yaml
+pnpm-lock.yaml
+package.json
+tsconfig.json
+tsconfig.base.json
+.npmrc
+
+# Exclude test files
+**/test/**
+**/*.test.*
+
+# Exclude documentation and config files not needed at runtime
+README.md
+*.md
+!vercel.json

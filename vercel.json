@@ -1,0 +1,29 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "pnpm run build",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "framework": "vite",
+  "regions": ["iad1"],
+  "functions": {
+    "artifacts/api-server/src/vercel.ts": {
+      "maxDuration": 30,
+      "runtime": "nodejs20.x"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/artifacts/api-server/src/vercel.ts"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/artifacts/hackathon-os/dist/public/$1"
+    }
+  ],
+  "outputDirectory": "artifacts/hackathon-os/dist/public",
+  "github": {
+    "enabled": true,
+    "autoAlias": true,
+    "silent": false
+  }
+}
