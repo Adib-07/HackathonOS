@@ -4,7 +4,7 @@
   "buildCommand": "pnpm --filter @workspace/hackathon-os run build",
   "outputDirectory": "artifacts/hackathon-os/dist/public",
   "functions": {
-    "api/index.ts": {
+    "api/index.mjs": {
       "maxDuration": 30
     }
   },
