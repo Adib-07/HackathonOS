@@ -4,16 +4,10 @@
   "installCommand": "pnpm install --frozen-lockfile",
   "framework": "vite",
   "regions": ["iad1"],
-  "functions": {
-    "artifacts/api-server/dist/app.mjs": {
-      "maxDuration": 30,
-      "runtime": "nodejs20.x"
-    }
-  },
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/artifacts/api-server/dist/app.mjs"
+      "destination": "/api/index.ts"
     },
     {
       "source": "/(.*)",
