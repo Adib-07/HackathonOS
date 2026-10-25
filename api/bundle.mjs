@@ -29036,17 +29036,7 @@ var require_multistream = __commonJS({
 // ../../node_modules/.pnpm/pino@9.14.0/node_modules/pino/pino.js
 var require_pino = __commonJS({
   "../../node_modules/.pnpm/pino@9.14.0/node_modules/pino/pino.js"(exports, module) {
-    function pinoBundlerAbsolutePath(p) {
-      try {
-        const path = __require("path");
-        const outputDir = "/Users/adibsunasra007gmail.com/HackathonOS/artifacts/api-server/dist";
-        return path.resolve(outputDir, p.replace(/^\.\//, ""));
-      } catch (e) {
-        const f = new Function("p", "return new URL(p, import.meta.url).pathname");
-        return f(p);
-      }
-    }
-    globalThis.__bundlerPathsOverrides = { ...globalThis.__bundlerPathsOverrides || {}, "thread-stream-worker": pinoBundlerAbsolutePath("./thread-stream-worker.mjs"), "pino-worker": pinoBundlerAbsolutePath("./pino-worker.mjs"), "pino/file": pinoBundlerAbsolutePath("./pino-file.mjs"), "pino-pretty": pinoBundlerAbsolutePath("./pino-pretty.mjs") };
+    "use strict";
     var os = __require("node:os");
     var stdSerializers = require_pino_std_serializers();
     var caller = require_caller();
@@ -99260,21 +99250,51 @@ var insertBuildBriefSchema = createInsertSchema(buildBriefsTable).omit({
 
 // ../../lib/db/src/index.ts
 var { Pool: Pool3 } = esm_default;
-var databaseUrl = process.env.DATABASE_URL;
-if (!databaseUrl) {
-  const isProduction3 = process.env.NODE_ENV === "production";
-  if (isProduction3) {
-    throw new Error(
-      "DATABASE_URL environment variable is required in production but was not provided."
+var poolInstance = null;
+var dbInstance = null;
+function createPool() {
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) {
+    const isProduction3 = process.env.NODE_ENV === "production";
+    if (isProduction3) {
+      throw new Error(
+        "DATABASE_URL environment variable is required in production but was not provided."
+      );
+    }
+    console.warn(
+      "[db] WARNING: DATABASE_URL not set, falling back to local PostgreSQL. This should only be used in development."
     );
   }
-  console.warn(
-    "[db] WARNING: DATABASE_URL not set, falling back to local PostgreSQL. This should only be used in development."
-  );
+  const fallbackUrl = databaseUrl || "postgresql://localhost:5432/hackathon_os";
+  return new Pool3({
+    connectionString: fallbackUrl,
+    max: 3,
+    idleTimeoutMillis: 1e4,
+    connectionTimeoutMillis: 5e3
+  });
 }
-var fallbackUrl = databaseUrl || "postgresql://localhost:5432/hackathon_os";
-var pool = new Pool3({ connectionString: fallbackUrl });
-var db = drizzle(pool, { schema: schema_exports });
+function getPool() {
+  if (!poolInstance) {
+    poolInstance = createPool();
+  }
+  return poolInstance;
+}
+function getDb() {
+  if (!dbInstance) {
+    dbInstance = drizzle(getPool(), { schema: schema_exports });
+  }
+  return dbInstance;
+}
+var pool = new Proxy({}, {
+  get(_target, prop) {
+    return getPool()[prop];
+  }
+});
+var db = new Proxy({}, {
+  get(_target, prop) {
+    return getDb()[prop];
+  }
+});
 
 // src/lib/planner.ts
 var shortTemplates = [
@@ -102655,6 +102675,14 @@ router4.get("/healthz", (_req, res) => {
   const data = HealthCheckResponse.parse({ status: "ok" });
   res.json(data);
 });
+router4.get("/readyz", async (_req, res) => {
+  try {
+    await pool.query("SELECT 1");
+    res.json({ status: "ready" });
+  } catch (err) {
+    res.status(503).json({ status: "not ready", error: "db unreachable" });
+  }
+});
 var health_default = router4;
 
 // src/routes/index.ts
@@ -102668,19 +102696,25 @@ var routes_default = router5;
 // src/lib/logger.ts
 var import_pino = __toESM(require_pino(), 1);
 var isProduction = process.env.NODE_ENV === "production";
+var usePretty = !isProduction && process.env.LOG_PRETTY === "1";
 var logger2 = (0, import_pino.default)({
   level: process.env.LOG_LEVEL ?? "info",
-  redact: [
-    "req.headers.authorization",
-    "req.headers.cookie",
-    "res.headers['set-cookie']"
-  ],
-  ...isProduction ? {} : {
+  redact: {
+    paths: [
+      "req.headers.authorization",
+      "req.headers.cookie",
+      "res.headers['set-cookie']",
+      "*.authorization",
+      "*.cookie"
+    ],
+    censor: "**REDACTED**"
+  },
+  ...usePretty ? {
     transport: {
       target: "pino-pretty",
       options: { colorize: true }
     }
-  }
+  } : {}
 });
 
 // ../../node_modules/.pnpm/httpxy@0.5.5/node_modules/httpxy/dist/index.mjs
@@ -105096,8 +105130,46 @@ function rateLimiterWrapper(req, res, next) {
   return defaultConditionalRateLimiter(req, res, next);
 }
 
+// src/lib/env-validation.ts
+var serverEnvSchema = external_exports.object({
+  DATABASE_URL: external_exports.string().url(),
+  CLERK_SECRET_KEY: external_exports.string().min(1),
+  CLERK_PUBLISHABLE_KEY: external_exports.string().min(1),
+  LOG_LEVEL: external_exports.enum(["fatal", "error", "warn", "info", "debug", "trace"]).optional(),
+  OPENAI_API_KEY: external_exports.string().optional(),
+  OPENAI_BASE_URL: external_exports.string().url().optional(),
+  OPENAI_MODEL: external_exports.string().optional()
+});
+function validateServerEnv() {
+  if (process.env.NODE_ENV === "test") {
+    return [];
+  }
+  const result = serverEnvSchema.safeParse(process.env);
+  if (!result.success) {
+    return result.error.issues.map((i) => i.path.join("."));
+  }
+  return [];
+}
+function requireServerEnv() {
+  return (req, res, next) => {
+    if (req.path === "/api/healthz" || req.path === "/healthz") {
+      return next();
+    }
+    const missing = validateServerEnv();
+    if (missing.length > 0) {
+      res.status(500).json({
+        error: "misconfigured",
+        missing
+      });
+      return;
+    }
+    next();
+  };
+}
+
 // src/app.ts
 var app = (0, import_express7.default)();
+app.use(requireServerEnv());
 var isProduction2 = process.env.NODE_ENV === "production";
 app.use(
   helmet({

@@ -11,11 +11,12 @@ import {
   getClerkProxyHost,
 } from "./middlewares/clerkProxyMiddleware";
 import { rateLimiterWrapper } from "./middlewares/rateLimit";
-import { validateServerEnv } from "./lib/env-validation";
-
-validateServerEnv();
+import { requireServerEnv } from "./lib/env-validation";
 
 const app: Express = express();
+
+// Validate server env on each request (except /healthz)
+app.use(requireServerEnv());
 
 const isProduction = process.env.NODE_ENV === "production";
 

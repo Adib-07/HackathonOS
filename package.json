@@ -11,7 +11,8 @@
     "build": "pnpm run typecheck && pnpm --filter @workspace/api-server --filter @workspace/hackathon-os run build && cp artifacts/api-server/dist/app.mjs api/bundle.mjs",
     "test": "pnpm -r --if-present run test",
     "typecheck:libs": "tsc --build",
-    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
+    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck",
+    "smoke:api": "node scripts/smoke-api.mjs"
   },
   "private": true,
   "dependencies": {},
