@@ -69,7 +69,7 @@ The `vercel.json` at the repository root configures:
 - **Build Command**: `pnpm run build` (builds both frontend and API)
 - **Install Command**: `pnpm install --frozen-lockfile`
 - **Output Directory**: `artifacts/hackathon-os/dist/public`
-- **Functions**: `artifacts/api-server/src/vercel.ts` (API serverless function)
+- **Node.js version**: defined in root `package.json` `"engines": { "node": "20.x" }`
 
 ### 3. Add Environment Variables
 
@@ -87,38 +87,40 @@ In Vercel Project Settings → Environment Variables, add all required variables
 
 ```json
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "pnpm run build",
   "installCommand": "pnpm install --frozen-lockfile",
   "framework": "vite",
-  "functions": {
-    "artifacts/api-server/src/vercel.ts": {
-      "maxDuration": 30,
-      "runtime": "nodejs20.x"
-    }
-  },
+  "regions": ["iad1"],
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/artifacts/api-server/src/vercel.ts" },
+    { "source": "/api/(.*)", "destination": "/api/index.ts" },
     { "source": "/(.*)", "destination": "/artifacts/hackathon-os/dist/public/$1" }
   ],
-  "outputDirectory": "artifacts/hackathon-os/dist/public"
+  "outputDirectory": "artifacts/hackathon-os/dist/public",
+  "github": {
+    "enabled": true,
+    "autoAlias": true,
+    "silent": false
+  }
 }
 ```
 
 ### API Serverless Function
 
-The API is deployed as a single serverless function at `artifacts/api-server/src/vercel.ts`:
+The API entry point lives at `/api/index.ts` (repo root). It re-exports the Express app from the workspace package:
 
 ```typescript
-import app from "./app";
+// /api/index.ts
+import app from "@workspace/api-server/app";
 export default app;
 ```
 
-This exports the Express app directly, which Vercel handles as a serverless function.
+The workspace package `@workspace/api-server` exports its Express app via `exports["/app"]` in its `package.json`.
 
 ### Routing
 
-- `/api/*` → API serverless function (all backend routes)
-- `/*` → Frontend SPA (with fallback to `index.html` for client-side routing)
+- `/api/*` → Vercel Node.js serverless function (`/api/index.ts`) handling all backend routes.
+- `/*` → Frontend SPA (served from `artifacts/hackathon-os/dist/public` with fallback to `index.html` for client‑side routing).
 
 ## Local Development
 

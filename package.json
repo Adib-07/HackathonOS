@@ -13,12 +13,7 @@
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
   },
   "private": true,
-  "dependencies": {
-    "@replit/connectors-sdk": "^0.4.3",
-    "@types/express-rate-limit": "^6.0.2",
-    "express-rate-limit": "^8.7.1",
-    "helmet": "^8.3.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "prettier": "^3.9.6",
     "typescript": "~5.9.3"

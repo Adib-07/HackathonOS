@@ -11,7 +11,6 @@ dist
 *.mjs.map
 *.mjs
 !artifacts/hackathon-os/dist/public
-!artifacts/api-server/src/vercel.ts
 !vercel.json
 
 # Exclude mockup-sandbox and other non-deployed workspaces
