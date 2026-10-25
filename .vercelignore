@@ -1,45 +1,9 @@
-# Vercel ignore file
-# Exclude development and build artifacts
-node_modules
+# Vercel ignore file - minimal
+# Exclude only obvious non-deploy items
 .git
-.gitignore
-.env
-.env.*
-*.log
-*.tsbuildinfo
-dist
-*.mjs.map
-*.mjs
-!artifacts/hackathon-os/dist/public
-!vercel.json
-
-# Exclude mockup-sandbox and other non-deployed workspaces
-artifacts/mockup-sandbox
-lib/api-spec
-lib/api-zod
-lib/api-client-react
-lib/db
-scripts
-attached_assets
-.gstack
+node_modules
 .agents
-.github
-.replit
-.replitignore
-PROJECT_STATUS.md
-replit.md
-pnpm-workspace.yaml
-pnpm-lock.yaml
-package.json
-tsconfig.json
-tsconfig.base.json
-.npmrc
-
-# Exclude test files
-**/test/**
-**/*.test.*
-
-# Exclude documentation and config files not needed at runtime
-README.md
+attached_assets
 *.md
 !vercel.json
+!README.md
