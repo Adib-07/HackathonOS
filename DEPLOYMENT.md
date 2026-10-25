@@ -162,9 +162,10 @@ Migrations are applied manually or via CI/CD:
 ```bash
 # On production database
 DATABASE_URL=... pnpm --filter @workspace/db run migrate
+DATABASE_URL=... pnpm --filter @workspace/db run migrate:baseline
 ```
 
-**Never use `drizzle-kit push` in production.** Use `migrate` only.
+**Never use `drizzle-kit push` in production.** Use `migrate` only. This avoids accidental schema drops.
 
 ## Troubleshooting
 
