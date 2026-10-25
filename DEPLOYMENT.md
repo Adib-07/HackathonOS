@@ -69,7 +69,7 @@ The `vercel.json` at the repository root configures:
 - **Build Command**: `pnpm run build` (builds both frontend and API)
 - **Install Command**: `pnpm install --frozen-lockfile`
 - **Output Directory**: `artifacts/hackathon-os/dist/public`
-- **Node.js version**: defined in root `package.json` `"engines": { "node": "20.x" }`
+- **Node.js version**: defined in root `package.json` `"engines": { "node": "24.x" }`
 
 ### 3. Add Environment Variables
 
@@ -88,20 +88,18 @@ In Vercel Project Settings → Environment Variables, add all required variables
 ```json
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "pnpm run build",
   "installCommand": "pnpm install --frozen-lockfile",
-  "framework": "vite",
-  "regions": ["iad1"],
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index.ts" },
-    { "source": "/(.*)", "destination": "/artifacts/hackathon-os/dist/public/$1" }
-  ],
+  "buildCommand": "pnpm run build",
   "outputDirectory": "artifacts/hackathon-os/dist/public",
-  "github": {
-    "enabled": true,
-    "autoAlias": true,
-    "silent": false
-  }
+  "functions": {
+    "api/index.ts": {
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ]
 }
 ```
 
