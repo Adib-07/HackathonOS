@@ -103,7 +103,8 @@ export function EvidencePanel({
   const invalidate = async () => {
     // Evidence changes the derived verification state, so the plan and
     // overview caches must be refreshed too, not just the evidence list.
-    await Promise.all([
+    // Use Promise.allSettled to avoid unhandled rejections if any invalidation fails.
+    await Promise.allSettled([
       queryClient.invalidateQueries({
         queryKey: getListEvidenceQueryKey(competitionId),
       }),
@@ -144,30 +145,38 @@ export function EvidencePanel({
     }
 
     setFormError("");
-    await createEvidence.mutateAsync({
-      competitionId,
-      taskId,
-      data: {
-        type,
-        summary: summary.trim(),
-        result,
-        sourceUrl: sourceUrl.trim() || null,
-        commandName: commandName.trim() || null,
-        reviewerNote: reviewerNote.trim() || null,
-      },
-    });
-    await invalidate();
-    resetForm();
-    setFormOpen(false);
+    try {
+      await createEvidence.mutateAsync({
+        competitionId,
+        taskId,
+        data: {
+          type,
+          summary: summary.trim(),
+          result,
+          sourceUrl: sourceUrl.trim() || null,
+          commandName: commandName.trim() || null,
+          reviewerNote: reviewerNote.trim() || null,
+        },
+      });
+      await invalidate();
+      resetForm();
+      setFormOpen(false);
+    } catch {
+      // Error is handled by createEvidence.isError in render
+    }
   };
 
   const handleDelete = async (evidence: Evidence) => {
     if (deleteEvidence.isPending) return;
-    await deleteEvidence.mutateAsync({
-      competitionId,
-      evidenceId: evidence.id,
-    });
-    await invalidate();
+    try {
+      await deleteEvidence.mutateAsync({
+        competitionId,
+        evidenceId: evidence.id,
+      });
+      await invalidate();
+    } catch {
+      // Error is handled by deleteEvidence.isError in render
+    }
   };
 
   const stateClass = `verification-state verification-state-${verification.state}`;
@@ -336,6 +345,13 @@ export function EvidencePanel({
                 );
               })}
             </ul>
+          )}
+
+          {deleteEvidence.isError && (
+            <div className="form-error" role="alert">
+              The evidence could not be deleted. Check the connection and try
+              again.
+            </div>
           )}
 
           {!formOpen ? (

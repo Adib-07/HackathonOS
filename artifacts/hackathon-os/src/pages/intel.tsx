@@ -209,10 +209,14 @@ function AnalysisStep({ competitionId }: { competitionId: string }) {
   }, [requirements]);
 
   const startAnalysis = async () => {
-    await createAnalysis.mutateAsync({ competitionId });
-    await client.invalidateQueries({
-      queryKey: getGetAnalysisQueryKey(competitionId),
-    });
+    try {
+      await createAnalysis.mutateAsync({ competitionId });
+      await client.invalidateQueries({
+        queryKey: getGetAnalysisQueryKey(competitionId),
+      });
+    } catch {
+      // Error is handled by createAnalysis.isError in render
+    }
   };
 
   return (
@@ -412,28 +416,36 @@ function ResearchStep({ competitionId }: { competitionId: string }) {
 
   const runSearch = async () => {
     if (query.trim().length < 3) return;
-    await createResearch.mutateAsync({
-      competitionId,
-      data: { query: query.trim() },
-    });
-    await refresh();
+    try {
+      await createResearch.mutateAsync({
+        competitionId,
+        data: { query: query.trim() },
+      });
+      await refresh();
+    } catch {
+      // Error is handled by createResearch.isError in render
+    }
   };
 
   const saveManual = async () => {
-    await createResearch.mutateAsync({
-      competitionId,
-      data: {
-        manual: true,
-        title: manualTitle.trim(),
-        summary: manualSummary.trim(),
-        sourceUrl: manualUrl.trim() || null,
-      },
-    });
-    await refresh();
-    setManualTitle("");
-    setManualSummary("");
-    setManualUrl("");
-    setManualOpen(false);
+    try {
+      await createResearch.mutateAsync({
+        competitionId,
+        data: {
+          manual: true,
+          title: manualTitle.trim(),
+          summary: manualSummary.trim(),
+          sourceUrl: manualUrl.trim() || null,
+        },
+      });
+      await refresh();
+      setManualTitle("");
+      setManualSummary("");
+      setManualUrl("");
+      setManualOpen(false);
+    } catch {
+      // Error is handled by createResearch.isError in render
+    }
   };
 
   const outcomes = createResearch.data?.providerOutcomes ?? [];
@@ -655,10 +667,14 @@ function GapsStep({ competitionId }: { competitionId: string }) {
   const gaps = listQuery.data?.gaps ?? [];
 
   const runGaps = async () => {
-    await createGaps.mutateAsync({ competitionId });
-    await client.invalidateQueries({
-      queryKey: getListGapsQueryKey(competitionId),
-    });
+    try {
+      await createGaps.mutateAsync({ competitionId });
+      await client.invalidateQueries({
+        queryKey: getListGapsQueryKey(competitionId),
+      });
+    } catch {
+      // Error is handled by createGaps.isError in render
+    }
   };
 
   return (
@@ -818,8 +834,12 @@ function IdeasStep({ competitionId }: { competitionId: string }) {
         </p>
         <Button
           onClick={async () => {
-            await createIdeas.mutateAsync({ competitionId });
-            await refresh();
+            try {
+              await createIdeas.mutateAsync({ competitionId });
+              await refresh();
+            } catch {
+              // Error is handled by createIdeas.isError in render
+            }
           }}
           disabled={createIdeas.isPending}
           data-testid="button-generate-ideas"
@@ -992,12 +1012,16 @@ function IdeasStep({ competitionId }: { competitionId: string }) {
                           type="button"
                           variant="secondary"
                           onClick={async () => {
-                            await evaluateIdea.mutateAsync({
-                              competitionId,
-                              ideaId: idea.id,
-                              data: { scores: [] },
-                            });
-                            await refresh();
+                            try {
+                              await evaluateIdea.mutateAsync({
+                                competitionId,
+                                ideaId: idea.id,
+                                data: { scores: [] },
+                              });
+                              await refresh();
+                            } catch {
+                              // Error is handled by evaluateIdea.isError in render
+                            }
                           }}
                           disabled={evaluateIdea.isPending}
                           data-testid={`button-score-idea-${idea.id}`}
@@ -1031,12 +1055,16 @@ function IdeasStep({ competitionId }: { competitionId: string }) {
                           <Button
                             type="button"
                             onClick={async () => {
-                              await decideIdea.mutateAsync({
-                                competitionId,
-                                ideaId: idea.id,
-                                data: { status: "selected", rationale },
-                              });
-                              await refresh();
+                              try {
+                                await decideIdea.mutateAsync({
+                                  competitionId,
+                                  ideaId: idea.id,
+                                  data: { status: "selected", rationale },
+                                });
+                                await refresh();
+                              } catch {
+                                // Error is handled by decideIdea.isError in render
+                              }
                             }}
                             disabled={decideIdea.isPending || !rationale.trim()}
                             data-testid={`button-select-idea-${idea.id}`}
@@ -1105,13 +1133,17 @@ function BriefStep({ competitionId }: { competitionId: string }) {
           </p>
           <Button
             onClick={async () => {
-              await createBrief.mutateAsync({
-                competitionId,
-                ideaId: selected.id,
-              });
-              await client.invalidateQueries({
-                queryKey: getListBriefsQueryKey(competitionId),
-              });
+              try {
+                await createBrief.mutateAsync({
+                  competitionId,
+                  ideaId: selected.id,
+                });
+                await client.invalidateQueries({
+                  queryKey: getListBriefsQueryKey(competitionId),
+                });
+              } catch {
+                // Error is handled by createBrief.isError in render
+              }
             }}
             disabled={createBrief.isPending}
             data-testid="button-create-brief"

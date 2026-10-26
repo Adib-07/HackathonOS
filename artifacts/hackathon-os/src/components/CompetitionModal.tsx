@@ -149,6 +149,7 @@ export function CompetitionModal({ open, onClose, onCreated }: CompetitionModalP
           await queryClient.invalidateQueries({ queryKey: getListCompetitionsQueryKey() });
           await queryClient.invalidateQueries({ queryKey: getGetOverviewQueryKey() });
           resetForm();
+          submitting.current = false;
           if (onCreated) {
             onCreated(competition);
           }
