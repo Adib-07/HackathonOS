@@ -8,16 +8,15 @@ import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Brand, WorkspaceShell } from '@/components/workspace';
-import CompetitionDetailPage from '@/pages/competition-detail';
-import CompetitionsPage from '@/pages/competitions';
-import IntelPage from '@/pages/intel';
 import LandingPage from '@/pages/landing';
 import NotFound from '@/pages/not-found';
 import OverviewPage from '@/pages/overview';
-import PlannerPage from '@/pages/planner';
 
-// The workflow view is a secondary route, so it is loaded on demand to keep
-// the initial bundle small.
+// All competition views are secondary routes — load on demand.
+const CompetitionsPage = lazy(() => import('@/pages/competitions'));
+const CompetitionDetailPage = lazy(() => import('@/pages/competition-detail'));
+const IntelPage = lazy(() => import('@/pages/intel'));
+const PlannerPage = lazy(() => import('@/pages/planner'));
 const WorkflowPage = lazy(() => import('@/pages/workflow'));
 
 const queryClient = new QueryClient({
@@ -240,11 +239,11 @@ function ClerkProviderWithRoutes() {
               <Route path="/" component={HomeRedirect} />
               <Route path="/sign-in/*?" component={SignInPage} />
               <Route path="/sign-up/*?" component={SignUpPage} />
-              <Route path="/competitions" component={() => <ProtectedPage><CompetitionsPage /></ProtectedPage>} />
-              <Route path="/competitions/:id/intel" component={() => <ProtectedPage><IntelPage /></ProtectedPage>} />
+              <Route path="/competitions" component={() => <ProtectedPage><Suspense fallback={<RouteFallback />}><CompetitionsPage /></Suspense></ProtectedPage>} />
+              <Route path="/competitions/:id/intel" component={() => <ProtectedPage><Suspense fallback={<RouteFallback />}><IntelPage /></Suspense></ProtectedPage>} />
               <Route path="/competitions/:id/workflow" component={() => <ProtectedPage><Suspense fallback={<RouteFallback />}><WorkflowPage /></Suspense></ProtectedPage>} />
-              <Route path="/competitions/:id/planner" component={() => <ProtectedPage><PlannerPage /></ProtectedPage>} />
-              <Route path="/competitions/:id" component={() => <ProtectedPage><CompetitionDetailPage /></ProtectedPage>} />
+              <Route path="/competitions/:id/planner" component={() => <ProtectedPage><Suspense fallback={<RouteFallback />}><PlannerPage /></Suspense></ProtectedPage>} />
+              <Route path="/competitions/:id" component={() => <ProtectedPage><Suspense fallback={<RouteFallback />}><CompetitionDetailPage /></Suspense></ProtectedPage>} />
               <Route component={NotFound} />
             </Switch>
           </RoutedErrorBoundary>

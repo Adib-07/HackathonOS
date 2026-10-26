@@ -13,6 +13,8 @@ async function buildAll() {
   const distDir = path.resolve(artifactDir, "dist");
   await rm(distDir, { recursive: true, force: true });
 
+  const isProduction = process.env.NODE_ENV === 'production';
+
   await esbuild({
     entryPoints: {
       index: path.resolve(artifactDir, "src/index.ts"),
@@ -103,7 +105,7 @@ async function buildAll() {
       "puppeteer-core",
       "electron",
     ],
-    sourcemap: "linked",
+    sourcemap: isProduction ? false : "linked",
     // No pino transport in production = no worker threads needed
     // Removed esbuild-plugin-pino to avoid generating pino-worker.mjs, pino-pretty.mjs, etc.
     // Make sure packages that are cjs only (e.g. express) but are bundled continue to work in our esm output file

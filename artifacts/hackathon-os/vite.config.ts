@@ -52,6 +52,66 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, 'dist/public'),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'clerk': ['@clerk/react', '@clerk/themes'],
+          'charts': ['recharts'],
+          'radix-ui': [
+            '@radix-ui/react-accordion',
+            '@radix-ui/react-alert-dialog',
+            '@radix-ui/react-aspect-ratio',
+            '@radix-ui/react-avatar',
+            '@radix-ui/react-checkbox',
+            '@radix-ui/react-collapsible',
+            '@radix-ui/react-context-menu',
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-hover-card',
+            '@radix-ui/react-label',
+            '@radix-ui/react-menubar',
+            '@radix-ui/react-navigation-menu',
+            '@radix-ui/react-popover',
+            '@radix-ui/react-progress',
+            '@radix-ui/react-radio-group',
+            '@radix-ui/react-scroll-area',
+            '@radix-ui/react-select',
+            '@radix-ui/react-separator',
+            '@radix-ui/react-slider',
+            '@radix-ui/react-slot',
+            '@radix-ui/react-switch',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-toast',
+            '@radix-ui/react-toggle',
+            '@radix-ui/react-toggle-group',
+            '@radix-ui/react-tooltip',
+          ],
+          'tanstack-query': ['@tanstack/react-query'],
+          'framer-motion': ['framer-motion'],
+          'cmdk': ['cmdk'],
+          'lucide': ['lucide-react'],
+          'utils': ['clsx', 'tailwind-merge', 'class-variance-authority', 'zod', 'wouter', 'date-fns'],
+        },
+      },
+      onwarn(warning, warn) {
+        // Suppress zod v4 Rollup annotation warnings (cosmetic, no runtime impact)
+        if (
+          warning.code === 'ANNOTATION' ||
+          (warning.message && warning.message.includes('annotation that Rollup cannot interpret'))
+        ) {
+          return;
+        }
+        // Suppress empty chunk warnings for manualChunks that may be empty
+        if (warning.code === 'EMPTY_CHUNK') {
+          return;
+        }
+        warn(warning);
+      },
+    },
+  },
+  esbuild: {
+    // Suppress zod v4 annotation warnings from esbuild transformation phase
+    logOverride: { 'annotation-issue': 'silent' },
   },
   server: {
     port,
