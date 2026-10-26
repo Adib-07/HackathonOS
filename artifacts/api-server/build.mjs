@@ -2,7 +2,7 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { build as esbuild } from "esbuild";
-import { rm } from "node:fs/promises";
+import { rm, writeFile } from "node:fs/promises";
 
 // Plugins may use `require` to resolve dependencies
 globalThis.require = createRequire(import.meta.url);
@@ -14,12 +14,19 @@ async function buildAll() {
   await rm(distDir, { recursive: true, force: true });
 
   const isProduction = process.env.NODE_ENV === 'production';
+  const isVercel = process.env.VERCEL === '1';
 
-  await esbuild({
-    entryPoints: {
-      index: path.resolve(artifactDir, "src/index.ts"),
-      app: path.resolve(artifactDir, "src/app.ts"),
-    },
+  // On Vercel, only build app.mjs (the serverless function entry point)
+  // index.mjs is the local development server entry and is not used on Vercel
+  const entryPoints = isVercel
+    ? { app: path.resolve(artifactDir, "src/app.ts") }
+    : {
+        index: path.resolve(artifactDir, "src/index.ts"),
+        app: path.resolve(artifactDir, "src/app.ts"),
+      };
+
+  const result = await esbuild({
+    entryPoints,
     platform: "node",
     bundle: true,
     format: "esm",
@@ -104,6 +111,8 @@ async function buildAll() {
       "puppeteer",
       "puppeteer-core",
       "electron",
+      // pino-pretty is a devDependency, should not be bundled in production
+      "pino-pretty",
     ],
     sourcemap: isProduction ? false : "linked",
     // No pino transport in production = no worker threads needed
@@ -119,7 +128,15 @@ globalThis.__filename = __bannerUrl.fileURLToPath(import.meta.url);
 globalThis.__dirname = __bannerPath.dirname(globalThis.__filename);
     `,
     },
+    metafile: true,
   });
+
+  if (result.metafile) {
+    await writeFile(
+      path.resolve(distDir, "metafile.json"),
+      JSON.stringify(result.metafile, null, 2)
+    );
+  }
 }
 
 buildAll().catch((err) => {
