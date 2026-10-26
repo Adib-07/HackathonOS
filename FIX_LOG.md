@@ -138,4 +138,50 @@ Each commit will be verified with `pnpm install --frozen-lockfile && pnpm run ty
 | (pending) | chore(vercel): add CSP headers | |
 
 ---
-*End of FIX_LOG.md (Phase 0‑1 captured). Next steps: implement Phase 1 fixes.*
+
+## Phase A – Live verification and smoke tests (COMPLETED)
+
+### A.1 Smoke test implementation
+- Added Playwright + `@playwright/test` as dev dependencies
+- Created `playwright.config.ts` with `baseURL` from `BASE_URL` env var
+- Created `scripts/smoke/smoke.test.ts` with 5 tests:
+  1. Home page renders real UI with zero console errors and zero CSP violations
+  2. `/api/healthz` returns 200
+  3. `/api/readyz` returns JSON (200 or 503)
+  4. `/sign-in` renders Clerk sign-in form
+  5. Unauthenticated protected route (`/api/competitions`) returns 401 (not 500)
+- Added `pnpm smoke` script to root `package.json`
+
+### A.2 Smoke test results against https://hackathonos-mu.vercel.app
+
+| Test | Result | Details |
+|------|--------|---------|
+| `/` renders real UI, zero console/CSP errors | **FAIL** | Body text only 10 chars (`<div id="root"></div>` empty). React not hydrating. |
+| `/api/healthz` = 200 | **PASS** | Returns `{"status":"ok"}` |
+| `/api/readyz` returns JSON | **FAIL** | Returns 500 `{"error":"misconfigured","missing":["DATABASE_URL"]}` |
+| `/sign-in` renders Clerk form | **FAIL** | Root div empty, no Clerk sign-in form rendered |
+| `/api/competitions` (unauth) returns 401 | **FAIL** | Returns 500 `{"error":"misconfigured","missing":["DATABASE_URL"]}` |
+
+### A.3 Root cause analysis
+The live deployment is missing required environment variables:
+- **Build-time (Vercel Build Env)**: `VITE_CLERK_PUBLISHABLE_KEY` → causes blank page (App.tsx throws at module eval)
+- **Runtime (Vercel Serverless Function Env)**: `DATABASE_URL`, `CLERK_SECRET_KEY`, `CLERK_PUBLISHABLE_KEY` → causes 500 "misconfigured" on all non-healthz routes
+
+### A.4 Local test gate verification
+- `pnpm install --frozen-lockfile` ✅ PASS
+- `pnpm run typecheck` ✅ PASS (libs + all artifacts + scripts)
+- `pnpm test` ✅ PASS (160 api-server + 40 hackathon-os + 17 db = 217 tests)
+- `pnpm run build` ✅ PASS (warning: 559 kB main chunk > 500 kB)
+
+### A.5 Commits
+| Commit | Message | Verified |
+|--------|---------|----------|
+| 49d8b60 | feat(smoke): add Playwright smoke tests for live verification | ✅ Gate passed |
+
+---
+
+## Phase B – Bug sweep and button/flow inventory (NOT STARTED)
+
+---
+
+*End of FIX_LOG.md (Phase A completed). Next: Phase B after Vercel env vars are configured and verified.*
