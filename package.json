@@ -12,11 +12,13 @@
     "test": "pnpm -r --if-present run test",
     "typecheck:libs": "tsc --build",
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck",
-    "smoke:api": "node scripts/smoke-api.mjs"
+    "smoke:api": "node scripts/smoke-api.mjs",
+    "smoke": "playwright test --project=chromium"
   },
   "private": true,
-  "dependencies": {},
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "playwright": "^1.64.1",
     "prettier": "^3.9.6",
     "typescript": "~5.9.3"
   }
