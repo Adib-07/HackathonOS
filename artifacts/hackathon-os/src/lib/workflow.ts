@@ -24,7 +24,11 @@ export type PlanTaskPhase =
   | "deployment"
   | "demo"
   | "pitch"
-  | "submission";
+  | "submission"
+  | "retrospective_what_worked"
+  | "retrospective_what_failed"
+  | "retrospective_lessons_learned"
+  | "retrospective_next_steps";
 
 export type PlanTaskStatus =
   | "todo"
@@ -67,8 +71,7 @@ export type StageId =
   | "deployment"
   | "demo"
   | "submission"
-  | "retrospective"
-  | "settings";
+  | "retrospective";
 
 /**
  * `backed` stages map to persisted plan phases.
@@ -154,18 +157,15 @@ export const LIFECYCLE_STAGES: StageDefinition[] = [
   {
     id: "retrospective",
     label: "Retrospective",
-    phases: [],
+    phases: [
+      "retrospective_what_worked",
+      "retrospective_what_failed",
+      "retrospective_lessons_learned",
+      "retrospective_next_steps",
+    ],
     summary:
-      "Capture what worked and what to change. No persisted source yet, so this stage cannot hold real entries.",
-    planned: true,
-  },
-  {
-    id: "settings",
-    label: "Settings & Integrations",
-    phases: [],
-    summary:
-      "Manage account, storage, and external integrations. Not connected yet.",
-    planned: true,
+      "Capture what worked, what failed, lessons learned, and next steps. Unlocks when Submission is complete or the competition deadline has passed.",
+    planned: false,
   },
 ];
 
@@ -293,9 +293,67 @@ export function deriveStageState(tasks: StageTask[]): {
 /**
  * Build the full stage list for a set of persisted plan tasks.
  * Planned stages are always reported as "planned" and never carry counts.
+ * The retrospective stage unlocks when Submission is complete or the competition deadline has passed.
  */
-export function buildStageSummaries(tasks: StageTask[]): StageSummary[] {
+export function buildStageSummaries(
+  tasks: StageTask[],
+  competitionDeadline?: string | Date,
+): StageSummary[] {
+  const now = new Date();
+  const deadline = competitionDeadline ? new Date(competitionDeadline) : null;
+  const isPastDeadline = deadline ? now > deadline : false;
+
+  // Check if submission stage is complete
+  const submissionTasks = tasks.filter((task) => task.phase === "submission");
+  const submissionComplete =
+    submissionTasks.length > 0 &&
+    submissionTasks.every((task) => task.status === "done");
+
+  const retrospectiveUnlocked = submissionComplete || isPastDeadline;
+
   return LIFECYCLE_STAGES.map((definition) => {
+    // Handle retrospective unlock logic
+    if (definition.id === "retrospective") {
+      if (!retrospectiveUnlocked) {
+        return {
+          definition,
+          state: "planned" as StageState,
+          total: 0,
+          done: 0,
+          inProgress: 0,
+          blocked: 0,
+          todo: 0,
+          deferred: 0,
+          verified: 0,
+          estimatedMinutes: 0,
+          blockers: [],
+          nextTask: null,
+          completion: 0,
+        };
+      }
+      // Retrospective is unlocked - derive state from its tasks
+      const stageTasks = tasks.filter((task) =>
+        phaseMatches(task, definition.phases),
+      );
+      const derived = deriveStageState(stageTasks);
+
+      return {
+        definition,
+        state: derived.state,
+        total: stageTasks.length,
+        done: derived.done,
+        inProgress: derived.inProgress,
+        blocked: derived.blocked,
+        todo: derived.todo,
+        deferred: derived.deferred,
+        verified: derived.verified,
+        estimatedMinutes: derived.estimatedMinutes,
+        blockers: derived.blockers,
+        nextTask: derived.nextTask,
+        completion: derived.completion,
+      };
+    }
+
     if (definition.planned) {
       return {
         definition,
@@ -461,6 +519,10 @@ export const PHASE_LABELS: Record<PlanTaskPhase, string> = {
   demo: "Demo",
   pitch: "Pitch",
   submission: "Submission",
+  retrospective_what_worked: "What worked",
+  retrospective_what_failed: "What failed",
+  retrospective_lessons_learned: "Lessons learned",
+  retrospective_next_steps: "Next steps",
 };
 
 export function phaseLabel(phase: string): string {

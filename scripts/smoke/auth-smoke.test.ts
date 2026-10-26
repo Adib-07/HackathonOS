@@ -59,7 +59,7 @@ const hasCredentials = !!process.env.TEST_USER_EMAIL && !!process.env.TEST_USER_
     }
   }
 
-  test('overview page with empty database shows lock tooltips on Retrospective and Settings', async ({ page }) => {
+  test('overview page with empty database shows lock tooltip on Retrospective and Settings link in nav', async ({ page }) => {
     await signIn(page);
 
     // Navigate to overview (should be home after sign in)
@@ -67,19 +67,17 @@ const hasCredentials = !!process.env.TEST_USER_EMAIL && !!process.env.TEST_USER_
     await page.waitForLoadState('domcontentloaded');
     await page.waitForTimeout(2000);
 
-    // Check that lifecycle stages are visible in sidebar
+    // Check that Retrospective lifecycle stage is visible in sidebar
     const retrospectiveItem = page.locator('[data-testid="lifecycle-retrospective"]');
-    const settingsItem = page.locator('[data-testid="lifecycle-settings"]');
-
     await expect(retrospectiveItem).toBeVisible();
-    await expect(settingsItem).toBeVisible();
 
-    // Check that lock icons are present for planned stages
+    // Settings is no longer a lifecycle stage - check it's in primary navigation
+    const settingsLink = page.locator('[data-testid="link-settings"]');
+    await expect(settingsLink).toBeVisible();
+
+    // Check that lock icon is present for Retrospective (planned until unlocked)
     const retrospectiveLock = retrospectiveItem.locator('[data-testid="lifecycle-lock-retrospective"]');
-    const settingsLock = settingsItem.locator('[data-testid="lifecycle-lock-settings"]');
-
     await expect(retrospectiveLock).toBeVisible();
-    await expect(settingsLock).toBeVisible();
 
     // Check that IN PLAN chips are present for non-planned stages
     const intakeItem = page.locator('[data-testid="lifecycle-intake"]');
@@ -92,14 +90,14 @@ const hasCredentials = !!process.env.TEST_USER_EMAIL && !!process.env.TEST_USER_
     const tooltip = page.locator('.tooltip-text:visible').first();
     await expect(tooltip).toBeVisible();
     const tooltipText = await tooltip.textContent();
-    expect(tooltipText).toContain('Unlocks when a plan includes retrospective tasks');
+    expect(tooltipText).toContain('Unlocks when Submission is complete or the deadline has passed');
 
     // Check no console errors
     expect(consoleErrors).toHaveLength(0);
     expect(cspViolations).toHaveLength(0);
   });
 
-  test('workflow page shows lock tooltips for planned stages', async ({ page }) => {
+  test('workflow page shows lock tooltip for Retrospective when locked', async ({ page }) => {
     await signIn(page);
 
     // First create a competition to have a valid workflow page
@@ -127,19 +125,17 @@ const hasCredentials = !!process.env.TEST_USER_EMAIL && !!process.env.TEST_USER_
       await page.waitForLoadState('domcontentloaded');
       await page.waitForTimeout(2000);
 
-      // Check that planned stages have lock icons with tooltips
+      // Check that Retrospective stage has lock icon with tooltip
       const retrospectiveStage = page.locator('[data-testid="stage-retrospective"]');
-      const settingsStage = page.locator('[data-testid="stage-settings"]');
-
       await expect(retrospectiveStage).toBeVisible();
-      await expect(settingsStage).toBeVisible();
 
-      // Check lock icons
+      // Settings is no longer a lifecycle stage
+      const settingsStage = page.locator('[data-testid="stage-settings"]');
+      await expect(settingsStage).not.toBeVisible();
+
+      // Check lock icon for Retrospective
       const retrospectiveLock = retrospectiveStage.locator('.stage-lock-tooltip');
-      const settingsLock = settingsStage.locator('.stage-lock-tooltip');
-
       await expect(retrospectiveLock).toBeVisible();
-      await expect(settingsLock).toBeVisible();
 
       // Hover to verify tooltip
       await retrospectiveLock.hover();
@@ -147,7 +143,7 @@ const hasCredentials = !!process.env.TEST_USER_EMAIL && !!process.env.TEST_USER_
       const tooltip = page.locator('.tooltip-text:visible').first();
       await expect(tooltip).toBeVisible();
       const tooltipText = await tooltip.textContent();
-      expect(tooltipText).toContain('Unlocks when a plan includes retrospective tasks');
+      expect(tooltipText).toContain('Unlocks when Submission is complete or the deadline has passed');
     }
 
     expect(consoleErrors).toHaveLength(0);
@@ -273,6 +269,11 @@ const hasCredentials = !!process.env.TEST_USER_EMAIL && !!process.env.TEST_USER_
     // Test Workflow link (should go to competitions list if no active competition)
     await page.locator('[data-testid="link-workflow"]').click();
     await page.waitForLoadState('networkidle');
+
+    // Test Settings link
+    await page.locator('[data-testid="link-settings"]').click();
+    await page.waitForURL('/settings', { waitUntil: 'networkidle' });
+    await expect(page.locator('text=Settings & Integrations')).toBeVisible();
   });
 
   test('No failed API requests during navigation', async ({ page }) => {

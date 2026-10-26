@@ -18,6 +18,7 @@ const CompetitionDetailPage = lazy(() => import('@/pages/competition-detail'));
 const IntelPage = lazy(() => import('@/pages/intel'));
 const PlannerPage = lazy(() => import('@/pages/planner'));
 const WorkflowPage = lazy(() => import('@/pages/workflow'));
+const SettingsPage = lazy(() => import('@/pages/settings'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -244,6 +245,7 @@ function ClerkProviderWithRoutes() {
               <Route path="/competitions/:id/workflow" component={() => <ProtectedPage><Suspense fallback={<RouteFallback />}><WorkflowPage /></Suspense></ProtectedPage>} />
               <Route path="/competitions/:id/planner" component={() => <ProtectedPage><Suspense fallback={<RouteFallback />}><PlannerPage /></Suspense></ProtectedPage>} />
               <Route path="/competitions/:id" component={() => <ProtectedPage><Suspense fallback={<RouteFallback />}><CompetitionDetailPage /></Suspense></ProtectedPage>} />
+              <Route path="/settings" component={() => <ProtectedPage><Suspense fallback={<RouteFallback />}><SettingsPage /></Suspense></ProtectedPage>} />
               <Route component={NotFound} />
             </Switch>
           </RoutedErrorBoundary>

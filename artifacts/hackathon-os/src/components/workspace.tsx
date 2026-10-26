@@ -18,7 +18,9 @@ import {
   LogOut,
   Menu,
   RefreshCw,
+  Shield,
   TerminalSquare,
+  Trash2,
   X,
   Info,
 } from 'lucide-react';
@@ -41,11 +43,17 @@ export function Brand({ compact = false }: { compact?: boolean }) {
 /**
  * Lifecycle stages shown in the sidebar. Stages that a saved plan can back
  * are marked as such; the rest are shown as planned and never as complete.
+ * Retrospective unlocks when Submission is complete or the deadline has passed.
  */
 const lifecycleStages = LIFECYCLE_STAGES.map((stage) => ({
   id: stage.id,
   label: stage.label,
   planned: stage.planned,
+  unlockRule: stage.id === "retrospective"
+    ? "Unlocks when Submission is complete or the deadline has passed"
+    : stage.planned
+    ? `Unlocks when a plan includes ${stage.label.toLowerCase()} tasks`
+    : "Shows progress from the saved plan",
 }));
 
 export function WorkspaceShell({ children }: { children: ReactNode }) {
@@ -127,14 +135,21 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
             <ListTodo size={16} />
             <span>Workflow</span>
           </Link>
+          <Link
+            href="/settings"
+            className={`nav-link ${location === '/settings' ? 'nav-active' : ''}`}
+            aria-current={location === '/settings' ? 'page' : undefined}
+            data-testid="link-settings"
+          >
+            <Shield size={16} />
+            <span>Settings</span>
+          </Link>
         </nav>
         <div className="sidebar-caption module-caption">LIFECYCLE</div>
         <div className="planned-list">
           {lifecycleStages.map((stage) => {
             const isPlanned = stage.planned;
-            const tooltipText = isPlanned
-              ? `${stage.label}: not backed by a saved plan. Unlocks when a plan includes tasks for this stage.`
-              : `${stage.label}: shows progress from the saved plan.`;
+            const tooltipText = stage.unlockRule;
             return (
               <div
                 className={`planned-row ${isPlanned ? '' : 'planned-row-backed'}`}
@@ -147,7 +162,7 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
                 {isPlanned ? (
                   <span className="planned-lock-tooltip" data-testid={`lifecycle-lock-${stage.id}`}>
                     <LockKeyhole size={11} />
-                    <span className="tooltip-text">Unlocks when a plan includes {stage.label.toLowerCase()} tasks</span>
+                    <span className="tooltip-text">{stage.unlockRule}</span>
                   </span>
                 ) : (
                   <span className="planned-chip">IN PLAN</span>

@@ -73,7 +73,10 @@ export default function WorkflowPage() {
   const plan = planQuery.data;
 
   const stageTasks = useMemo(() => toStageTasks(plan?.tasks), [plan?.tasks]);
-  const stages = useMemo(() => buildStageSummaries(stageTasks), [stageTasks]);
+  const stages = useMemo(
+    () => buildStageSummaries(stageTasks, competition?.deadline),
+    [stageTasks, competition?.deadline],
+  );
   const progress = useMemo(() => summarisePlan(stageTasks), [stageTasks]);
   const remaining = useMemo(
     () =>
@@ -346,6 +349,35 @@ function StageRow({
           <span className="stage-lock-tooltip">
             <Info size={10} />
             <span className="tooltip-text">Unlocks when a plan includes {definition.label.toLowerCase()} tasks</span>
+          </span>
+        </span>
+        <div className="stage-row-main">
+          <div className="stage-row-head">
+            <h3>{definition.label}</h3>
+            <span className="stage-state-label stage-label-planned">
+              {STAGE_STATE_LABELS.planned}
+            </span>
+          </div>
+          <p>{definition.summary}</p>
+        </div>
+      </article>
+    );
+  }
+
+  // Special handling for retrospective stage when locked (not unlocked yet)
+  if (definition.id === "retrospective" && stage.state === "planned") {
+    const tooltipText = `${definition.label}: unlocks when Submission stage is complete or the competition deadline has passed.`;
+    return (
+      <article
+        className="stage-row stage-planned"
+        data-testid={`stage-${definition.id}`}
+        aria-label={tooltipText}
+      >
+        <span className="stage-state-icon stage-icon-planned">
+          <Lock size={14} />
+          <span className="stage-lock-tooltip">
+            <Info size={10} />
+            <span className="tooltip-text">Unlocks when Submission is complete or the deadline has passed</span>
           </span>
         </span>
         <div className="stage-row-main">

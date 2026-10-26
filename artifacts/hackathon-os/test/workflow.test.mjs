@@ -72,6 +72,10 @@ test("every planner phase is owned by exactly one stage", () => {
     "demo",
     "pitch",
     "submission",
+    "retrospective_what_worked",
+    "retrospective_what_failed",
+    "retrospective_lessons_learned",
+    "retrospective_next_steps",
   ];
 
   const owned = new Set();
@@ -110,13 +114,29 @@ test("a task in any planner phase is visible in some stage", () => {
     "demo",
     "pitch",
     "submission",
+    "retrospective_what_worked",
+    "retrospective_what_failed",
+    "retrospective_lessons_learned",
+    "retrospective_next_steps",
   ];
 
+  // For retrospective phases, we need to unlock the retrospective stage
+  // by providing a completed submission task and a future deadline
+  const futureDeadline = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+  const submissionTask = makeTask({ phase: "submission", status: "done" });
+
   for (const phase of plannerPhases) {
-    const summaries = buildStageSummaries([makeTask({ phase, status: "blocked" })]);
-    const withTask = summaries.filter((s) => s.total > 0);
-    assert.equal(withTask.length, 1, `phase ${phase} landed in ${withTask.length} stages`);
-    assert.equal(withTask[0].state, "blocked", `phase ${phase} should surface its blocker`);
+    const tasks = phase.startsWith("retrospective_")
+      ? [submissionTask, makeTask({ phase, status: "blocked" })]
+      : [makeTask({ phase, status: "blocked" })];
+    const summaries = buildStageSummaries(tasks, futureDeadline);
+    // Find the stage that owns this phase
+    const targetStage = summaries.find((s) =>
+      s.definition.phases.includes(phase),
+    );
+    assert.ok(targetStage, `phase ${phase} has no owning stage`);
+    assert.equal(targetStage.total, 1, `phase ${phase} should have 1 task`);
+    assert.equal(targetStage.state, "blocked", `phase ${phase} should surface its blocker`);
   }
 });
 
@@ -251,7 +271,7 @@ test("stage summaries group tasks by their plan phase", () => {
   const research = summaries.find((s) => s.definition.id === "research");
   const build = summaries.find((s) => s.definition.id === "build");
   const quality = summaries.find((s) => s.definition.id === "quality");
-  const retrospective = summaries.find((s) => s.definition.id === "settings");
+  const retrospective = summaries.find((s) => s.definition.id === "retrospective");
 
   assert.equal(research?.total, 1);
   assert.equal(research?.done, 1);
@@ -261,6 +281,7 @@ test("stage summaries group tasks by their plan phase", () => {
   assert.equal(build?.completion, 50);
   assert.equal(quality?.total, 1);
   assert.equal(quality?.state, "blocked");
+  // Retrospective is locked (planned) when no submission tasks are done and deadline is future
   assert.equal(retrospective?.state, "planned");
   assert.equal(retrospective?.total, 0);
 });
@@ -268,7 +289,10 @@ test("stage summaries group tasks by their plan phase", () => {
 test("a stage with no tasks in the plan is not started, not complete", () => {
   const summaries = buildStageSummaries([]);
   for (const summary of summaries) {
-    if (summary.definition.planned) {
+    if (summary.definition.id === "retrospective") {
+      // Retrospective is locked (planned) when no submission tasks are done and deadline is future
+      assert.equal(summary.state, "planned");
+    } else if (summary.definition.planned) {
       assert.equal(summary.state, "planned");
     } else {
       assert.equal(summary.state, "not_started");
