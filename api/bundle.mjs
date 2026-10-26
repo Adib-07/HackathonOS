@@ -102697,6 +102697,13 @@ var routes_default = router5;
 var import_pino = __toESM(require_pino(), 1);
 var isProduction = process.env.NODE_ENV === "production";
 var usePretty = !isProduction && process.env.LOG_PRETTY === "1";
+var prettyTransport = usePretty ? {
+  transport: {
+    // Dynamic require prevents esbuild from bundling pino-pretty
+    target: __require.resolve("pino-pretty"),
+    options: { colorize: true }
+  }
+} : {};
 var logger2 = (0, import_pino.default)({
   level: process.env.LOG_LEVEL ?? "info",
   redact: {
@@ -102709,12 +102716,7 @@ var logger2 = (0, import_pino.default)({
     ],
     censor: "**REDACTED**"
   },
-  ...usePretty ? {
-    transport: {
-      target: "pino-pretty",
-      options: { colorize: true }
-    }
-  } : {}
+  ...prettyTransport
 });
 
 // ../../node_modules/.pnpm/httpxy@0.5.5/node_modules/httpxy/dist/index.mjs
