@@ -680,6 +680,7 @@
   padding: 0 10px;
   color: #8b9791;
   font-size: 10px;
+  position: relative;
 }
 
 .planned-row svg {
@@ -693,6 +694,50 @@
   flex: 0 0 auto;
   background: #47524d;
   border-radius: 100%;
+}
+
+.planned-lock-tooltip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  position: relative;
+}
+
+.planned-lock-tooltip .tooltip-text {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 6px 10px;
+  margin-bottom: 6px;
+  color: #e1e7e4;
+  background: #1a1f26;
+  border: 1px solid #333b44;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 500;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 150ms ease, visibility 150ms ease;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.planned-lock-tooltip .tooltip-text::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #1a1f26;
+}
+
+.planned-row:hover .planned-lock-tooltip .tooltip-text,
+.planned-row:focus-within .planned-lock-tooltip .tooltip-text {
+  opacity: 1;
+  visibility: visible;
 }
 
 .sidebar-bottom {
@@ -3999,6 +4044,51 @@
   color: #5c6761;
   background: #171c21;
   border-color: #2a3138;
+  position: relative;
+}
+
+.stage-lock-tooltip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  position: relative;
+}
+
+.stage-lock-tooltip .tooltip-text {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 6px 10px;
+  margin-bottom: 6px;
+  color: #e1e7e4;
+  background: #1a1f26;
+  border: 1px solid #333b44;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 500;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 150ms ease, visibility 150ms ease;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.stage-lock-tooltip .tooltip-text::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #1a1f26;
+}
+
+.stage-icon-planned:hover .stage-lock-tooltip .tooltip-text,
+.stage-icon-planned:focus-within .stage-lock-tooltip .tooltip-text {
+  opacity: 1;
+  visibility: visible;
 }
 
 .stage-row-main {

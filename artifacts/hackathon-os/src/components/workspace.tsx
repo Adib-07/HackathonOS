@@ -20,6 +20,7 @@ import {
   RefreshCw,
   TerminalSquare,
   X,
+  Info,
 } from 'lucide-react';
 
 export function Brand({ compact = false }: { compact?: boolean }) {
@@ -96,7 +97,6 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
             <strong>Personal workspace</strong>
             <small>PRIVATE · SINGLE USER</small>
           </span>
-          <ChevronDown size={14} className="muted-icon" />
         </div>
         <div className="sidebar-caption">WORKSPACE</div>
         <nav className="primary-navigation" aria-label="Workspace navigation">
@@ -130,25 +130,31 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
         </nav>
         <div className="sidebar-caption module-caption">LIFECYCLE</div>
         <div className="planned-list">
-          {lifecycleStages.map((stage) => (
-            <div
-              className={`planned-row ${stage.planned ? '' : 'planned-row-backed'}`}
-              key={stage.id}
-              aria-label={
-                stage.planned
-                  ? `${stage.label} is not implemented yet`
-                  : `${stage.label} stage, available in the workflow view`
-              }
-            >
-              <span className="planned-dot" />
-              <span>{stage.label}</span>
-              {stage.planned ? (
-                <LockKeyhole size={11} />
-              ) : (
-                <span className="planned-chip">IN PLAN</span>
-              )}
-            </div>
-          ))}
+          {lifecycleStages.map((stage) => {
+            const isPlanned = stage.planned;
+            const tooltipText = isPlanned
+              ? `${stage.label}: not backed by a saved plan. Unlocks when a plan includes tasks for this stage.`
+              : `${stage.label}: shows progress from the saved plan.`;
+            return (
+              <div
+                className={`planned-row ${isPlanned ? '' : 'planned-row-backed'}`}
+                key={stage.id}
+                data-testid={`lifecycle-${stage.id}`}
+                aria-label={tooltipText}
+              >
+                <span className="planned-dot" />
+                <span>{stage.label}</span>
+                {isPlanned ? (
+                  <span className="planned-lock-tooltip" data-testid={`lifecycle-lock-${stage.id}`}>
+                    <LockKeyhole size={11} />
+                    <span className="tooltip-text">Unlocks when a plan includes {stage.label.toLowerCase()} tasks</span>
+                  </span>
+                ) : (
+                  <span className="planned-chip">IN PLAN</span>
+                )}
+              </div>
+            );
+          })}
         </div>
         <div className="sidebar-bottom">
           <div className="connection-state">

@@ -14,7 +14,9 @@ import {
   Check,
   CircleDashed,
   CircleDot,
+  CircleHelp,
   Clock3,
+  Info,
   Lock,
   ShieldCheck,
 } from "lucide-react";
@@ -332,13 +334,19 @@ function StageRow({
   const { definition } = stage;
 
   if (definition.planned) {
+    const tooltipText = `${definition.label}: not backed by a saved plan. Unlocks when a plan includes tasks for this stage.`;
     return (
       <article
         className="stage-row stage-planned"
         data-testid={`stage-${definition.id}`}
+        aria-label={tooltipText}
       >
         <span className="stage-state-icon stage-icon-planned">
           <Lock size={14} />
+          <span className="stage-lock-tooltip">
+            <Info size={10} />
+            <span className="tooltip-text">Unlocks when a plan includes {definition.label.toLowerCase()} tasks</span>
+          </span>
         </span>
         <div className="stage-row-main">
           <div className="stage-row-head">
