@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Ask a Question
+    url: https://github.com/Adib-07/HackathonOS/discussions
+    about: General questions, discussions, and help
+  - name: 🔒 Report a Security Vulnerability
+    url: https://github.com/Adib-07/HackathonOS/security/advisories/new
+    about: Report security issues privately
+  - name: 📖 View Documentation
+    url: https://github.com/Adib-07/HackathonOS/tree/main/docs
+    about: Architecture, workflow, deployment, and API docs
