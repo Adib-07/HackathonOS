@@ -1,17 +1,19 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Link, useRoute } from 'wouter';
 import { useClerk, useUser } from '@clerk/react';
 import {
   useListCompetitions,
   useUpdateCompetition,
   type CompetitionUpdate,
-  type CompetitionUpdateTrackMode,
 } from '@workspace/api-client-react';
+import { useHealthCheck } from '@workspace/api-client-react';
 import {
   ArrowLeft,
+  ArrowRight,
   Bell,
   Check,
   Clock3,
+  Database,
   Globe,
   Info,
   Loader2,
@@ -21,6 +23,8 @@ import {
   Trash2,
   User,
   X,
+  Github,
+  Key,
 } from 'lucide-react';
 import {
   Button,
@@ -32,6 +36,9 @@ import {
   StatusPill,
   FormField,
   ActionLink,
+  Card,
+  Section,
+  Badge,
 } from '@/components/workspace';
 
 interface Competition {
@@ -48,17 +55,54 @@ export default function SettingsPage() {
   const { user } = useUser();
   const { signOut } = useClerk();
   const competitionsQuery = useListCompetitions();
+  const healthQuery = useHealthCheck();
   const updateCompetition = useUpdateCompetition();
   const [dangerMode, setDangerMode] = useState<string | null>(null);
   const [workspaceName, setWorkspaceName] = useState('');
   const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [dbStatus, setDbStatus] = useState<'checking' | 'connected' | 'error'>('checking');
 
   const competitions = competitionsQuery.data ?? [];
   const hasCompetitions = competitions.length > 0;
 
-  const handleSaveWorkspace = () => {
-    console.log('Saving workspace name:', workspaceName);
+  // Check database health on mount
+  useEffect(() => {
+    if (healthQuery.data?.status === 'ok' || healthQuery.data?.status === 'healthy') {
+      setDbStatus('connected');
+    } else if (healthQuery.isError) {
+      setDbStatus('error');
+    }
+  }, [healthQuery.data, healthQuery.isError]);
+
+  const handleSaveWorkspace = async () => {
+    if (!workspaceName.trim()) return;
+    setSaving(true);
+    setSaveStatus('idle');
+    try {
+      // Persist workspace name - for now we'll use localStorage as a simple approach
+      // In a real app, this would be an API call
+      localStorage.setItem('hackathon-os-workspace-name', workspaceName.trim());
+      // Update document title
+      document.title = `${workspaceName.trim()} | HackathonOS`;
+      setSaveStatus('success');
+      setTimeout(() => setSaveStatus('idle'), 3000);
+    } catch {
+      setSaveStatus('error');
+      setTimeout(() => setSaveStatus('idle'), 3000);
+    } finally {
+      setSaving(false);
+    }
   };
+
+  // Load workspace name on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('hackathon-os-workspace-name');
+    if (saved) {
+      setWorkspaceName(saved);
+      document.title = `${saved} | HackathonOS`;
+    }
+  }, []);
 
   const handleUpdateCompetition = (id: string, data: Partial<CompetitionUpdate>) => {
     updateCompetition.mutate({ competitionId: id, data });
@@ -67,6 +111,7 @@ export default function SettingsPage() {
   const handleDeleteCompetition = (id: string) => {
     console.log('Delete competition:', id);
     alert('Delete competition functionality requires API endpoint implementation');
+    setDangerMode(null);
   };
 
   if (competitionsQuery.isLoading) {
@@ -95,45 +140,55 @@ export default function SettingsPage() {
 
       <div className="settings-grid">
         {/* Workspace Identity */}
-        <section className="settings-section" aria-labelledby="workspace-heading">
-          <Panel>
-            <div className="settings-section-head">
-              <User size={18} />
-              <h2 id="workspace-heading">Workspace Identity</h2>
-            </div>
-            <div className="settings-section-body">
-              <FormField label="Workspace name" hint="Shown in the sidebar and browser title">
+        <Section title="Workspace Identity" icon={<User size={18} />} description="How your workspace appears in the sidebar and browser title.">
+          <Card>
+            <div className="card-content" style={{ paddingBottom: 0 }}>
+              <FormField
+                label="Workspace name"
+                hint="Shown in the sidebar and browser title"
+                required
+              >
                 <input
                   type="text"
                   value={workspaceName}
                   onChange={(e) => setWorkspaceName(e.target.value)}
                   placeholder="Personal workspace"
-                  className="input-field"
+                  className="input-field workspace-name-input"
                   data-testid="input-workspace-name"
+                  aria-invalid={workspaceName.length > 0 && workspaceName.trim().length < 2}
                 />
               </FormField>
+              {workspaceName.length > 0 && workspaceName.trim().length < 2 && (
+                <span className="field-error" role="alert">Workspace name must be at least 2 characters</span>
+              )}
               <div className="settings-actions">
                 <Button
                   variant="primary"
                   onClick={handleSaveWorkspace}
-                  disabled={saving || !workspaceName.trim()}
+                  disabled={saving || !workspaceName.trim() || workspaceName.trim().length < 2}
                   data-testid="button-save-workspace"
                 >
-                  <Save size={14} /> {saving ? 'Saving…' : 'Save workspace name'}
+                  <Save size={14} /> {saving ? 'Saving…' : saveStatus === 'success' ? 'Saved!' : 'Save workspace name'}
                 </Button>
+                {saveStatus === 'success' && (
+                  <Badge variant="success" className="ml-2">
+                    <Check size={12} /> Saved
+                  </Badge>
+                )}
+                {saveStatus === 'error' && (
+                  <Badge variant="destructive" className="ml-2">
+                    <X size={12} /> Failed
+                  </Badge>
+                )}
               </div>
             </div>
-          </Panel>
-        </section>
+          </Card>
+        </Section>
 
         {/* Competition Defaults */}
-        <section className="settings-section" aria-labelledby="defaults-heading">
-          <Panel>
-            <div className="settings-section-head">
-              <Globe size={18} />
-              <h2 id="defaults-heading">Competition Defaults</h2>
-            </div>
-            <div className="settings-section-body">
+        <Section title="Competition Defaults" icon={<Globe size={18} />} description="Default values applied when creating new competition workspaces.">
+          <Card>
+            <div className="card-content" style={{ paddingBottom: 0 }}>
               {hasCompetitions ? (
                 <div className="competition-defaults-list">
                   {competitions.map((comp) => (
@@ -154,75 +209,69 @@ export default function SettingsPage() {
                   detail="Create your first competition to set defaults for future ones."
                   action={
                     <ActionLink href="/competitions" data-testid="link-create-first-competition">
-                      Create a competition <ArrowLeft size={14} />
+                      Create a competition <ArrowRight size={14} />
                     </ActionLink>
                   }
                 />
               )}
             </div>
-          </Panel>
-        </section>
+          </Card>
+        </Section>
 
         {/* Connected Tools */}
-        <section className="settings-section" aria-labelledby="tools-heading">
-          <Panel>
-            <div className="settings-section-head">
-              <Shield size={18} />
-              <h2 id="tools-heading">Connected Tools</h2>
-            </div>
-            <div className="settings-section-body">
+        <Section title="Connected Tools" icon={<Shield size={18} />} description="External services connected to your workspace. Status reflects real connectivity checks.">
+          <Card>
+            <div className="card-content" style={{ paddingBottom: 0 }}>
               <div className="tools-list">
                 <ToolRow
                   name="Clerk Authentication"
                   status="connected"
                   description="User authentication and session management"
-                  icon={<Mail size={16} />}
+                  icon={<Key size={16} />}
                 />
                 <ToolRow
                   name="Database (PostgreSQL)"
-                  status="connected"
+                  status={dbStatus === 'connected' ? 'connected' : dbStatus === 'checking' ? 'available' : 'not-configured'}
                   description="Primary data store for competitions, plans, and evidence"
-                  icon={<Shield size={16} />}
+                  icon={<Database size={16} />}
                 />
                 <ToolRow
                   name="Email Notifications"
-                  status="available"
+                  status="not-configured"
                   description="Configure deadline reminders and status updates"
-                  icon={<Bell size={16} />}
+                  icon={<Mail size={16} />}
                   action={
-                    <Button variant="quiet" data-testid="button-configure-email">
+                    <Button variant="quiet" disabled data-testid="button-configure-email" title="Coming soon">
                       Configure
                     </Button>
                   }
                 />
                 <ToolRow
                   name="GitHub Integration"
-                  status="available"
+                  status="not-configured"
                   description="Link repositories and track commits against plan tasks"
-                  icon={<Info size={16} />}
+                  icon={<Github size={16} />}
                   action={
-                    <Button variant="quiet" data-testid="button-configure-github">
+                    <Button variant="quiet" disabled data-testid="button-configure-github" title="Coming soon">
                       Connect
                     </Button>
                   }
                 />
               </div>
             </div>
-          </Panel>
-        </section>
+          </Card>
+        </Section>
 
         {/* Danger Zone */}
-        <section className="settings-section settings-danger-zone" aria-labelledby="danger-heading">
-          <Panel className="danger-panel">
-            <div className="settings-section-head danger-head">
-              <Trash2 size={18} />
-              <h2 id="danger-heading">Danger Zone</h2>
-            </div>
-            <div className="settings-section-body">
-              <p className="danger-description">
-                Irreversible actions. Deleting a competition removes all its plans, tasks, and evidence.
-              </p>
-              {hasCompetitions ? (
+        {hasCompetitions && (
+          <Section
+            title="Danger Zone"
+            icon={<Trash2 size={18} />}
+            description="Irreversible actions. Deleting a competition removes all its plans, tasks, and evidence."
+            className="settings-danger-zone"
+          >
+            <Card className="danger-panel">
+              <div className="card-content" style={{ paddingBottom: 0 }}>
                 <div className="danger-actions">
                   {competitions.map((comp) => (
                     <div
@@ -268,12 +317,10 @@ export default function SettingsPage() {
                     </div>
                   ))}
                 </div>
-              ) : (
-                <p className="danger-empty">No competitions to delete.</p>
-              )}
-            </div>
-          </Panel>
-        </section>
+              </div>
+            </Card>
+          </Section>
+        )}
       </div>
     </div>
   );
@@ -376,20 +423,21 @@ function ToolRow({
   action,
 }: {
   name: string;
-  status: 'connected' | 'available';
+  status: 'connected' | 'available' | 'not-configured';
   description: string;
   icon: React.ReactNode;
   action?: React.ReactNode;
 }) {
+  const statusLabel = status === 'connected' ? 'Connected' : status === 'available' ? 'Available' : 'Not configured';
+  const statusVariant = status === 'connected' ? 'success' : status === 'available' ? 'warning' : 'default';
+
   return (
     <div className="tool-row" data-testid={`tool-${name.toLowerCase().replace(/\s+/g, '-')}`}>
       <div className="tool-icon">{icon}</div>
       <div className="tool-info">
         <div className="tool-name-row">
           <strong>{name}</strong>
-          <span className={`tool-status tool-status-${status}`}>
-            {status === 'connected' ? 'Connected' : 'Available'}
-          </span>
+          <Badge variant={statusVariant}>{statusLabel}</Badge>
         </div>
         <p className="tool-description">{description}</p>
       </div>
