@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { X } from "lucide-react";
 
 const FOCUSABLE_SELECTOR = [
@@ -21,6 +21,10 @@ export interface DialogProps {
   headerAside?: ReactNode;
   /** Test id applied to the dialog element. */
   testId?: string;
+  /** Whether to show a confirmation before closing when form is dirty. */
+  confirmOnDirtyClose?: boolean;
+  /** Whether the form has unsaved changes. */
+  isDirty?: boolean;
 }
 
 /**
@@ -30,10 +34,11 @@ export interface DialogProps {
  * absolutely-positioned div does not:
  *   - moves focus into the dialog when it opens
  *   - traps Tab / Shift+Tab inside the dialog
- *   - closes on Escape
+ *   - closes on Escape (with optional dirty confirmation)
  *   - restores focus to the trigger when it closes
  *   - locks background scroll
  *   - labels the dialog for screen readers
+ *   - supports sticky header/footer with scrollable body
  */
 export function Dialog({
   open,
@@ -44,13 +49,18 @@ export function Dialog({
   footer,
   headerAside,
   testId,
+  confirmOnDirtyClose = false,
+  isDirty = false,
 }: DialogProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
   const titleId = useRef(`dialog-title-${Math.random().toString(36).slice(2)}`);
   const descriptionId = useRef(
     `dialog-description-${Math.random().toString(36).slice(2)}`,
   );
+  const [showDirtyConfirm, setShowDirtyConfirm] = useState(false);
+  const dirtyCloseResolve = useRef<((confirmed: boolean) => void) | null>(null);
 
   const focusableElements = useCallback(() => {
     const root = dialogRef.current;
@@ -58,6 +68,26 @@ export function Dialog({
     return Array.from(
       root.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
     ).filter((element) => element.offsetParent !== null || element === document.activeElement);
+  }, []);
+
+  // Handle dirty confirmation
+  const handleCloseRequest = useCallback(() => {
+    if (confirmOnDirtyClose && isDirty) {
+      setShowDirtyConfirm(true);
+      return new Promise<boolean>((resolve) => {
+        dirtyCloseResolve.current = resolve;
+      }).then((confirmed) => {
+        if (confirmed) onClose();
+      });
+    }
+    onClose();
+    return Promise.resolve();
+  }, [confirmOnDirtyClose, isDirty, onClose]);
+
+  const handleDirtyConfirm = useCallback((confirmed: boolean) => {
+    setShowDirtyConfirm(false);
+    dirtyCloseResolve.current?.(confirmed);
+    dirtyCloseResolve.current = null;
   }, []);
 
   // Move focus in on open, restore it on close.
@@ -73,9 +103,11 @@ export function Dialog({
 
     return () => {
       window.clearTimeout(focusFirst);
-      previouslyFocused.current?.focus?.();
+      if (!showDirtyConfirm) {
+        previouslyFocused.current?.focus?.();
+      }
     };
-  }, [open, focusableElements]);
+  }, [open, focusableElements, showDirtyConfirm]);
 
   // Lock background scroll while the dialog is open.
   useEffect(() => {
@@ -93,8 +125,13 @@ export function Dialog({
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
+        if (showDirtyConfirm) {
+          event.preventDefault();
+          handleDirtyConfirm(false);
+          return;
+        }
         event.preventDefault();
-        onClose();
+        handleCloseRequest();
         return;
       }
 
@@ -122,7 +159,7 @@ export function Dialog({
 
     document.addEventListener("keydown", onKeyDown, true);
     return () => document.removeEventListener("keydown", onKeyDown, true);
-  }, [open, onClose, focusableElements]);
+  }, [open, focusableElements, showDirtyConfirm, handleCloseRequest, handleDirtyConfirm]);
 
   if (!open) return null;
 
@@ -131,7 +168,9 @@ export function Dialog({
       className="modal-backdrop"
       role="presentation"
       onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
+        if (event.target === event.currentTarget && !showDirtyConfirm) {
+          handleCloseRequest();
+        }
       }}
     >
       <div
@@ -156,15 +195,42 @@ export function Dialog({
           </div>
           <button
             className="icon-button"
-            onClick={onClose}
+            onClick={handleCloseRequest}
             aria-label="Close dialog"
             data-testid="button-close-create-form"
           >
             <X size={17} />
           </button>
         </div>
-        {children}
-        {footer && <div className="modal-actions">{footer}</div>}
+        <div className="modal-body" ref={bodyRef}>
+          {children}
+        </div>
+        {footer && <div className="modal-footer">{footer}</div>}
+
+        {showDirtyConfirm && (
+          <div className="modal-dirty-confirm" role="alertdialog" aria-modal="true" aria-labelledby="dirty-confirm-title">
+            <div className="dirty-confirm-content">
+              <h3 id="dirty-confirm-title">Unsaved changes</h3>
+              <p>You have unsaved changes. Are you sure you want to close without saving?</p>
+              <div className="dirty-confirm-actions">
+                <button
+                  className="button button-secondary"
+                  onClick={() => handleDirtyConfirm(false)}
+                  data-testid="button-dirty-cancel"
+                >
+                  Keep editing
+                </button>
+                <button
+                  className="button button-primary"
+                  onClick={() => handleDirtyConfirm(true)}
+                  data-testid="button-dirty-confirm"
+                >
+                  Discard changes
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

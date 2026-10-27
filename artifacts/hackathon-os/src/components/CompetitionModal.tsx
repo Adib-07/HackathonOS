@@ -1,4 +1,4 @@
-import { useRef, useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent, useId } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   getListCompetitionsQueryKey,
@@ -15,6 +15,7 @@ import {
   validateCompetitionForm,
   type CompetitionFormState,
 } from "@/lib/competition-form-validation";
+import { toast } from "@/hooks/use-toast";
 
 export type { CompetitionFormState } from "@/lib/competition-form-validation";
 export { validateCompetitionForm } from "@/lib/competition-form-validation";
@@ -46,8 +47,27 @@ export function CompetitionModal({ open, onClose, onCreated }: CompetitionModalP
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
-  // Guards against a second submit while the first is still in flight.
-  const submitting = useRef(false);
+  const deadlineInputRef = useRef<HTMLInputElement>(null);
+  const isDirty = useRef(false);
+
+  // Check if form has unsaved changes
+  const hasUnsavedChanges = () => {
+    return (
+      form.name !== initialFormState.name ||
+      form.organizer !== initialFormState.organizer ||
+      form.competitionType !== initialFormState.competitionType ||
+      form.deadline !== initialFormState.deadline ||
+      form.teamSize !== initialFormState.teamSize ||
+      form.trackMode !== initialFormState.trackMode ||
+      form.currentTrack !== initialFormState.currentTrack ||
+      form.problemStatement !== initialFormState.problemStatement ||
+      form.officialUrl !== initialFormState.officialUrl ||
+      form.rulesUrl !== initialFormState.rulesUrl ||
+      form.status !== initialFormState.status ||
+      deliverablesText !== "" ||
+      skillsText !== ""
+    );
+  };
 
   const updateField = <K extends keyof CompetitionFormState>(
     field: K,
@@ -64,6 +84,7 @@ export function CompetitionModal({ open, onClose, onCreated }: CompetitionModalP
       }
       return next;
     });
+    isDirty.current = true;
   };
 
   const handleBlur = (field: keyof CompetitionFormState) => {
@@ -82,19 +103,20 @@ export function CompetitionModal({ open, onClose, onCreated }: CompetitionModalP
     setErrors({});
     setTouched({});
     setSubmitAttempted(false);
+    isDirty.current = false;
   };
 
   const handleClose = () => {
     if (createCompetition.isPending) return;
+    // Dialog will handle dirty confirmation via confirmOnDirtyClose prop
     resetForm();
     onClose();
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    // Ignore repeat submissions while a request is already in flight.
-    if (submitting.current || createCompetition.isPending) return;
+    if (createCompetition.isPending) return;
 
     setSubmitAttempted(true);
     const validationErrors = validateCompetitionForm(form, deliverablesText, skillsText);
@@ -108,12 +130,13 @@ export function CompetitionModal({ open, onClose, onCreated }: CompetitionModalP
         teamSize: true,
         problemStatement: true,
       });
-      // Move focus to the first field that needs attention.
       const firstErrorField = (["name", "deadline"] as const).find(
         (field) => validationErrors[field],
       );
       if (firstErrorField === "name") {
         nameInputRef.current?.focus();
+      } else if (firstErrorField === "deadline") {
+        deadlineInputRef.current?.focus();
       }
       return;
     }
@@ -141,30 +164,25 @@ export function CompetitionModal({ open, onClose, onCreated }: CompetitionModalP
       status: form.status,
     };
 
-    submitting.current = true;
-    createCompetition.mutate(
-      { data: payload },
-      {
-        onSuccess: async (competition) => {
-          await queryClient.invalidateQueries({ queryKey: getListCompetitionsQueryKey() });
-          await queryClient.invalidateQueries({ queryKey: getGetOverviewQueryKey() });
-          resetForm();
-          submitting.current = false;
-          if (onCreated) {
-            onCreated(competition);
-          }
-          onClose();
-        },
-        onError: () => {
-          submitting.current = false;
-        },
-      },
-    );
+    try {
+      const competition = await createCompetition.mutateAsync({ data: payload });
+      await queryClient.invalidateQueries({ queryKey: getListCompetitionsQueryKey() });
+      await queryClient.invalidateQueries({ queryKey: getGetOverviewQueryKey() });
+      toast({ title: "Workspace created", description: competition.name });
+      resetForm();
+      if (onCreated) onCreated(competition);
+      onClose();
+    } catch {
+      toast({ title: "Creation failed", description: "Could not create workspace. Please try again.", variant: "destructive" });
+    }
   };
 
   const errorId = (field: keyof CompetitionFormState) => ERROR_FIELD_IDS[field];
   const describedBy = (field: keyof CompetitionFormState) =>
     errors[field] ? errorId(field) : undefined;
+
+  // Get user's timezone for display
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   return (
     <Dialog
@@ -174,6 +192,8 @@ export function CompetitionModal({ open, onClose, onCreated }: CompetitionModalP
       description="Record the event name and submission deadline first. Everything else can be filled in as you learn it."
       headerAside={<span className="eyebrow">NEW WORKSPACE</span>}
       testId="dialog-create-competition"
+      confirmOnDirtyClose={true}
+      isDirty={hasUnsavedChanges()}
       footer={
         <>
           <Button
@@ -209,6 +229,7 @@ export function CompetitionModal({ open, onClose, onCreated }: CompetitionModalP
             hint="Required. Official hackathon or event title."
             error={errors.name}
             errorId={errorId("name")}
+            required
           >
             <input
               ref={nameInputRef}
@@ -242,11 +263,13 @@ export function CompetitionModal({ open, onClose, onCreated }: CompetitionModalP
 
           <FormField
             label="Submission deadline"
-            hint="Required. Local submission cutoff time."
+            hint={`Required. Local submission cutoff time. Your timezone: ${timezone}`}
             error={errors.deadline}
             errorId={errorId("deadline")}
+            required
           >
             <input
+              ref={deadlineInputRef}
               type="datetime-local"
               value={form.deadline}
               onChange={(e) => updateField("deadline", e.target.value)}
@@ -349,7 +372,7 @@ export function CompetitionModal({ open, onClose, onCreated }: CompetitionModalP
           errorId={errorId("problemStatement")}
         >
           <textarea
-            rows={2}
+            rows={3}
             value={form.problemStatement}
             onChange={(e) => updateField("problemStatement", e.target.value)}
             onBlur={() => handleBlur("problemStatement")}
@@ -361,7 +384,7 @@ export function CompetitionModal({ open, onClose, onCreated }: CompetitionModalP
           />
         </FormField>
 
-        <div className="form-grid" style={{ marginTop: "14px" }}>
+        <div className="form-grid" style={{ marginTop: "8px" }}>
           <FormField
             label="Required deliverables"
             hint="One deliverable per line. Tracks completion checklist."

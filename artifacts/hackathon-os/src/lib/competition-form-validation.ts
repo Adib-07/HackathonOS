@@ -53,6 +53,8 @@ export function validateCompetitionForm(
     const parsedDate = new Date(form.deadline);
     if (isNaN(parsedDate.getTime())) {
       errors.deadline = "Please enter a valid submission date and time.";
+    } else if (parsedDate < new Date()) {
+      errors.deadline = "Submission deadline must be in the future.";
     }
   }
 

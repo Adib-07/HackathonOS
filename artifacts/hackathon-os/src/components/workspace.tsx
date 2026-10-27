@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { Link, useLocation } from 'wouter';
 import { useClerk, useUser } from '@clerk/react';
 import { useGetOverview, useHealthCheck } from '@workspace/api-client-react';
 import { LIFECYCLE_STAGES } from '@/lib/workflow';
+import { useWorkspaceGate } from '@/hooks/useWorkspaceGate';
 import {
   Activity,
   ArrowLeft,
@@ -23,7 +24,9 @@ import {
   Trash2,
   X,
   Info,
+  AlertCircle,
 } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export function Brand({ compact = false }: { compact?: boolean }) {
   return (
@@ -66,6 +69,7 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const activeCompetitionId = overviewQuery.data?.currentCompetition?.id ?? '';
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const gate = useWorkspaceGate();
 
   // Close the mobile drawer on Escape and return focus to the trigger.
   useEffect(() => {
@@ -85,115 +89,138 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
     setMobileOpen(false);
   }, [location]);
 
+  const workflowLocked = gate.isLocked('workflow');
+  const workflowUnlockReason = gate.getUnlockReason('workflow');
+
   return (
-    <div className="workspace-frame">
-      <aside className={`sidebar ${mobileOpen ? 'sidebar-open' : ''}`}>
-        <div className="sidebar-top">
-          <Brand />
-          <button
-            className="icon-button sidebar-close"
-            onClick={() => setMobileOpen(false)}
-            aria-label="Close navigation"
-            data-testid="button-close-navigation"
-          >
-            <X size={17} />
-          </button>
-        </div>
-        <div className="workspace-selector">
-          <span className="workspace-glyph">H</span>
-          <span className="workspace-meta">
-            <strong>Personal workspace</strong>
-            <small>PRIVATE · SINGLE USER</small>
-          </span>
-        </div>
-        <div className="sidebar-caption">WORKSPACE</div>
-        <nav className="primary-navigation" aria-label="Workspace navigation">
-          <Link
-            href="/"
-            className={`nav-link ${location === '/' ? 'nav-active' : ''}`}
-            aria-current={location === '/' ? 'page' : undefined}
-            data-testid="link-overview"
-          >
-            <LayoutDashboard size={16} />
-            <span>Overview</span>
-          </Link>
-          <Link
-            href="/competitions"
-            className={`nav-link ${location === '/competitions' ? 'nav-active' : ''}`}
-            aria-current={location === '/competitions' ? 'page' : undefined}
-            data-testid="link-competitions"
-          >
-            <FolderKanban size={16} />
-            <span>Competitions</span>
-          </Link>
-          <Link
-            href={activeCompetitionId ? `/competitions/${activeCompetitionId}/workflow` : '/competitions'}
-            className={`nav-link ${location.includes('/workflow') ? 'nav-active' : ''}`}
-            aria-current={location.includes('/workflow') ? 'page' : undefined}
-            data-testid="link-workflow"
-          >
-            <ListTodo size={16} />
-            <span>Workflow</span>
-          </Link>
-          <Link
-            href="/settings"
-            className={`nav-link ${location === '/settings' ? 'nav-active' : ''}`}
-            aria-current={location === '/settings' ? 'page' : undefined}
-            data-testid="link-settings"
-          >
-            <Shield size={16} />
-            <span>Settings</span>
-          </Link>
-        </nav>
-        <div className="sidebar-caption module-caption">LIFECYCLE</div>
-        <div className="planned-list">
-          {lifecycleStages.map((stage) => {
-            const isPlanned = stage.planned;
-            const tooltipText = stage.unlockRule;
-            return (
-              <div
-                className={`planned-row ${isPlanned ? '' : 'planned-row-backed'}`}
-                key={stage.id}
-                data-testid={`lifecycle-${stage.id}`}
-                aria-label={tooltipText}
-              >
-                <span className="planned-dot" />
-                <span>{stage.label}</span>
-                {isPlanned ? (
-                  <span className="planned-lock-tooltip" data-testid={`lifecycle-lock-${stage.id}`}>
-                    <LockKeyhole size={11} />
-                    <span className="tooltip-text">{stage.unlockRule}</span>
-                  </span>
-                ) : (
-                  <span className="planned-chip">IN PLAN</span>
-                )}
-              </div>
-            );
-          })}
-        </div>
-        <div className="sidebar-bottom">
-          <div className="connection-state">
-            <span className={`connection-dot ${healthQuery.isError ? 'connection-dot-error' : ''}`} />
-            <span>API connection</span>
-            <span className="mono">{apiStatus}</span>
-          </div>
-          <div className="profile-row">
-            <span className="avatar-initials">{(user?.firstName?.[0] ?? user?.emailAddresses?.[0]?.emailAddress?.[0] ?? 'D').toUpperCase()}</span>
-            <span className="profile-copy">
-              <strong>{user?.fullName || user?.primaryEmailAddress?.emailAddress || 'Developer'}</strong>
-              <small>Personal account</small>
-            </span>
+    <TooltipProvider>
+      <div className="workspace-frame">
+        <aside className={`sidebar ${mobileOpen ? 'sidebar-open' : ''}`}>
+          <div className="sidebar-top">
+            <Brand />
             <button
-              className="icon-button logout-button"
-              onClick={() => signOut({ redirectUrl: import.meta.env.BASE_URL || '/' })}
-              aria-label="Sign out"
-              data-testid="button-sign-out"
+              className="icon-button sidebar-close"
+              onClick={() => setMobileOpen(false)}
+              aria-label="Close navigation"
+              data-testid="button-close-navigation"
             >
-              <LogOut size={15} />
+              <X size={17} />
             </button>
           </div>
-        </div>
-      </aside>
+          <div className="workspace-selector">
+            <span className="workspace-glyph">H</span>
+            <span className="workspace-meta">
+              <strong>Personal workspace</strong>
+              <small>PRIVATE · SINGLE USER</small>
+            </span>
+          </div>
+          <div className="sidebar-caption">WORKSPACE</div>
+          <nav className="primary-navigation" aria-label="Workspace navigation">
+            <Link
+              href="/"
+              className={`nav-link ${location === '/' ? 'nav-active' : ''}`}
+              aria-current={location === '/' ? 'page' : undefined}
+              data-testid="link-overview"
+            >
+              <LayoutDashboard size={16} />
+              <span>Overview</span>
+            </Link>
+            <Link
+              href="/competitions"
+              className={`nav-link ${location === '/competitions' ? 'nav-active' : ''}`}
+              aria-current={location === '/competitions' ? 'page' : undefined}
+              data-testid="link-competitions"
+            >
+              <FolderKanban size={16} />
+              <span>Competitions</span>
+            </Link>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href={activeCompetitionId ? `/competitions/${activeCompetitionId}/workflow` : '/competitions'}
+                  className={`nav-link ${location.includes('/workflow') ? 'nav-active' : ''} ${workflowLocked ? 'nav-disabled' : ''}`}
+                  aria-current={location.includes('/workflow') ? 'page' : undefined}
+                  data-testid="link-workflow"
+                  aria-disabled={workflowLocked}
+                  tabIndex={workflowLocked ? -1 : undefined}
+                  onClick={(e) => {
+                    if (workflowLocked) {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }
+                  }}
+                >
+                  <ListTodo size={16} />
+                  <span>Workflow</span>
+                  {workflowLocked && <LockKeyhole size={11} className="nav-lock-icon" />}
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right" align="center">
+                <div className="tooltip-content">
+                  <AlertCircle size={12} />
+                  <span>{workflowUnlockReason}</span>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+            <Link
+              href="/settings"
+              className={`nav-link ${location === '/settings' ? 'nav-active' : ''}`}
+              aria-current={location === '/settings' ? 'page' : undefined}
+              data-testid="link-settings"
+            >
+              <Shield size={16} />
+              <span>Settings</span>
+            </Link>
+          </nav>
+          <div className="sidebar-caption module-caption">LIFECYCLE</div>
+          <div className="planned-list">
+            {lifecycleStages.map((stage) => {
+              const isPlanned = stage.planned;
+              const tooltipText = stage.unlockRule;
+              return (
+                <div
+                  className={`planned-row ${isPlanned ? '' : 'planned-row-backed'}`}
+                  key={stage.id}
+                  data-testid={`lifecycle-${stage.id}`}
+                  aria-label={tooltipText}
+                >
+                  <span className="planned-dot" />
+                  <span>{stage.label}</span>
+                  {isPlanned ? (
+                    <span className="planned-lock-tooltip" data-testid={`lifecycle-lock-${stage.id}`}>
+                      <LockKeyhole size={11} />
+                      <span className="tooltip-text">{stage.unlockRule}</span>
+                    </span>
+                  ) : (
+                    <span className="planned-chip">IN PLAN</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <div className="sidebar-bottom">
+            <div className="connection-state">
+              <span className={`connection-dot ${healthQuery.isError ? 'connection-dot-error' : ''}`} />
+              <span>API connection</span>
+              <span className="mono">{apiStatus}</span>
+            </div>
+            <div className="profile-row">
+              <span className="avatar-initials">{(user?.firstName?.[0] ?? user?.emailAddresses?.[0]?.emailAddress?.[0] ?? 'D').toUpperCase()}</span>
+              <span className="profile-copy">
+                <strong>{user?.fullName || user?.primaryEmailAddress?.emailAddress || 'Developer'}</strong>
+                <small>Personal account</small>
+              </span>
+              <button
+                className="icon-button logout-button"
+                onClick={() => signOut({ redirectUrl: import.meta.env.BASE_URL || '/' })}
+                aria-label="Sign out"
+                data-testid="button-sign-out"
+              >
+                <LogOut size={15} />
+              </button>
+            </div>
+          </div>
+        </aside>
       {mobileOpen && (
         <button
           className="mobile-scrim"
@@ -248,6 +275,7 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
         <div className="page-content">{children}</div>
       </main>
     </div>
+  </TooltipProvider>
   );
 }
 
@@ -349,6 +377,69 @@ export function Panel({
   className?: string;
 }) {
   return <section className={`panel ${className}`}>{children}</section>;
+}
+
+export function Card({
+  children,
+  className = '',
+  header,
+  footer,
+}: {
+  children: ReactNode;
+  className?: string;
+  header?: ReactNode;
+  footer?: ReactNode;
+}) {
+  return (
+    <section className={`card ${className}`}>
+      {header && <div className="card-header">{header}</div>}
+      <div className="card-content">{children}</div>
+      {footer && <div className="card-footer">{footer}</div>}
+    </section>
+  );
+}
+
+export function Section({
+  children,
+  className = '',
+  title,
+  icon,
+  description,
+}: {
+  children: ReactNode;
+  className?: string;
+  title?: string;
+  icon?: ReactNode;
+  description?: string;
+}) {
+  return (
+    <section className={`section ${className}`} aria-labelledby={title ? `section-${title.toLowerCase().replace(/\s+/g, '-')}` : undefined}>
+      {(title || icon) && (
+        <div className="section-head">
+          {icon && <span className="section-icon">{icon}</span>}
+          {title && <h2 id={`section-${title.toLowerCase().replace(/\s+/g, '-')}`} className="section-title">{title}</h2>}
+        </div>
+      )}
+      {description && <p className="section-description">{description}</p>}
+      <div className="section-body">{children}</div>
+    </section>
+  );
+}
+
+export function Badge({
+  children,
+  variant = 'default',
+  className = '',
+}: {
+  children: ReactNode;
+  variant?: 'default' | 'success' | 'warning' | 'destructive' | 'info';
+  className?: string;
+}) {
+  return (
+    <span className={`badge badge-${variant} ${className}`} data-testid={`badge-${variant}`}>
+      {children}
+    </span>
+  );
 }
 
 export function StatusPill({ value }: { value: string }) {
@@ -459,6 +550,7 @@ export function FormField({
   error,
   errorId,
   children,
+  required,
 }: {
   label: string;
   hint?: string;
@@ -466,18 +558,25 @@ export function FormField({
   /** Id for the error message so the control can reference it via aria-describedby. */
   errorId?: string;
   children: ReactNode;
+  required?: boolean;
 }) {
+  const labelId = useId?.() ?? `field-label-${Math.random().toString(36).slice(2)}`;
+  const hintId = hint ? `field-hint-${Math.random().toString(36).slice(2)}` : undefined;
+  const describedBy = [hintId, errorId].filter(Boolean).join(' ') || undefined;
+
   return (
-    <label className="form-field">
-      <span className="field-label">{label}</span>
+    <div className="form-field">
+      <label id={labelId} htmlFor={undefined} className="field-label-wrapper">
+        <span className="field-label">{label}{required && <span className="required-marker" aria-hidden="true">*</span>}</span>
+      </label>
       {children}
       {error && (
         <span className="field-error" id={errorId} role="alert">
           {error}
         </span>
       )}
-      {hint && !error && <span className="field-hint">{hint}</span>}
-    </label>
+      {hint && !error && <span id={hintId} className="field-hint">{hint}</span>}
+    </div>
   );
 }
 
@@ -495,3 +594,6 @@ export function ActionLink({
     </Link>
   );
 }
+
+// Re-export Tooltip components for convenience
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
