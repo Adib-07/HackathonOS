@@ -209,7 +209,7 @@ export default function SettingsPage() {
                   detail="Create your first competition to set defaults for future ones."
                   action={
                     <ActionLink href="/competitions" data-testid="link-create-first-competition">
-                      Create a competition <ArrowRight size={14} />
+                      Create a competition
                     </ActionLink>
                   }
                 />

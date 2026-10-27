@@ -1958,7 +1958,7 @@
   inset: 0;
   z-index: 100;
   display: grid;
-  place-items: center;
+  place-items: start center;
   overflow: auto;
   padding: 1rem;
   background: hsl(220 20% 4% / .78);
@@ -4401,6 +4401,7 @@
   }
   .modal-backdrop {
     align-items: end;
+    place-items: end center;
     padding: 0;
   }
   .modal-card {
