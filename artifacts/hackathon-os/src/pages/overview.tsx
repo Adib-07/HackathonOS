@@ -22,6 +22,8 @@ import {
   Plus,
   ShieldCheck,
   Sparkles,
+  Lock,
+  AlertCircle,
 } from "lucide-react";
 import {
   Button,
@@ -33,6 +35,10 @@ import {
   PageHeading,
   Panel,
   StatusPill,
+  Badge,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
 } from "@/components/workspace";
 import { CompetitionModal } from "@/components/CompetitionModal";
 import {
@@ -41,13 +47,16 @@ import {
   formatDuration,
   summarisePlan,
   type StageTask,
+  WORKSPACE_GATES,
 } from "@/lib/workflow";
+import { useWorkspaceGate } from "@/hooks/useWorkspaceGate";
 
 export default function OverviewPage() {
   const query = useGetOverview();
   const competitionsQuery = useListCompetitions();
   const [createOpen, setCreateOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const gate = useWorkspaceGate();
 
   const overview = query.data;
   const competitions = competitionsQuery.data ?? [];
@@ -150,25 +159,119 @@ export default function OverviewPage() {
       </div>
 
       {!competition ? (
-        <Panel className="overview-empty">
-          <div className="empty-orbit">
-            <Sparkles size={21} />
+        <div className="overview-empty-state">
+          <Panel className="overview-empty">
+            <div className="empty-orbit">
+              <Sparkles size={21} />
+            </div>
+            <div className="empty-copy">
+              <span className="eyebrow">YOUR FIRST WORKSPACE</span>
+              <h2>Start with a real deadline.</h2>
+              <p>
+                Add a competition brief and HackathonOS can organize its rules,
+                constraints, and next steps in one place.
+              </p>
+            </div>
+            <Button
+              onClick={() => setCreateOpen(true)}
+              data-testid="link-add-first-competition"
+            >
+              <Plus size={15} /> Add a competition
+            </Button>
+          </Panel>
+
+          <div className="locked-features" aria-label="Locked features requiring a competition">
+            <Panel className="locked-feature">
+              <div className="locked-feature-icon">
+                <Lock size={20} />
+              </div>
+              <div className="locked-feature-content">
+                <div className="locked-feature-header">
+                  <h3>Workflow</h3>
+                  <Badge variant="default">Locked</Badge>
+                </div>
+                <p>Lifecycle stages, task progress, and stage unlocks require a competition workspace.</p>
+              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="quiet"
+                    onClick={() => setCreateOpen(true)}
+                    data-testid="button-unlock-workflow"
+                  >
+                    <Plus size={14} /> Create workspace
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top" align="center">
+                  <div className="tooltip-content">
+                    <AlertCircle size={12} />
+                    <span>Create a competition workspace to unlock Workflow</span>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </Panel>
+
+            <Panel className="locked-feature">
+              <div className="locked-feature-icon">
+                <Lock size={20} />
+              </div>
+              <div className="locked-feature-content">
+                <div className="locked-feature-header">
+                  <h3>Planner</h3>
+                  <Badge variant="default">Locked</Badge>
+                </div>
+                <p>Generate and manage execution plans tied to a competition deadline.</p>
+              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="quiet"
+                    onClick={() => setCreateOpen(true)}
+                    data-testid="button-unlock-planner"
+                  >
+                    <Plus size={14} /> Create workspace
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top" align="center">
+                  <div className="tooltip-content">
+                    <AlertCircle size={12} />
+                    <span>Create a competition workspace to unlock Planner</span>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </Panel>
+
+            <Panel className="locked-feature">
+              <div className="locked-feature-icon">
+                <Lock size={20} />
+              </div>
+              <div className="locked-feature-content">
+                <div className="locked-feature-header">
+                  <h3>Intelligence</h3>
+                  <Badge variant="default">Locked</Badge>
+                </div>
+                <p>Research, idea exploration, and evidence gathering require a competition context.</p>
+              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="quiet"
+                    onClick={() => setCreateOpen(true)}
+                    data-testid="button-unlock-intel"
+                  >
+                    <Plus size={14} /> Create workspace
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top" align="center">
+                  <div className="tooltip-content">
+                    <AlertCircle size={12} />
+                    <span>Create a competition workspace to unlock Intelligence</span>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </Panel>
           </div>
-          <div className="empty-copy">
-            <span className="eyebrow">YOUR FIRST WORKSPACE</span>
-            <h2>Start with a real deadline.</h2>
-            <p>
-              Add a competition brief and HackathonOS can organize its rules,
-              constraints, and next steps in one place.
-            </p>
-          </div>
-          <Button
-            onClick={() => setCreateOpen(true)}
-            data-testid="link-add-first-competition"
-          >
-            <Plus size={15} /> Add a competition
-          </Button>
-        </Panel>
+        </div>
       ) : (
         <div className="overview-main-grid">
           <Panel className="active-competition">

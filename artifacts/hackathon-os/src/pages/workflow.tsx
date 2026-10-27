@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Link, useRoute } from "wouter";
+import { Link, useRoute, Redirect } from "wouter";
 import {
   getGetPlanQueryKey,
   useGetCompetition,
@@ -19,6 +19,8 @@ import {
   Info,
   Lock,
   ShieldCheck,
+  Plus,
+  AlertCircle,
 } from "lucide-react";
 import {
   Button,
@@ -29,6 +31,8 @@ import {
   Panel,
   StatusPill,
 } from "@/components/workspace";
+import { CompetitionModal } from "@/components/CompetitionModal";
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   buildStageSummaries,
   computeRemaining,
@@ -39,6 +43,7 @@ import {
   type StageSummary,
   type StageTask,
 } from "@/lib/workflow";
+import { useWorkspaceGate } from "@/hooks/useWorkspaceGate";
 
 /**
  * The generated PlanTask has Date fields; the workflow helpers accept both
@@ -54,6 +59,12 @@ function toStageTasks(tasks: PlanTask[] | undefined): StageTask[] {
 export default function WorkflowPage() {
   const [, params] = useRoute("/competitions/:id/workflow");
   const competitionId = params?.id ?? "";
+  const gate = useWorkspaceGate();
+
+  // If no competitions exist at all, redirect to overview with CTA
+  if (!gate.hasCompetitions) {
+    return <WorkflowEmptyState />;
+  }
 
   const competitionQuery = useGetCompetition(competitionId);
   const versionsQuery = useListPlanVersions(competitionId);
@@ -473,5 +484,27 @@ function StageRow({
         )}
       </div>
     </article>
+  );
+}
+
+function WorkflowEmptyState() {
+  return (
+    <div className="reveal">
+      <Panel className="workflow-empty">
+        <EmptyState
+          icon={<CircleDashed size={23} />}
+          title="No competition workspace"
+          detail="Create a competition workspace to unlock the workflow lifecycle. All stages — from Intake & Scope through Retrospective — require an active competition."
+          action={
+            <Button
+              onClick={() => window.location.href = '/overview'}
+              data-testid="button-create-workflow-workspace"
+            >
+              <Plus size={15} /> Create workspace
+            </Button>
+          }
+        />
+      </Panel>
+    </div>
   );
 }

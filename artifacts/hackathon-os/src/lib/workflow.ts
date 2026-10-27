@@ -445,6 +445,51 @@ export function formatDuration(minutes: number): string {
   return `${hours}h ${rest}m`;
 }
 
+/**
+ * Workspace gate hook - single source of truth for competition-dependent features.
+ * Gate configuration for each feature area
+ */
+export const WORKSPACE_GATES = {
+  workflow: {
+    id: 'workflow',
+    label: 'Workflow',
+    unlockReason: 'Create a competition workspace to unlock Workflow',
+    unlockAction: 'Create workspace',
+  },
+  planner: {
+    id: 'planner',
+    label: 'Planner',
+    unlockReason: 'Create a competition workspace to unlock Planner',
+    unlockAction: 'Create workspace',
+  },
+  intel: {
+    id: 'intel',
+    label: 'Intelligence',
+    unlockReason: 'Create a competition workspace to unlock Intelligence',
+    unlockAction: 'Create workspace',
+  },
+  competitions: {
+    id: 'competitions',
+    label: 'Competitions',
+    unlockReason: null, // Always accessible
+    unlockAction: null,
+  },
+  settings: {
+    id: 'settings',
+    label: 'Settings & Integrations',
+    unlockReason: null, // Always accessible
+    unlockAction: null,
+  },
+  retrospective: {
+    id: 'retrospective',
+    label: 'Retrospective',
+    unlockReason: 'Unlocks when Submission is complete or the competition deadline has passed',
+    unlockAction: null,
+  },
+} as const;
+
+export type WorkspaceGateId = keyof typeof WORKSPACE_GATES;
+
 export interface RemainingTime {
   /** Raw milliseconds until the deadline. Negative once it has passed. */
   ms: number;
