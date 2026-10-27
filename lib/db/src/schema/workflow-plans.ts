@@ -12,6 +12,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { z } from "zod/v4";
 import { competitionsTable } from "./competitions";
+import { competitionMembersTable } from "./teams";
 
 export const workflowPlansTable = pgTable(
   "workflow_plans",
@@ -78,6 +79,11 @@ export const workflowTasksTable = pgTable(
     verificationMethod: text("verification_method").notNull(),
     riskIfSkipped: text("risk_if_skipped").notNull(),
     mandatory: boolean("mandatory").notNull().default(false),
+    assigneeMemberId: uuid("assignee_member_id").references(
+      () => competitionMembersTable.id,
+      { onDelete: "set null" },
+    ),
+    blockedReason: text("blocked_reason"),
   },
   (table) => [
     index("workflow_tasks_plan_order_idx").on(
@@ -85,6 +91,7 @@ export const workflowTasksTable = pgTable(
       table.plannedStartAt,
     ),
     index("workflow_tasks_competition_idx").on(table.competitionId),
+    index("workflow_tasks_assignee_idx").on(table.assigneeMemberId),
   ],
 );
 
