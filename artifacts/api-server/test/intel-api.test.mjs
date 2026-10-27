@@ -14,6 +14,9 @@ import app, {
   researchGapsTable,
 } from "../dist/app.mjs";
 import { eq } from "drizzle-orm";
+import { setupTestDatabase } from "./setup.mjs";
+
+await setupTestDatabase();
 
 let server;
 let baseUrl = "";

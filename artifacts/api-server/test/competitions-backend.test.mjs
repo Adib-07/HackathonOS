@@ -3,6 +3,9 @@ import test, { before, after } from "node:test";
 import { createServer } from "node:http";
 import app, { db, pool, competitionsTable } from "../dist/app.mjs";
 import { eq } from "drizzle-orm";
+import { setupTestDatabase } from "./setup.mjs";
+
+await setupTestDatabase();
 
 let server;
 let baseUrl = "";
