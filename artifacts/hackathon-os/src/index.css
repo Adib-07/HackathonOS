@@ -1958,7 +1958,7 @@
   inset: 0;
   z-index: 100;
   display: grid;
-  place-items: start center;
+  place-items: center;
   overflow: auto;
   padding: 1rem;
   background: hsl(220 20% 4% / .78);
@@ -1966,7 +1966,7 @@
 }
 
 .modal-card {
-  width: min(100%, 700px);
+  width: min(720px, calc(100vw - 2rem));
   max-height: calc(100dvh - 2rem);
   display: flex;
   flex-direction: column;
@@ -2066,6 +2066,145 @@
 
 .ml-2 {
   margin-left: 0.5rem;
+}
+
+/* Wizard stepper styles */
+.wizard-stepper {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #2e363d;
+}
+
+.wizard-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  flex: 1;
+  background: #171c22;
+  border: 1px solid #2e363d;
+  border-radius: 6px;
+  color: #8b9791;
+  font-size: 9px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.wizard-step:hover:not(:disabled) {
+  color: #e0e7e4;
+  background: #1d242b;
+  border-color: #3a444d;
+}
+
+.wizard-step:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.wizard-step.active {
+  color: #54d09d;
+  background: #172a22;
+  border-color: #2d513f;
+}
+
+.wizard-step.completed {
+  color: #54d09d;
+  background: #172a22;
+  border-color: #2d513f;
+}
+
+.wizard-step.completed .wizard-step-number {
+  background: #54d09d;
+  color: #0d1c16;
+}
+
+.wizard-step-number {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  background: #2e363d;
+  color: #8b9791;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  transition: all 150ms ease;
+}
+
+.wizard-step.active .wizard-step-number {
+  background: #54d09d;
+  color: #0d1c16;
+}
+
+.wizard-step-label {
+  white-space: nowrap;
+}
+
+/* Wizard step panels */
+[role="tabpanel"] {
+  animation: fade-in 150ms ease;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Button pending state */
+.button.pending {
+  position: relative;
+  color: transparent;
+}
+
+.button.pending::after {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: 50%;
+  left: 50%;
+  margin: -8px 0 0 -8px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Mobile: single column, allow body scroll, pinned footer */
+@media (max-width: 640px) {
+  .modal-card {
+    max-height: calc(100dvh - 1rem);
+    border-radius: 0;
+  }
+  
+  .modal-body {
+    padding-bottom: 80px; /* Space for pinned footer */
+  }
+  
+  .modal-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    border-radius: 0;
+    box-shadow: 0 -4px 12px hsl(0 0% 0% / .3);
+  }
+  
+  .wizard-stepper {
+    flex-wrap: wrap;
+  }
+  
+  .wizard-step {
+    flex: 1 0 30%;
+    min-width: 80px;
+  }
 }
 
 /* Settings page styles */

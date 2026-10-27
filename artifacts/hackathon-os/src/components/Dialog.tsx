@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
 const FOCUSABLE_SELECTOR = [
@@ -28,10 +29,9 @@ export interface DialogProps {
 }
 
 /**
- * Accessible modal dialog.
+ * Accessible modal dialog rendered via portal into document.body.
  *
- * Handles the behaviours a native <dialog> would give us but that a plain
- * absolutely-positioned div does not:
+ * Handles the behaviours a native <dialog> would give us:
  *   - moves focus into the dialog when it opens
  *   - traps Tab / Shift+Tab inside the dialog
  *   - closes on Escape (with optional dirty confirmation)
@@ -163,7 +163,7 @@ export function Dialog({
 
   if (!open) return null;
 
-  return (
+  const dialogContent = (
     <div
       className="modal-backdrop"
       role="presentation"
@@ -234,4 +234,8 @@ export function Dialog({
       </div>
     </div>
   );
+
+  // Render via portal into document.body to avoid ancestor transform/filter issues
+  // and ensure fixed positioning works relative to viewport
+  return createPortal(dialogContent, document.body);
 }
