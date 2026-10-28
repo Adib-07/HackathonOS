@@ -69,3 +69,8 @@ api/bundle.mjs
 test-results/
 playwright-report/
 .playwright-artifacts-*/
+
+# Test output
+test-results/
+playwright-report/
+.playwright-artifacts-*/
