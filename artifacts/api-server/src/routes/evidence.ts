@@ -1,5 +1,5 @@
 import { and, desc, eq } from "drizzle-orm";
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, type RequestHandler } from "express";
 import {
   CreateEvidenceBody,
   CreateEvidenceParams,
@@ -10,14 +10,29 @@ import {
   DeleteEvidenceResponse,
 } from "@workspace/api-zod";
 import {
+  competitionMembersTable,
   competitionsTable,
   db,
   workflowEvidenceTable,
   workflowTasksTable,
 } from "@workspace/db";
 import { EVIDENCE_TYPES } from "../lib/verification";
+import {
+  requireMember,
+  loadCompetitionMembership,
+} from "../middlewares/competitionAuth";
 
 const router: IRouter = Router();
+
+// Conditional middleware - only load membership when competitionId param exists
+const conditionalLoadMembership: RequestHandler = async (req, res, next) => {
+  if (!req.params.competitionId) {
+    return next();
+  }
+  return loadCompetitionMembership(req, res, next);
+};
+
+router.use(conditionalLoadMembership);
 
 /**
  * Evidence is always recorded as manual provenance. Nothing in this codebase
@@ -43,25 +58,15 @@ function containsSecret(value: string | null | undefined): boolean {
   return SECRET_PATTERNS.some((pattern) => pattern.test(value));
 }
 
-/**
- * Look up a task that belongs to the authenticated owner.
- *
- * Returns undefined for tasks owned by somebody else, so the API answers 404
- * rather than revealing that another owner's task exists.
- */
-async function findOwnedTask(competitionId: string, taskId: string, ownerId: string) {
+/** Find task by ID within competition (no owner check - membership middleware handles access) */
+async function findTaskInCompetition(competitionId: string, taskId: string) {
   const [row] = await db
     .select({ task: workflowTasksTable })
     .from(workflowTasksTable)
-    .innerJoin(
-      competitionsTable,
-      eq(workflowTasksTable.competitionId, competitionsTable.id),
-    )
     .where(
       and(
         eq(workflowTasksTable.id, taskId),
         eq(workflowTasksTable.competitionId, competitionId),
-        eq(competitionsTable.ownerId, ownerId),
       ),
     )
     .limit(1);
@@ -71,6 +76,7 @@ async function findOwnedTask(competitionId: string, taskId: string, ownerId: str
 
 router.get(
   "/competitions/:competitionId/evidence",
+  requireMember,
   async (req, res): Promise<void> => {
     const params = ListEvidenceParams.safeParse(req.params);
     if (!params.success) {
@@ -78,31 +84,11 @@ router.get(
       return;
     }
 
-    const ownerId = res.locals.userId as string;
-
-    // Confirm the competition belongs to the caller before reading anything.
-    const [ownedCompetition] = await db
-      .select({ id: competitionsTable.id })
-      .from(competitionsTable)
-      .where(
-        and(
-          eq(competitionsTable.id, params.data.competitionId),
-          eq(competitionsTable.ownerId, ownerId),
-        ),
-      )
-      .limit(1);
-
-    if (!ownedCompetition) {
-      res.status(404).json({ error: "Competition not found." });
-      return;
-    }
-
+    // Membership already verified by requireMember middleware
     const records = await db
       .select()
       .from(workflowEvidenceTable)
-      .where(
-        eq(workflowEvidenceTable.competitionId, params.data.competitionId),
-      )
+      .where(eq(workflowEvidenceTable.competitionId, params.data.competitionId))
       .orderBy(desc(workflowEvidenceTable.observedAt));
 
     res.json(ListEvidenceResponse.parse(records));
@@ -111,6 +97,7 @@ router.get(
 
 router.post(
   "/competitions/:competitionId/tasks/:taskId/evidence",
+  requireMember,
   async (req, res): Promise<void> => {
     const params = CreateEvidenceParams.safeParse(req.params);
     const parsed = CreateEvidenceBody.safeParse(req.body);
@@ -134,17 +121,14 @@ router.post(
       containsSecret(data.reviewerNote)
     ) {
       res.status(400).json({
-        error:
-          "Evidence must not contain credentials, tokens, or private keys.",
+        error: "Evidence must not contain credentials, tokens, or private keys.",
       });
       return;
     }
 
-    const ownerId = res.locals.userId as string;
-    const task = await findOwnedTask(
+    const task = await findTaskInCompetition(
       params.data.competitionId,
       params.data.taskId,
-      ownerId,
     );
 
     if (!task) {
@@ -189,6 +173,7 @@ router.post(
 
 router.delete(
   "/competitions/:competitionId/evidence/:evidenceId",
+  requireMember,
   async (req, res): Promise<void> => {
     const params = DeleteEvidenceParams.safeParse(req.params);
     if (!params.success) {
@@ -196,26 +181,14 @@ router.delete(
       return;
     }
 
-    const ownerId = res.locals.userId as string;
-
-    // Ownership is checked before the delete, joined through the competition
-    // so another owner's evidence is never touched and is reported as 404
-    // rather than 403.
+    // Membership already verified by requireMember middleware
     const [ownedEvidence] = await db
       .select({ evidence: workflowEvidenceTable })
       .from(workflowEvidenceTable)
-      .innerJoin(
-        competitionsTable,
-        eq(workflowEvidenceTable.competitionId, competitionsTable.id),
-      )
       .where(
         and(
           eq(workflowEvidenceTable.id, params.data.evidenceId),
-          eq(
-            workflowEvidenceTable.competitionId,
-            params.data.competitionId,
-          ),
-          eq(competitionsTable.ownerId, ownerId),
+          eq(workflowEvidenceTable.competitionId, params.data.competitionId),
         ),
       )
       .limit(1);

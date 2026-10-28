@@ -20,6 +20,11 @@ const PlannerPage = lazy(() => import('@/pages/planner'));
 const WorkflowPage = lazy(() => import('@/pages/workflow'));
 const SettingsPage = lazy(() => import('@/pages/settings'));
 
+// Team & Share pages
+const TeamPage = lazy(() => import('@/pages/team'));
+const InviteAcceptPage = lazy(() => import('@/pages/invite'));
+const PublicSharePage = lazy(() => import('@/pages/share'));
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -240,7 +245,17 @@ function ClerkProviderWithRoutes() {
               <Route path="/" component={HomeRedirect} />
               <Route path="/sign-in/*?" component={SignInPage} />
               <Route path="/sign-up/*?" component={SignUpPage} />
+              
+              {/* Public invite acceptance (requires auth after token validation) */}
+              <Route path="/invite/:token" component={InviteAcceptPage} />
+              
+              {/* Public share pages (no auth required) */}
+              <Route path="/share/:token" component={PublicSharePage} />
+              <Route path="/share/:token/tasks" component={PublicSharePage} />
+              
+              {/* Protected competition pages */}
               <Route path="/competitions" component={() => <ProtectedPage><Suspense fallback={<RouteFallback />}><CompetitionsPage /></Suspense></ProtectedPage>} />
+              <Route path="/competitions/:id/team" component={() => <ProtectedPage><Suspense fallback={<RouteFallback />}><TeamPage /></Suspense></ProtectedPage>} />
               <Route path="/competitions/:id/intel" component={() => <ProtectedPage><Suspense fallback={<RouteFallback />}><IntelPage /></Suspense></ProtectedPage>} />
               <Route path="/competitions/:id/workflow" component={() => <ProtectedPage><Suspense fallback={<RouteFallback />}><WorkflowPage /></Suspense></ProtectedPage>} />
               <Route path="/competitions/:id/planner" component={() => <ProtectedPage><Suspense fallback={<RouteFallback />}><PlannerPage /></Suspense></ProtectedPage>} />
