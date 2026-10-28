@@ -20054,980 +20054,8 @@ var require_proxy_addr = __commonJS({
   }
 });
 
-// ../../node_modules/.pnpm/qs@6.16.0/node_modules/qs/lib/formats.js
-var require_formats2 = __commonJS({
-  "../../node_modules/.pnpm/qs@6.16.0/node_modules/qs/lib/formats.js"(exports, module) {
-    "use strict";
-    var replace = String.prototype.replace;
-    var percentTwenties = /%20/g;
-    var Format = {
-      RFC1738: "RFC1738",
-      RFC3986: "RFC3986"
-    };
-    module.exports = {
-      "default": Format.RFC3986,
-      formatters: {
-        RFC1738: function(value) {
-          return replace.call(value, percentTwenties, "+");
-        },
-        RFC3986: function(value) {
-          return String(value);
-        }
-      },
-      RFC1738: Format.RFC1738,
-      RFC3986: Format.RFC3986
-    };
-  }
-});
-
-// ../../node_modules/.pnpm/qs@6.16.0/node_modules/qs/lib/utils.js
-var require_utils3 = __commonJS({
-  "../../node_modules/.pnpm/qs@6.16.0/node_modules/qs/lib/utils.js"(exports, module) {
-    "use strict";
-    var formats = require_formats2();
-    var getSideChannel = require_side_channel();
-    var defineProperty = require_es_define_property();
-    var has = Object.prototype.hasOwnProperty;
-    var isArray = Array.isArray;
-    var overflowChannel = getSideChannel();
-    var markOverflow = function markOverflow2(obj, maxIndex) {
-      overflowChannel.set(obj, maxIndex);
-      return obj;
-    };
-    var isOverflow = function isOverflow2(obj) {
-      return overflowChannel.has(obj);
-    };
-    var getMaxIndex = function getMaxIndex2(obj) {
-      return overflowChannel.get(obj);
-    };
-    var setMaxIndex = function setMaxIndex2(obj, maxIndex) {
-      overflowChannel.set(obj, maxIndex);
-    };
-    var hexTable = (function() {
-      var array2 = [];
-      for (var i = 0; i < 256; ++i) {
-        array2[array2.length] = "%" + ((i < 16 ? "0" : "") + i.toString(16)).toUpperCase();
-      }
-      return array2;
-    })();
-    var compactQueue = function compactQueue2(queue) {
-      while (queue.length > 1) {
-        var item = queue.pop();
-        var obj = item.obj[item.prop];
-        if (isArray(obj)) {
-          var compacted = [];
-          for (var j = 0; j < obj.length; ++j) {
-            if (typeof obj[j] !== "undefined") {
-              compacted[compacted.length] = obj[j];
-            }
-          }
-          item.obj[item.prop] = compacted;
-        }
-      }
-    };
-    var arrayToObject = function arrayToObject2(source, options) {
-      var obj = options && options.plainObjects ? { __proto__: null } : {};
-      for (var i = 0; i < source.length; ++i) {
-        if (typeof source[i] !== "undefined") {
-          obj[i] = source[i];
-        }
-      }
-      return obj;
-    };
-    var setProperty = function setProperty2(obj, key, value) {
-      if (key === "__proto__" && defineProperty) {
-        defineProperty(obj, key, {
-          configurable: true,
-          enumerable: true,
-          value,
-          writable: true
-        });
-      } else {
-        obj[key] = value;
-      }
-    };
-    var merge2 = function merge3(target, source, options) {
-      if (!source) {
-        return target;
-      }
-      if (typeof source !== "object" && typeof source !== "function") {
-        if (isArray(target)) {
-          var nextIndex = target.length;
-          if (options && typeof options.arrayLimit === "number" && nextIndex >= options.arrayLimit) {
-            if (options.throwOnLimitExceeded) {
-              throw new RangeError("Array limit exceeded. Only " + options.arrayLimit + " element" + (options.arrayLimit === 1 ? "" : "s") + " allowed in an array.");
-            }
-            return markOverflow(arrayToObject(target.concat(source), options), nextIndex);
-          }
-          target[nextIndex] = source;
-        } else if (target && typeof target === "object") {
-          if (isOverflow(target)) {
-            var newIndex = getMaxIndex(target) + 1;
-            target[newIndex] = source;
-            setMaxIndex(target, newIndex);
-          } else if (options && options.strictMerge) {
-            return [target, source];
-          } else if (options && (options.plainObjects || options.allowPrototypes) || !has.call(Object.prototype, source)) {
-            target[source] = true;
-          }
-        } else {
-          return [target, source];
-        }
-        return target;
-      }
-      if (!target || typeof target !== "object") {
-        if (isOverflow(source)) {
-          var sourceKeys = Object.keys(source);
-          var result = options && options.plainObjects ? { __proto__: null, 0: target } : { 0: target };
-          for (var m = 0; m < sourceKeys.length; m++) {
-            var oldKey = parseInt(sourceKeys[m], 10);
-            result[oldKey + 1] = source[sourceKeys[m]];
-          }
-          return markOverflow(result, getMaxIndex(source) + 1);
-        }
-        var combined = [target].concat(source);
-        if (options && typeof options.arrayLimit === "number" && combined.length > options.arrayLimit) {
-          if (options.throwOnLimitExceeded) {
-            throw new RangeError("Array limit exceeded. Only " + options.arrayLimit + " element" + (options.arrayLimit === 1 ? "" : "s") + " allowed in an array.");
-          }
-          return markOverflow(arrayToObject(combined, options), combined.length - 1);
-        }
-        return combined;
-      }
-      var mergeTarget = target;
-      if (isArray(target) && !isArray(source)) {
-        mergeTarget = arrayToObject(target, options);
-      }
-      if (isArray(target) && isArray(source)) {
-        source.forEach(function(item, i) {
-          if (has.call(target, i)) {
-            var targetItem = target[i];
-            if (targetItem && typeof targetItem === "object" && item && typeof item === "object") {
-              target[i] = merge3(targetItem, item, options);
-            } else {
-              target[target.length] = item;
-            }
-          } else {
-            target[i] = item;
-          }
-        });
-        if (options && typeof options.arrayLimit === "number" && target.length > options.arrayLimit) {
-          if (options.throwOnLimitExceeded) {
-            throw new RangeError("Array limit exceeded. Only " + options.arrayLimit + " element" + (options.arrayLimit === 1 ? "" : "s") + " allowed in an array.");
-          }
-          return markOverflow(arrayToObject(target, options), target.length - 1);
-        }
-        return target;
-      }
-      return Object.keys(source).reduce(function(acc, key) {
-        var value = source[key];
-        if (has.call(acc, key)) {
-          setProperty(acc, key, merge3(acc[key], value, options));
-        } else {
-          setProperty(acc, key, value);
-        }
-        if (isOverflow(source) && !isOverflow(acc)) {
-          markOverflow(acc, getMaxIndex(source));
-        }
-        if (isOverflow(acc)) {
-          var keyNum = parseInt(key, 10);
-          if (String(keyNum) === key && keyNum >= 0 && keyNum > getMaxIndex(acc)) {
-            setMaxIndex(acc, keyNum);
-          }
-        }
-        return acc;
-      }, mergeTarget);
-    };
-    var assign = function assignSingleSource(target, source) {
-      return Object.keys(source).reduce(function(acc, key) {
-        setProperty(acc, key, source[key]);
-        return acc;
-      }, target);
-    };
-    var decode3 = function(str, defaultDecoder, charset) {
-      var strWithoutPlus = str.replace(/\+/g, " ");
-      if (charset === "iso-8859-1") {
-        return strWithoutPlus.replace(/%[0-9a-f]{2}/gi, unescape);
-      }
-      try {
-        return decodeURIComponent(strWithoutPlus);
-      } catch (e) {
-        return strWithoutPlus;
-      }
-    };
-    var limit = 1024;
-    var encode3 = function encode4(str, defaultEncoder, charset, kind, format) {
-      if (str.length === 0) {
-        return str;
-      }
-      var string4 = str;
-      if (typeof str === "symbol") {
-        string4 = Symbol.prototype.toString.call(str);
-      } else if (typeof str !== "string") {
-        string4 = String(str);
-      }
-      if (charset === "iso-8859-1") {
-        return escape(string4).replace(/%u[0-9a-f]{4}/gi, function($0) {
-          return "%26%23" + parseInt($0.slice(2), 16) + "%3B";
-        });
-      }
-      var out = "";
-      for (var j = 0; j < string4.length; j += limit) {
-        var segment = string4.length >= limit ? string4.slice(j, j + limit) : string4;
-        if (j + limit < string4.length) {
-          var last = segment.charCodeAt(segment.length - 1);
-          if (last >= 55296 && last <= 56319) {
-            segment = segment.slice(0, -1);
-            j -= 1;
-          }
-        }
-        var arr = [];
-        for (var i = 0; i < segment.length; ++i) {
-          var c = segment.charCodeAt(i);
-          if (c === 45 || c === 46 || c === 95 || c === 126 || c >= 48 && c <= 57 || c >= 65 && c <= 90 || c >= 97 && c <= 122 || format === formats.RFC1738 && (c === 40 || c === 41)) {
-            arr[arr.length] = segment.charAt(i);
-            continue;
-          }
-          if (c < 128) {
-            arr[arr.length] = hexTable[c];
-            continue;
-          }
-          if (c < 2048) {
-            arr[arr.length] = hexTable[192 | c >> 6] + hexTable[128 | c & 63];
-            continue;
-          }
-          if (c < 55296 || c >= 57344) {
-            arr[arr.length] = hexTable[224 | c >> 12] + hexTable[128 | c >> 6 & 63] + hexTable[128 | c & 63];
-            continue;
-          }
-          i += 1;
-          c = 65536 + ((c & 1023) << 10 | segment.charCodeAt(i) & 1023);
-          arr[arr.length] = hexTable[240 | c >> 18] + hexTable[128 | c >> 12 & 63] + hexTable[128 | c >> 6 & 63] + hexTable[128 | c & 63];
-        }
-        out += arr.join("");
-      }
-      return out;
-    };
-    var compact = function compact2(value) {
-      var queue = [{ obj: { o: value }, prop: "o" }];
-      var refs = getSideChannel();
-      for (var i = 0; i < queue.length; ++i) {
-        var item = queue[i];
-        var obj = item.obj[item.prop];
-        var keys = Object.keys(obj);
-        for (var j = 0; j < keys.length; ++j) {
-          var key = keys[j];
-          var val = obj[key];
-          if (typeof val === "object" && val !== null && !refs.has(val)) {
-            queue[queue.length] = { obj, prop: key };
-            refs.set(val, true);
-          }
-        }
-      }
-      compactQueue(queue);
-      return value;
-    };
-    var isRegExp = function isRegExp2(obj) {
-      return Object.prototype.toString.call(obj) === "[object RegExp]";
-    };
-    var isBuffer = function isBuffer2(obj) {
-      if (!obj || typeof obj !== "object") {
-        return false;
-      }
-      return !!(obj.constructor && typeof obj.constructor.isBuffer === "function" && obj.constructor.isBuffer(obj));
-    };
-    var combine2 = function combine3(a, b, arrayLimit, plainObjects, throwOnLimitExceeded) {
-      if (isOverflow(a)) {
-        if (throwOnLimitExceeded) {
-          throw new RangeError("Array limit exceeded. Only " + arrayLimit + " element" + (arrayLimit === 1 ? "" : "s") + " allowed in an array.");
-        }
-        var bValues = isArray(b) ? b : [b];
-        var newIndex = getMaxIndex(a);
-        for (var i = 0; i < bValues.length; ++i) {
-          newIndex += 1;
-          a[newIndex] = bValues[i];
-        }
-        setMaxIndex(a, newIndex);
-        return a;
-      }
-      var result = [].concat(a, b);
-      if (result.length > arrayLimit) {
-        if (throwOnLimitExceeded) {
-          throw new RangeError("Array limit exceeded. Only " + arrayLimit + " element" + (arrayLimit === 1 ? "" : "s") + " allowed in an array.");
-        }
-        return markOverflow(arrayToObject(result, { plainObjects }), result.length - 1);
-      }
-      return result;
-    };
-    var maybeMap = function maybeMap2(val, fn) {
-      if (isArray(val)) {
-        var mapped = [];
-        for (var i = 0; i < val.length; i += 1) {
-          mapped[mapped.length] = fn(val[i]);
-        }
-        return mapped;
-      }
-      return fn(val);
-    };
-    module.exports = {
-      arrayToObject,
-      assign,
-      combine: combine2,
-      compact,
-      decode: decode3,
-      encode: encode3,
-      isBuffer,
-      isOverflow,
-      isRegExp,
-      markOverflow,
-      maybeMap,
-      merge: merge2
-    };
-  }
-});
-
-// ../../node_modules/.pnpm/qs@6.16.0/node_modules/qs/lib/stringify.js
-var require_stringify2 = __commonJS({
-  "../../node_modules/.pnpm/qs@6.16.0/node_modules/qs/lib/stringify.js"(exports, module) {
-    "use strict";
-    var getSideChannel = require_side_channel();
-    var utils = require_utils3();
-    var formats = require_formats2();
-    var has = Object.prototype.hasOwnProperty;
-    var arrayPrefixGenerators = {
-      brackets: function brackets(prefix) {
-        return prefix + "[]";
-      },
-      comma: "comma",
-      indices: function indices(prefix, key) {
-        return prefix + "[" + key + "]";
-      },
-      repeat: function repeat(prefix) {
-        return prefix;
-      }
-    };
-    var isArray = Array.isArray;
-    var push = Array.prototype.push;
-    var pushToArray = function(arr, valueOrArray) {
-      push.apply(arr, isArray(valueOrArray) ? valueOrArray : [valueOrArray]);
-    };
-    var toISO = Date.prototype.toISOString;
-    var defaultFormat = formats["default"];
-    var defaults2 = {
-      addQueryPrefix: false,
-      allowDots: false,
-      allowEmptyArrays: false,
-      arrayFormat: "indices",
-      charset: "utf-8",
-      charsetSentinel: false,
-      commaRoundTrip: false,
-      delimiter: "&",
-      depth: Infinity,
-      encode: true,
-      encodeDotInKeys: false,
-      encoder: utils.encode,
-      encodeValuesOnly: false,
-      filter: void 0,
-      format: defaultFormat,
-      formatter: formats.formatters[defaultFormat],
-      // deprecated
-      indices: false,
-      serializeDate: function serializeDate(date6) {
-        return toISO.call(date6);
-      },
-      skipNulls: false,
-      strictNullHandling: false
-    };
-    var isNonNullishPrimitive = function isNonNullishPrimitive2(v) {
-      return typeof v === "string" || typeof v === "number" || typeof v === "boolean" || typeof v === "symbol" || typeof v === "bigint";
-    };
-    var sentinel = {};
-    var stringify2 = function stringify3(object2, prefix, generateArrayPrefix, commaRoundTrip, allowEmptyArrays, strictNullHandling, skipNulls, encodeDotInKeys, encoder, filter, sort, allowDots, serializeDate, format, formatter, encodeValuesOnly, charset, sideChannel, depth, currentDepth) {
-      var obj = object2;
-      if (currentDepth > depth) {
-        throw new RangeError("Input depth exceeded depth option of " + depth);
-      }
-      var tmpSc = sideChannel;
-      var step = 0;
-      var findFlag = false;
-      while ((tmpSc = tmpSc.get(sentinel)) !== void 0 && !findFlag) {
-        var pos = tmpSc.get(object2);
-        step += 1;
-        if (typeof pos !== "undefined") {
-          if (pos === step) {
-            throw new RangeError("Cyclic object value");
-          } else {
-            findFlag = true;
-          }
-        }
-        if (typeof tmpSc.get(sentinel) === "undefined") {
-          step = 0;
-        }
-      }
-      obj = typeof filter === "function" ? filter(prefix, obj) : obj;
-      if (obj instanceof Date) {
-        obj = serializeDate(obj);
-      } else if (generateArrayPrefix === "comma" && isArray(obj)) {
-        obj = utils.maybeMap(obj, function(value2) {
-          if (value2 instanceof Date) {
-            return serializeDate(value2);
-          }
-          return value2;
-        });
-      }
-      if (obj === null) {
-        if (strictNullHandling) {
-          return formatter(encoder && !encodeValuesOnly ? encoder(prefix, defaults2.encoder, charset, "key", format) : prefix);
-        }
-        obj = "";
-      }
-      if (isNonNullishPrimitive(obj) || utils.isBuffer(obj)) {
-        if (encoder) {
-          var keyValue = encodeValuesOnly ? prefix : encoder(prefix, defaults2.encoder, charset, "key", format);
-          return [formatter(keyValue) + "=" + formatter(encoder(obj, defaults2.encoder, charset, "value", format))];
-        }
-        return [formatter(prefix) + "=" + formatter(String(obj))];
-      }
-      var values = [];
-      if (typeof obj === "undefined") {
-        return values;
-      }
-      var objKeys;
-      if (generateArrayPrefix === "comma" && isArray(obj)) {
-        if (encodeValuesOnly && encoder) {
-          obj = utils.maybeMap(obj, function(v) {
-            return v == null ? v : encoder(v);
-          });
-        }
-        objKeys = [{ value: obj.length > 0 ? obj.join(",") || null : void 0 }];
-      } else if (isArray(filter)) {
-        objKeys = filter;
-      } else {
-        var keys = Object.keys(obj);
-        objKeys = sort ? keys.sort(sort) : keys;
-      }
-      var encodedPrefix = encodeDotInKeys ? String(prefix).replace(/\./g, "%2E") : String(prefix);
-      var adjustedPrefix = commaRoundTrip && isArray(obj) && obj.length === 1 ? encodedPrefix + "[]" : encodedPrefix;
-      if (allowEmptyArrays && isArray(obj) && obj.length === 0 && Object.keys(obj).length === 0) {
-        return adjustedPrefix + "[]";
-      }
-      for (var j = 0; j < objKeys.length; ++j) {
-        var key = objKeys[j];
-        var value = typeof key === "object" && key && typeof key.value !== "undefined" ? key.value : obj[key];
-        if (skipNulls && value === null) {
-          continue;
-        }
-        var encodedKey = allowDots && encodeDotInKeys ? String(key).replace(/\./g, "%2E") : String(key);
-        var keyPrefix = isArray(obj) ? typeof generateArrayPrefix === "function" ? generateArrayPrefix(adjustedPrefix, encodedKey) : adjustedPrefix : adjustedPrefix + (allowDots ? "." + encodedKey : "[" + encodedKey + "]");
-        sideChannel.set(object2, step);
-        var valueSideChannel = getSideChannel();
-        valueSideChannel.set(sentinel, sideChannel);
-        pushToArray(values, stringify3(
-          value,
-          keyPrefix,
-          generateArrayPrefix,
-          commaRoundTrip,
-          allowEmptyArrays,
-          strictNullHandling,
-          skipNulls,
-          encodeDotInKeys,
-          generateArrayPrefix === "comma" && encodeValuesOnly && isArray(obj) ? null : encoder,
-          filter,
-          sort,
-          allowDots,
-          serializeDate,
-          format,
-          formatter,
-          encodeValuesOnly,
-          charset,
-          valueSideChannel,
-          depth,
-          currentDepth + 1
-        ));
-      }
-      return values;
-    };
-    var normalizeStringifyOptions = function normalizeStringifyOptions2(opts) {
-      if (!opts) {
-        return defaults2;
-      }
-      if (typeof opts.allowEmptyArrays !== "undefined" && typeof opts.allowEmptyArrays !== "boolean") {
-        throw new TypeError("`allowEmptyArrays` option can only be `true` or `false`, when provided");
-      }
-      if (typeof opts.encodeDotInKeys !== "undefined" && typeof opts.encodeDotInKeys !== "boolean") {
-        throw new TypeError("`encodeDotInKeys` option can only be `true` or `false`, when provided");
-      }
-      if (opts.encoder !== null && typeof opts.encoder !== "undefined" && typeof opts.encoder !== "function") {
-        throw new TypeError("Encoder has to be a function.");
-      }
-      var charset = opts.charset || defaults2.charset;
-      if (typeof opts.charset !== "undefined" && opts.charset !== "utf-8" && opts.charset !== "iso-8859-1") {
-        throw new TypeError("The charset option must be either utf-8, iso-8859-1, or undefined");
-      }
-      var format = formats["default"];
-      if (typeof opts.format !== "undefined") {
-        if (!has.call(formats.formatters, opts.format)) {
-          throw new TypeError("Unknown format option provided.");
-        }
-        format = opts.format;
-      }
-      var formatter = formats.formatters[format];
-      var filter = defaults2.filter;
-      if (typeof opts.filter === "function" || isArray(opts.filter)) {
-        filter = opts.filter;
-      }
-      var arrayFormat;
-      if (opts.arrayFormat in arrayPrefixGenerators) {
-        arrayFormat = opts.arrayFormat;
-      } else if ("indices" in opts) {
-        arrayFormat = opts.indices ? "indices" : "repeat";
-      } else {
-        arrayFormat = defaults2.arrayFormat;
-      }
-      if ("commaRoundTrip" in opts && typeof opts.commaRoundTrip !== "boolean") {
-        throw new TypeError("`commaRoundTrip` must be a boolean, or absent");
-      }
-      var allowDots = typeof opts.allowDots === "undefined" ? opts.encodeDotInKeys === true ? true : defaults2.allowDots : !!opts.allowDots;
-      return {
-        addQueryPrefix: typeof opts.addQueryPrefix === "boolean" ? opts.addQueryPrefix : defaults2.addQueryPrefix,
-        allowDots,
-        allowEmptyArrays: typeof opts.allowEmptyArrays === "boolean" ? !!opts.allowEmptyArrays : defaults2.allowEmptyArrays,
-        arrayFormat,
-        charset,
-        charsetSentinel: typeof opts.charsetSentinel === "boolean" ? opts.charsetSentinel : defaults2.charsetSentinel,
-        commaRoundTrip: !!opts.commaRoundTrip,
-        delimiter: typeof opts.delimiter === "undefined" ? defaults2.delimiter : opts.delimiter,
-        depth: typeof opts.depth === "number" ? opts.depth : defaults2.depth,
-        encode: typeof opts.encode === "boolean" ? opts.encode : defaults2.encode,
-        encodeDotInKeys: typeof opts.encodeDotInKeys === "boolean" ? opts.encodeDotInKeys : defaults2.encodeDotInKeys,
-        encoder: typeof opts.encoder === "function" ? opts.encoder : defaults2.encoder,
-        encodeValuesOnly: typeof opts.encodeValuesOnly === "boolean" ? opts.encodeValuesOnly : defaults2.encodeValuesOnly,
-        filter,
-        format,
-        formatter,
-        serializeDate: typeof opts.serializeDate === "function" ? opts.serializeDate : defaults2.serializeDate,
-        skipNulls: typeof opts.skipNulls === "boolean" ? opts.skipNulls : defaults2.skipNulls,
-        sort: typeof opts.sort === "function" ? opts.sort : null,
-        strictNullHandling: typeof opts.strictNullHandling === "boolean" ? opts.strictNullHandling : defaults2.strictNullHandling
-      };
-    };
-    module.exports = function(object2, opts) {
-      var obj = object2;
-      var options = normalizeStringifyOptions(opts);
-      var objKeys;
-      var filter;
-      if (typeof options.filter === "function") {
-        filter = options.filter;
-        obj = filter("", obj);
-      } else if (isArray(options.filter)) {
-        filter = options.filter;
-        objKeys = filter;
-      }
-      var keys = [];
-      if (typeof obj !== "object" || obj === null) {
-        return "";
-      }
-      var generateArrayPrefix = arrayPrefixGenerators[options.arrayFormat];
-      var commaRoundTrip = generateArrayPrefix === "comma" && options.commaRoundTrip;
-      if (!objKeys) {
-        objKeys = Object.keys(obj);
-      }
-      if (options.sort) {
-        objKeys.sort(options.sort);
-      }
-      var sideChannel = getSideChannel();
-      for (var i = 0; i < objKeys.length; ++i) {
-        var key = objKeys[i];
-        if (typeof key === "undefined" || key === null) {
-          continue;
-        }
-        var value = obj[key];
-        if (options.skipNulls && value === null) {
-          continue;
-        }
-        var encodedKey = options.encodeDotInKeys ? String(key).replace(/\./g, "%2E") : String(key);
-        pushToArray(keys, stringify2(
-          value,
-          encodedKey,
-          generateArrayPrefix,
-          commaRoundTrip,
-          options.allowEmptyArrays,
-          options.strictNullHandling,
-          options.skipNulls,
-          options.encodeDotInKeys,
-          options.encode ? options.encoder : null,
-          options.filter,
-          options.sort,
-          options.allowDots,
-          options.serializeDate,
-          options.format,
-          options.formatter,
-          options.encodeValuesOnly,
-          options.charset,
-          sideChannel,
-          options.depth,
-          0
-        ));
-      }
-      var joined = keys.join(options.delimiter);
-      var prefix = options.addQueryPrefix === true ? "?" : "";
-      if (options.charsetSentinel) {
-        if (options.charset === "iso-8859-1") {
-          prefix += "utf8=%26%2310003%3B" + options.delimiter;
-        } else {
-          prefix += "utf8=%E2%9C%93" + options.delimiter;
-        }
-      }
-      return joined.length > 0 ? prefix + joined : "";
-    };
-  }
-});
-
-// ../../node_modules/.pnpm/qs@6.16.0/node_modules/qs/lib/parse.js
-var require_parse2 = __commonJS({
-  "../../node_modules/.pnpm/qs@6.16.0/node_modules/qs/lib/parse.js"(exports, module) {
-    "use strict";
-    var utils = require_utils3();
-    var has = Object.prototype.hasOwnProperty;
-    var isArray = Array.isArray;
-    var defaults2 = {
-      allowDots: false,
-      allowEmptyArrays: false,
-      allowPrototypes: false,
-      allowSparse: false,
-      arrayLimit: 20,
-      charset: "utf-8",
-      charsetSentinel: false,
-      comma: false,
-      decodeDotInKeys: false,
-      decoder: utils.decode,
-      delimiter: "&",
-      depth: 5,
-      duplicates: "combine",
-      ignoreQueryPrefix: false,
-      interpretNumericEntities: false,
-      parameterLimit: 1e3,
-      parseArrays: true,
-      plainObjects: false,
-      strictDepth: false,
-      strictMerge: true,
-      strictNullHandling: false,
-      throwOnLimitExceeded: false
-    };
-    var interpretNumericEntities = function(str) {
-      return str.replace(/&#(\d+);/g, function($0, numberStr) {
-        return String.fromCharCode(parseInt(numberStr, 10));
-      });
-    };
-    var parseArrayValue = function(val, options, currentArrayLength) {
-      if (val && typeof val === "string" && options.comma && val.indexOf(",") > -1) {
-        if (options.throwOnLimitExceeded) {
-          var commaCount = 0;
-          var commaIndex = val.indexOf(",");
-          while (commaIndex > -1) {
-            commaCount += 1;
-            if (commaCount >= options.arrayLimit) {
-              throw new RangeError("Array limit exceeded. Only " + options.arrayLimit + " element" + (options.arrayLimit === 1 ? "" : "s") + " allowed in an array.");
-            }
-            commaIndex = val.indexOf(",", commaIndex + 1);
-          }
-        }
-        return val.split(",");
-      }
-      if (options.throwOnLimitExceeded && currentArrayLength >= options.arrayLimit) {
-        throw new RangeError("Array limit exceeded. Only " + options.arrayLimit + " element" + (options.arrayLimit === 1 ? "" : "s") + " allowed in an array.");
-      }
-      return val;
-    };
-    var isoSentinel = "utf8=%26%2310003%3B";
-    var charsetSentinel = "utf8=%E2%9C%93";
-    var parseValues = function parseQueryStringValues(str, options) {
-      var obj = { __proto__: null };
-      var cleanStr = options.ignoreQueryPrefix ? str.replace(/^\?/, "") : str;
-      cleanStr = cleanStr.replace(/%5B/gi, "[").replace(/%5D/gi, "]");
-      var limit = options.parameterLimit === Infinity ? void 0 : options.parameterLimit;
-      var parts = cleanStr.split(
-        options.delimiter,
-        options.throwOnLimitExceeded && typeof limit !== "undefined" ? limit + 1 : limit
-      );
-      if (options.throwOnLimitExceeded && typeof limit !== "undefined" && parts.length > limit) {
-        throw new RangeError("Parameter limit exceeded. Only " + limit + " parameter" + (limit === 1 ? "" : "s") + " allowed.");
-      }
-      var skipIndex = -1;
-      var i;
-      var charset = options.charset;
-      if (options.charsetSentinel) {
-        for (i = 0; i < parts.length; ++i) {
-          if (parts[i].indexOf("utf8=") === 0) {
-            if (parts[i] === charsetSentinel) {
-              charset = "utf-8";
-            } else if (parts[i] === isoSentinel) {
-              charset = "iso-8859-1";
-            }
-            skipIndex = i;
-            i = parts.length;
-          }
-        }
-      }
-      for (i = 0; i < parts.length; ++i) {
-        if (i === skipIndex) {
-          continue;
-        }
-        var part = parts[i];
-        var bracketEqualsPos = part.indexOf("]=");
-        var pos = bracketEqualsPos === -1 ? part.indexOf("=") : bracketEqualsPos + 1;
-        var key;
-        var val;
-        if (pos === -1) {
-          key = options.decoder(part, defaults2.decoder, charset, "key");
-          val = options.strictNullHandling ? null : "";
-        } else {
-          key = options.decoder(part.slice(0, pos), defaults2.decoder, charset, "key");
-          if (key !== null) {
-            val = utils.maybeMap(
-              parseArrayValue(
-                part.slice(pos + 1),
-                options,
-                isArray(obj[key]) ? obj[key].length : 0
-              ),
-              function(encodedVal) {
-                return options.decoder(encodedVal, defaults2.decoder, charset, "value");
-              }
-            );
-          }
-        }
-        if (val && options.interpretNumericEntities && charset === "iso-8859-1") {
-          val = interpretNumericEntities(String(val));
-        }
-        if (part.indexOf("[]=") > -1) {
-          val = isArray(val) ? [val] : val;
-        }
-        if (options.comma && isArray(val) && val.length > options.arrayLimit) {
-          val = utils.combine([], val, options.arrayLimit, options.plainObjects, options.throwOnLimitExceeded);
-        }
-        if (key !== null) {
-          var existing = has.call(obj, key);
-          if (existing && (options.duplicates === "combine" || part.indexOf("[]=") > -1)) {
-            obj[key] = utils.combine(
-              obj[key],
-              val,
-              options.arrayLimit,
-              options.plainObjects,
-              options.throwOnLimitExceeded
-            );
-          } else if (!existing || options.duplicates === "last") {
-            obj[key] = val;
-          }
-        }
-      }
-      return obj;
-    };
-    var parseObject = function(chain, val, options, valuesParsed) {
-      var currentArrayLength = 0;
-      if (chain.length > 0 && chain[chain.length - 1] === "[]") {
-        var parentKey = chain.slice(0, -1).join("");
-        currentArrayLength = Array.isArray(val) && val[parentKey] ? val[parentKey].length : 0;
-      }
-      var leaf = valuesParsed ? val : parseArrayValue(val, options, currentArrayLength);
-      for (var i = chain.length - 1; i >= 0; --i) {
-        var obj;
-        var root = chain[i];
-        if (root === "[]" && options.parseArrays) {
-          if (utils.isOverflow(leaf)) {
-            obj = leaf;
-          } else {
-            obj = options.allowEmptyArrays && (leaf === "" || options.strictNullHandling && leaf === null) ? [] : utils.combine(
-              [],
-              leaf,
-              options.arrayLimit,
-              options.plainObjects,
-              options.throwOnLimitExceeded
-            );
-          }
-        } else {
-          obj = options.plainObjects ? { __proto__: null } : {};
-          var cleanRoot = root.charAt(0) === "[" && root.charAt(root.length - 1) === "]" ? root.slice(1, -1) : root;
-          var decodedRoot = options.decodeDotInKeys ? cleanRoot.replace(/%2E/g, ".") : cleanRoot;
-          var index2 = parseInt(decodedRoot, 10);
-          var isValidArrayIndex = !isNaN(index2) && root !== decodedRoot && String(index2) === decodedRoot && index2 >= 0 && options.parseArrays;
-          if (!options.parseArrays && decodedRoot === "") {
-            obj = { 0: leaf };
-          } else if (isValidArrayIndex && index2 < options.arrayLimit) {
-            obj = [];
-            obj[index2] = leaf;
-          } else if (isValidArrayIndex && options.throwOnLimitExceeded) {
-            throw new RangeError("Array limit exceeded. Only " + options.arrayLimit + " element" + (options.arrayLimit === 1 ? "" : "s") + " allowed in an array.");
-          } else if (isValidArrayIndex) {
-            obj[index2] = leaf;
-            utils.markOverflow(obj, index2);
-          } else if (decodedRoot !== "__proto__") {
-            obj[decodedRoot] = leaf;
-          }
-        }
-        leaf = obj;
-      }
-      return leaf;
-    };
-    var splitKeyIntoSegments = function splitKeyIntoSegments2(originalKey, options) {
-      var key = options.allowDots ? originalKey.replace(/\.([^.[]+)/g, "[$1]") : originalKey;
-      if (options.depth <= 0) {
-        if (!options.plainObjects && has.call(Object.prototype, key)) {
-          if (!options.allowPrototypes) {
-            return;
-          }
-        }
-        return [key];
-      }
-      var segments = [];
-      var first = key.indexOf("[");
-      var parent = first >= 0 ? key.slice(0, first) : key;
-      if (parent) {
-        if (!options.plainObjects && has.call(Object.prototype, parent)) {
-          if (!options.allowPrototypes) {
-            return;
-          }
-        }
-        segments[segments.length] = parent;
-      }
-      var n = key.length;
-      var open2 = first;
-      var collected = 0;
-      while (open2 >= 0 && collected < options.depth) {
-        var level = 1;
-        var i = open2 + 1;
-        var close = -1;
-        while (i < n && close < 0) {
-          var cu = key.charCodeAt(i);
-          if (cu === 91) {
-            level += 1;
-          } else if (cu === 93) {
-            level -= 1;
-            if (level === 0) {
-              close = i;
-            }
-          }
-          i += 1;
-        }
-        if (close < 0) {
-          segments[segments.length] = "[" + key.slice(open2) + "]";
-          return segments;
-        }
-        var seg = key.slice(open2, close + 1);
-        var content = seg.slice(1, -1);
-        if (!options.plainObjects && has.call(Object.prototype, content) && !options.allowPrototypes) {
-          return;
-        }
-        segments[segments.length] = seg;
-        collected += 1;
-        open2 = key.indexOf("[", close + 1);
-      }
-      if (open2 >= 0) {
-        if (options.strictDepth === true) {
-          throw new RangeError("Input depth exceeded depth option of " + options.depth + " and strictDepth is true");
-        }
-        segments[segments.length] = "[" + key.slice(open2) + "]";
-      }
-      return segments;
-    };
-    var parseKeys = function parseQueryStringKeys(givenKey, val, options, valuesParsed) {
-      if (!givenKey) {
-        return;
-      }
-      var keys = splitKeyIntoSegments(givenKey, options);
-      if (!keys) {
-        return;
-      }
-      return parseObject(keys, val, options, valuesParsed);
-    };
-    var normalizeParseOptions = function normalizeParseOptions2(opts) {
-      if (!opts) {
-        return defaults2;
-      }
-      if (typeof opts.allowEmptyArrays !== "undefined" && typeof opts.allowEmptyArrays !== "boolean") {
-        throw new TypeError("`allowEmptyArrays` option can only be `true` or `false`, when provided");
-      }
-      if (typeof opts.decodeDotInKeys !== "undefined" && typeof opts.decodeDotInKeys !== "boolean") {
-        throw new TypeError("`decodeDotInKeys` option can only be `true` or `false`, when provided");
-      }
-      if (opts.decoder !== null && typeof opts.decoder !== "undefined" && typeof opts.decoder !== "function") {
-        throw new TypeError("Decoder has to be a function.");
-      }
-      if (typeof opts.charset !== "undefined" && opts.charset !== "utf-8" && opts.charset !== "iso-8859-1") {
-        throw new TypeError("The charset option must be either utf-8, iso-8859-1, or undefined");
-      }
-      if (typeof opts.throwOnLimitExceeded !== "undefined" && typeof opts.throwOnLimitExceeded !== "boolean") {
-        throw new TypeError("`throwOnLimitExceeded` option must be a boolean");
-      }
-      var charset = typeof opts.charset === "undefined" ? defaults2.charset : opts.charset;
-      var duplicates = typeof opts.duplicates === "undefined" ? defaults2.duplicates : opts.duplicates;
-      if (duplicates !== "combine" && duplicates !== "first" && duplicates !== "last") {
-        throw new TypeError("The duplicates option must be either combine, first, or last");
-      }
-      var allowDots = typeof opts.allowDots === "undefined" ? opts.decodeDotInKeys === true ? true : defaults2.allowDots : !!opts.allowDots;
-      return {
-        allowDots,
-        allowEmptyArrays: typeof opts.allowEmptyArrays === "boolean" ? !!opts.allowEmptyArrays : defaults2.allowEmptyArrays,
-        allowPrototypes: typeof opts.allowPrototypes === "boolean" ? opts.allowPrototypes : defaults2.allowPrototypes,
-        allowSparse: typeof opts.allowSparse === "boolean" ? opts.allowSparse : defaults2.allowSparse,
-        arrayLimit: typeof opts.arrayLimit === "number" ? opts.arrayLimit : defaults2.arrayLimit,
-        charset,
-        charsetSentinel: typeof opts.charsetSentinel === "boolean" ? opts.charsetSentinel : defaults2.charsetSentinel,
-        comma: typeof opts.comma === "boolean" ? opts.comma : defaults2.comma,
-        decodeDotInKeys: typeof opts.decodeDotInKeys === "boolean" ? opts.decodeDotInKeys : defaults2.decodeDotInKeys,
-        decoder: typeof opts.decoder === "function" ? opts.decoder : defaults2.decoder,
-        delimiter: typeof opts.delimiter === "string" || utils.isRegExp(opts.delimiter) ? opts.delimiter : defaults2.delimiter,
-        // eslint-disable-next-line no-implicit-coercion, no-extra-parens
-        depth: typeof opts.depth === "number" || opts.depth === false ? +opts.depth : defaults2.depth,
-        duplicates,
-        ignoreQueryPrefix: opts.ignoreQueryPrefix === true,
-        interpretNumericEntities: typeof opts.interpretNumericEntities === "boolean" ? opts.interpretNumericEntities : defaults2.interpretNumericEntities,
-        parameterLimit: typeof opts.parameterLimit === "number" ? opts.parameterLimit : defaults2.parameterLimit,
-        parseArrays: opts.parseArrays !== false,
-        plainObjects: typeof opts.plainObjects === "boolean" ? opts.plainObjects : defaults2.plainObjects,
-        strictDepth: typeof opts.strictDepth === "boolean" ? !!opts.strictDepth : defaults2.strictDepth,
-        strictMerge: typeof opts.strictMerge === "boolean" ? !!opts.strictMerge : defaults2.strictMerge,
-        strictNullHandling: typeof opts.strictNullHandling === "boolean" ? opts.strictNullHandling : defaults2.strictNullHandling,
-        throwOnLimitExceeded: typeof opts.throwOnLimitExceeded === "boolean" ? opts.throwOnLimitExceeded : false
-      };
-    };
-    module.exports = function(str, opts) {
-      var options = normalizeParseOptions(opts);
-      if (str === "" || str === null || typeof str === "undefined") {
-        return options.plainObjects ? { __proto__: null } : {};
-      }
-      var tempObj = typeof str === "string" ? parseValues(str, options) : str;
-      var obj = options.plainObjects ? { __proto__: null } : {};
-      var keys = Object.keys(tempObj);
-      for (var i = 0; i < keys.length; ++i) {
-        var key = keys[i];
-        var newObj = parseKeys(key, tempObj[key], options, typeof str === "string");
-        obj = utils.merge(obj, newObj, options);
-      }
-      if (options.allowSparse === true) {
-        return obj;
-      }
-      return utils.compact(obj);
-    };
-  }
-});
-
-// ../../node_modules/.pnpm/qs@6.16.0/node_modules/qs/lib/index.js
-var require_lib3 = __commonJS({
-  "../../node_modules/.pnpm/qs@6.16.0/node_modules/qs/lib/index.js"(exports, module) {
-    "use strict";
-    var stringify2 = require_stringify2();
-    var parse4 = require_parse2();
-    var formats = require_formats2();
-    module.exports = {
-      formats,
-      parse: parse4,
-      stringify: stringify2
-    };
-  }
-});
-
 // ../../node_modules/.pnpm/express@5.2.1/node_modules/express/lib/utils.js
-var require_utils4 = __commonJS({
+var require_utils3 = __commonJS({
   "../../node_modules/.pnpm/express@5.2.1/node_modules/express/lib/utils.js"(exports) {
     "use strict";
     var { METHODS } = __require("node:http");
@@ -21035,7 +20063,7 @@ var require_utils4 = __commonJS({
     var etag = require_etag();
     var mime = require_mime_types();
     var proxyaddr = require_proxy_addr();
-    var qs = require_lib3();
+    var qs = require_lib2();
     var querystring = __require("node:querystring");
     var { Buffer: Buffer3 } = __require("node:buffer");
     exports.methods = METHODS.map((method) => method.toLowerCase());
@@ -22283,10 +21311,10 @@ var require_application = __commonJS({
     var debug7 = require_src()("express:application");
     var View2 = require_view();
     var http = __require("node:http");
-    var methods = require_utils4().methods;
-    var compileETag = require_utils4().compileETag;
-    var compileQueryParser = require_utils4().compileQueryParser;
-    var compileTrust = require_utils4().compileTrust;
+    var methods = require_utils3().methods;
+    var compileETag = require_utils3().compileETag;
+    var compileQueryParser = require_utils3().compileQueryParser;
+    var compileTrust = require_utils3().compileTrust;
     var resolve = __require("node:path").resolve;
     var once = require_once();
     var Router6 = require_router();
@@ -24332,9 +23360,9 @@ var require_response = __commonJS({
     var pathIsAbsolute = __require("node:path").isAbsolute;
     var statuses = require_statuses();
     var sign = require_cookie_signature().sign;
-    var normalizeType = require_utils4().normalizeType;
-    var normalizeTypes = require_utils4().normalizeTypes;
-    var setCharset = require_utils4().setCharset;
+    var normalizeType = require_utils3().normalizeType;
+    var normalizeTypes = require_utils3().normalizeTypes;
+    var setCharset = require_utils3().setCharset;
     var cookie = require_cookie();
     var send = require_send();
     var extname = path.extname;
@@ -24935,6 +23963,284 @@ var require_express2 = __commonJS({
   "../../node_modules/.pnpm/express@5.2.1/node_modules/express/index.js"(exports, module) {
     "use strict";
     module.exports = require_express();
+  }
+});
+
+// ../../node_modules/.pnpm/object-assign@4.1.1/node_modules/object-assign/index.js
+var require_object_assign = __commonJS({
+  "../../node_modules/.pnpm/object-assign@4.1.1/node_modules/object-assign/index.js"(exports, module) {
+    "use strict";
+    var getOwnPropertySymbols = Object.getOwnPropertySymbols;
+    var hasOwnProperty = Object.prototype.hasOwnProperty;
+    var propIsEnumerable = Object.prototype.propertyIsEnumerable;
+    function toObject(val) {
+      if (val === null || val === void 0) {
+        throw new TypeError("Object.assign cannot be called with null or undefined");
+      }
+      return Object(val);
+    }
+    function shouldUseNative() {
+      try {
+        if (!Object.assign) {
+          return false;
+        }
+        var test1 = new String("abc");
+        test1[5] = "de";
+        if (Object.getOwnPropertyNames(test1)[0] === "5") {
+          return false;
+        }
+        var test2 = {};
+        for (var i = 0; i < 10; i++) {
+          test2["_" + String.fromCharCode(i)] = i;
+        }
+        var order2 = Object.getOwnPropertyNames(test2).map(function(n) {
+          return test2[n];
+        });
+        if (order2.join("") !== "0123456789") {
+          return false;
+        }
+        var test3 = {};
+        "abcdefghijklmnopqrst".split("").forEach(function(letter) {
+          test3[letter] = letter;
+        });
+        if (Object.keys(Object.assign({}, test3)).join("") !== "abcdefghijklmnopqrst") {
+          return false;
+        }
+        return true;
+      } catch (err) {
+        return false;
+      }
+    }
+    module.exports = shouldUseNative() ? Object.assign : function(target, source) {
+      var from;
+      var to = toObject(target);
+      var symbols;
+      for (var s2 = 1; s2 < arguments.length; s2++) {
+        from = Object(arguments[s2]);
+        for (var key in from) {
+          if (hasOwnProperty.call(from, key)) {
+            to[key] = from[key];
+          }
+        }
+        if (getOwnPropertySymbols) {
+          symbols = getOwnPropertySymbols(from);
+          for (var i = 0; i < symbols.length; i++) {
+            if (propIsEnumerable.call(from, symbols[i])) {
+              to[symbols[i]] = from[symbols[i]];
+            }
+          }
+        }
+      }
+      return to;
+    };
+  }
+});
+
+// ../../node_modules/.pnpm/cors@2.8.6/node_modules/cors/lib/index.js
+var require_lib3 = __commonJS({
+  "../../node_modules/.pnpm/cors@2.8.6/node_modules/cors/lib/index.js"(exports, module) {
+    (function() {
+      "use strict";
+      var assign = require_object_assign();
+      var vary = require_vary();
+      var defaults2 = {
+        origin: "*",
+        methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+        preflightContinue: false,
+        optionsSuccessStatus: 204
+      };
+      function isString2(s2) {
+        return typeof s2 === "string" || s2 instanceof String;
+      }
+      function isOriginAllowed(origin, allowedOrigin) {
+        if (Array.isArray(allowedOrigin)) {
+          for (var i = 0; i < allowedOrigin.length; ++i) {
+            if (isOriginAllowed(origin, allowedOrigin[i])) {
+              return true;
+            }
+          }
+          return false;
+        } else if (isString2(allowedOrigin)) {
+          return origin === allowedOrigin;
+        } else if (allowedOrigin instanceof RegExp) {
+          return allowedOrigin.test(origin);
+        } else {
+          return !!allowedOrigin;
+        }
+      }
+      function configureOrigin(options, req) {
+        var requestOrigin = req.headers.origin, headers = [], isAllowed;
+        if (!options.origin || options.origin === "*") {
+          headers.push([{
+            key: "Access-Control-Allow-Origin",
+            value: "*"
+          }]);
+        } else if (isString2(options.origin)) {
+          headers.push([{
+            key: "Access-Control-Allow-Origin",
+            value: options.origin
+          }]);
+          headers.push([{
+            key: "Vary",
+            value: "Origin"
+          }]);
+        } else {
+          isAllowed = isOriginAllowed(requestOrigin, options.origin);
+          headers.push([{
+            key: "Access-Control-Allow-Origin",
+            value: isAllowed ? requestOrigin : false
+          }]);
+          headers.push([{
+            key: "Vary",
+            value: "Origin"
+          }]);
+        }
+        return headers;
+      }
+      function configureMethods(options) {
+        var methods = options.methods;
+        if (methods.join) {
+          methods = options.methods.join(",");
+        }
+        return {
+          key: "Access-Control-Allow-Methods",
+          value: methods
+        };
+      }
+      function configureCredentials(options) {
+        if (options.credentials === true) {
+          return {
+            key: "Access-Control-Allow-Credentials",
+            value: "true"
+          };
+        }
+        return null;
+      }
+      function configureAllowedHeaders(options, req) {
+        var allowedHeaders = options.allowedHeaders || options.headers;
+        var headers = [];
+        if (!allowedHeaders) {
+          allowedHeaders = req.headers["access-control-request-headers"];
+          headers.push([{
+            key: "Vary",
+            value: "Access-Control-Request-Headers"
+          }]);
+        } else if (allowedHeaders.join) {
+          allowedHeaders = allowedHeaders.join(",");
+        }
+        if (allowedHeaders && allowedHeaders.length) {
+          headers.push([{
+            key: "Access-Control-Allow-Headers",
+            value: allowedHeaders
+          }]);
+        }
+        return headers;
+      }
+      function configureExposedHeaders(options) {
+        var headers = options.exposedHeaders;
+        if (!headers) {
+          return null;
+        } else if (headers.join) {
+          headers = headers.join(",");
+        }
+        if (headers && headers.length) {
+          return {
+            key: "Access-Control-Expose-Headers",
+            value: headers
+          };
+        }
+        return null;
+      }
+      function configureMaxAge(options) {
+        var maxAge = (typeof options.maxAge === "number" || options.maxAge) && options.maxAge.toString();
+        if (maxAge && maxAge.length) {
+          return {
+            key: "Access-Control-Max-Age",
+            value: maxAge
+          };
+        }
+        return null;
+      }
+      function applyHeaders(headers, res) {
+        for (var i = 0, n = headers.length; i < n; i++) {
+          var header = headers[i];
+          if (header) {
+            if (Array.isArray(header)) {
+              applyHeaders(header, res);
+            } else if (header.key === "Vary" && header.value) {
+              vary(res, header.value);
+            } else if (header.value) {
+              res.setHeader(header.key, header.value);
+            }
+          }
+        }
+      }
+      function cors2(options, req, res, next) {
+        var headers = [], method = req.method && req.method.toUpperCase && req.method.toUpperCase();
+        if (method === "OPTIONS") {
+          headers.push(configureOrigin(options, req));
+          headers.push(configureCredentials(options));
+          headers.push(configureMethods(options));
+          headers.push(configureAllowedHeaders(options, req));
+          headers.push(configureMaxAge(options));
+          headers.push(configureExposedHeaders(options));
+          applyHeaders(headers, res);
+          if (options.preflightContinue) {
+            next();
+          } else {
+            res.statusCode = options.optionsSuccessStatus;
+            res.setHeader("Content-Length", "0");
+            res.end();
+          }
+        } else {
+          headers.push(configureOrigin(options, req));
+          headers.push(configureCredentials(options));
+          headers.push(configureExposedHeaders(options));
+          applyHeaders(headers, res);
+          next();
+        }
+      }
+      function middlewareWrapper(o) {
+        var optionsCallback = null;
+        if (typeof o === "function") {
+          optionsCallback = o;
+        } else {
+          optionsCallback = function(req, cb) {
+            cb(null, o);
+          };
+        }
+        return function corsMiddleware(req, res, next) {
+          optionsCallback(req, function(err, options) {
+            if (err) {
+              next(err);
+            } else {
+              var corsOptions2 = assign({}, defaults2, options);
+              var originCallback = null;
+              if (corsOptions2.origin && typeof corsOptions2.origin === "function") {
+                originCallback = corsOptions2.origin;
+              } else if (corsOptions2.origin) {
+                originCallback = function(origin, cb) {
+                  cb(null, corsOptions2.origin);
+                };
+              }
+              if (originCallback) {
+                originCallback(req.headers.origin, function(err2, origin) {
+                  if (err2 || !origin) {
+                    next(err2);
+                  } else {
+                    corsOptions2.origin = origin;
+                    cors2(corsOptions2, req, res, next);
+                  }
+                });
+              } else {
+                next();
+              }
+            }
+          });
+        };
+      }
+      module.exports = middlewareWrapper;
+    })();
   }
 });
 
@@ -30493,7 +29799,7 @@ var require_defaults = __commonJS({
 });
 
 // ../../node_modules/.pnpm/pg@8.23.0/node_modules/pg/lib/utils.js
-var require_utils5 = __commonJS({
+var require_utils4 = __commonJS({
   "../../node_modules/.pnpm/pg@8.23.0/node_modules/pg/lib/utils.js"(exports, module) {
     "use strict";
     var defaults2 = require_defaults();
@@ -30641,7 +29947,7 @@ var require_utils5 = __commonJS({
 });
 
 // ../../node_modules/.pnpm/pg@8.23.0/node_modules/pg/lib/crypto/utils.js
-var require_utils6 = __commonJS({
+var require_utils5 = __commonJS({
   "../../node_modules/.pnpm/pg@8.23.0/node_modules/pg/lib/crypto/utils.js"(exports, module) {
     var nodeCrypto = __require("crypto");
     module.exports = {
@@ -30808,7 +30114,7 @@ var require_cert_signatures = __commonJS({
 var require_sasl = __commonJS({
   "../../node_modules/.pnpm/pg@8.23.0/node_modules/pg/lib/crypto/sasl.js"(exports, module) {
     "use strict";
-    var crypto2 = require_utils6();
+    var crypto2 = require_utils5();
     var { signatureAlgorithmHashFromCertificate } = require_cert_signatures();
     function saslprep(password) {
       const nonAsciiSpace = /[\u00A0\u1680\u2000-\u200B\u202F\u205F\u3000]/g;
@@ -31460,7 +30766,7 @@ var require_query = __commonJS({
     "use strict";
     var { EventEmitter: EventEmitter2 } = __require("events");
     var Result2 = require_result();
-    var utils = require_utils5();
+    var utils = require_utils4();
     var Query2 = class extends EventEmitter2 {
       constructor(config2, values, callback) {
         super();
@@ -33107,7 +32413,7 @@ var require_lib4 = __commonJS({
 var require_client = __commonJS({
   "../../node_modules/.pnpm/pg@8.23.0/node_modules/pg/lib/client.js"(exports, module) {
     var EventEmitter2 = __require("events").EventEmitter;
-    var utils = require_utils5();
+    var utils = require_utils4();
     var nodeUtils = __require("util");
     var sasl = require_sasl();
     var TypeOverrides2 = require_type_overrides();
@@ -33115,7 +32421,7 @@ var require_client = __commonJS({
     var Query2 = require_query();
     var defaults2 = require_defaults();
     var Connection2 = require_connection();
-    var crypto2 = require_utils6();
+    var crypto2 = require_utils5();
     var activeQueryDeprecationNotice = nodeUtils.deprecate(
       () => {
       },
@@ -34223,7 +33529,7 @@ var require_query2 = __commonJS({
     "use strict";
     var EventEmitter2 = __require("events").EventEmitter;
     var util = __require("util");
-    var utils = require_utils5();
+    var utils = require_utils4();
     var NativeQuery = module.exports = function(config2, values, callback) {
       EventEmitter2.call(this);
       config2 = utils.normalizeQueryConfig(config2, values, callback);
@@ -34616,7 +33922,7 @@ var require_client2 = __commonJS({
       const self = this;
       const queries = [];
       const nativeQueries = [];
-      const utils = require_utils5();
+      const utils = require_utils4();
       while (this._queryQueue.length > 0) {
         const query = this._queryQueue.shift();
         this.hasExecuted = true;
@@ -34708,11 +34014,11 @@ var require_lib5 = __commonJS({
     var defaults2 = require_defaults();
     var Connection2 = require_connection();
     var Result2 = require_result();
-    var utils = require_utils5();
+    var utils = require_utils4();
     var Pool4 = require_pg_pool();
     var TypeOverrides2 = require_type_overrides();
     var { DatabaseError: DatabaseError2 } = require_dist4();
-    var { escapeIdentifier: escapeIdentifier2, escapeLiteral: escapeLiteral2 } = require_utils5();
+    var { escapeIdentifier: escapeIdentifier2, escapeLiteral: escapeLiteral2 } = require_utils4();
     var poolFactory = (Client4) => {
       return class BoundPool extends Pool4 {
         constructor(options) {
@@ -34915,7 +34221,7 @@ var require_is_glob = __commonJS({
 });
 
 // ../../node_modules/.pnpm/braces@3.0.3/node_modules/braces/lib/utils.js
-var require_utils7 = __commonJS({
+var require_utils6 = __commonJS({
   "../../node_modules/.pnpm/braces@3.0.3/node_modules/braces/lib/utils.js"(exports) {
     "use strict";
     exports.isInteger = (num) => {
@@ -34997,10 +34303,10 @@ var require_utils7 = __commonJS({
 });
 
 // ../../node_modules/.pnpm/braces@3.0.3/node_modules/braces/lib/stringify.js
-var require_stringify3 = __commonJS({
+var require_stringify2 = __commonJS({
   "../../node_modules/.pnpm/braces@3.0.3/node_modules/braces/lib/stringify.js"(exports, module) {
     "use strict";
-    var utils = require_utils7();
+    var utils = require_utils6();
     module.exports = (ast, options = {}) => {
       const stringify2 = (node2, parent = {}) => {
         const invalidBlock = options.escapeInvalid && utils.isInvalidBrace(parent);
@@ -35453,7 +34759,7 @@ var require_compile = __commonJS({
   "../../node_modules/.pnpm/braces@3.0.3/node_modules/braces/lib/compile.js"(exports, module) {
     "use strict";
     var fill = require_fill_range();
-    var utils = require_utils7();
+    var utils = require_utils6();
     var compile2 = (ast, options = {}) => {
       const walk = (node2, parent = {}) => {
         const invalidBlock = utils.isInvalidBrace(parent);
@@ -35505,8 +34811,8 @@ var require_expand = __commonJS({
   "../../node_modules/.pnpm/braces@3.0.3/node_modules/braces/lib/expand.js"(exports, module) {
     "use strict";
     var fill = require_fill_range();
-    var stringify2 = require_stringify3();
-    var utils = require_utils7();
+    var stringify2 = require_stringify2();
+    var utils = require_utils6();
     var append = (queue = "", stash = "", enclose = false) => {
       const result = [];
       queue = [].concat(queue);
@@ -35696,10 +35002,10 @@ var require_constants2 = __commonJS({
 });
 
 // ../../node_modules/.pnpm/braces@3.0.3/node_modules/braces/lib/parse.js
-var require_parse3 = __commonJS({
+var require_parse2 = __commonJS({
   "../../node_modules/.pnpm/braces@3.0.3/node_modules/braces/lib/parse.js"(exports, module) {
     "use strict";
-    var stringify2 = require_stringify3();
+    var stringify2 = require_stringify2();
     var {
       MAX_LENGTH,
       CHAR_BACKSLASH,
@@ -35937,10 +35243,10 @@ var require_parse3 = __commonJS({
 var require_braces = __commonJS({
   "../../node_modules/.pnpm/braces@3.0.3/node_modules/braces/index.js"(exports, module) {
     "use strict";
-    var stringify2 = require_stringify3();
+    var stringify2 = require_stringify2();
     var compile2 = require_compile();
     var expand = require_expand();
-    var parse4 = require_parse3();
+    var parse4 = require_parse2();
     var braces = (input2, options = {}) => {
       let output2 = [];
       if (Array.isArray(input2)) {
@@ -36198,7 +35504,7 @@ var require_constants3 = __commonJS({
 });
 
 // ../../node_modules/.pnpm/picomatch@2.3.2/node_modules/picomatch/lib/utils.js
-var require_utils8 = __commonJS({
+var require_utils7 = __commonJS({
   "../../node_modules/.pnpm/picomatch@2.3.2/node_modules/picomatch/lib/utils.js"(exports) {
     "use strict";
     var path = __require("path");
@@ -36262,7 +35568,7 @@ var require_utils8 = __commonJS({
 var require_scan = __commonJS({
   "../../node_modules/.pnpm/picomatch@2.3.2/node_modules/picomatch/lib/scan.js"(exports, module) {
     "use strict";
-    var utils = require_utils8();
+    var utils = require_utils7();
     var {
       CHAR_ASTERISK,
       /* * */
@@ -36589,11 +35895,11 @@ var require_scan = __commonJS({
 });
 
 // ../../node_modules/.pnpm/picomatch@2.3.2/node_modules/picomatch/lib/parse.js
-var require_parse4 = __commonJS({
+var require_parse3 = __commonJS({
   "../../node_modules/.pnpm/picomatch@2.3.2/node_modules/picomatch/lib/parse.js"(exports, module) {
     "use strict";
     var constants2 = require_constants3();
-    var utils = require_utils8();
+    var utils = require_utils7();
     var {
       MAX_LENGTH,
       POSIX_REGEX_SOURCE,
@@ -37596,8 +36902,8 @@ var require_picomatch = __commonJS({
     "use strict";
     var path = __require("path");
     var scan = require_scan();
-    var parse4 = require_parse4();
-    var utils = require_utils8();
+    var parse4 = require_parse3();
+    var utils = require_utils7();
     var constants2 = require_constants3();
     var isObject3 = (val) => val && typeof val === "object" && !Array.isArray(val);
     var picomatch = (glob, options, returnState = false) => {
@@ -37746,7 +37052,7 @@ var require_micromatch = __commonJS({
     var util = __require("util");
     var braces = require_braces();
     var picomatch = require_picomatch2();
-    var utils = require_utils8();
+    var utils = require_utils7();
     var isEmptyString = (v) => v === "" || v === "./";
     var hasBraces = (v) => {
       const index2 = v.indexOf("{");
@@ -47846,10 +47152,10 @@ var require_dist5 = __commonJS({
       }
     };
     var Instance2 = class _Instance2 {
-      constructor(id, environmentType, allowedOrigins) {
+      constructor(id, environmentType, allowedOrigins2) {
         this.id = id;
         this.environmentType = environmentType;
-        this.allowedOrigins = allowedOrigins;
+        this.allowedOrigins = allowedOrigins2;
       }
       static fromJSON(data) {
         return new _Instance2(data.id, data.environment_type, data.allowed_origins);
@@ -56274,10 +55580,10 @@ var require_internal2 = __commonJS({
       }
     };
     var Instance2 = class _Instance2 {
-      constructor(id, environmentType, allowedOrigins) {
+      constructor(id, environmentType, allowedOrigins2) {
         this.id = id;
         this.environmentType = environmentType;
-        this.allowedOrigins = allowedOrigins;
+        this.allowedOrigins = allowedOrigins2;
       }
       static fromJSON(data) {
         return new _Instance2(data.id, data.environment_type, data.allowed_origins);
@@ -59700,7 +59006,7 @@ var require_utils_B43KYtlc = __commonJS({
 });
 
 // ../../node_modules/.pnpm/@clerk+shared@4.40.0_react-dom@19.1.4_react@19.1.4__react@19.1.4/node_modules/@clerk/shared/dist/utils/index.js
-var require_utils9 = __commonJS({
+var require_utils8 = __commonJS({
   "../../node_modules/.pnpm/@clerk+shared@4.40.0_react-dom@19.1.4_react@19.1.4__react@19.1.4/node_modules/@clerk/shared/dist/utils/index.js"(exports) {
     Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
     var require_runtimeEnvironment = require_runtimeEnvironment_DVXDje4R();
@@ -59708,22 +59014,22 @@ var require_utils9 = __commonJS({
     var require_instance = require_instance_DcOvlnfl();
     var require_noop = require_noop_DCQKAlxF();
     var require_createDeferredPromise = require_createDeferredPromise_BXa3LUQE();
-    var require_utils10 = require_utils_B43KYtlc();
-    exports.allSettled = require_utils10.allSettled;
+    var require_utils9 = require_utils_B43KYtlc();
+    exports.allSettled = require_utils9.allSettled;
     exports.automatedEnvironmentVariables = require_runtimeEnvironment.automatedEnvironmentVariables;
     exports.createDeferredPromise = require_createDeferredPromise.createDeferredPromise;
-    exports.fastDeepMergeAndKeep = require_utils10.fastDeepMergeAndKeep;
-    exports.fastDeepMergeAndReplace = require_utils10.fastDeepMergeAndReplace;
+    exports.fastDeepMergeAndKeep = require_utils9.fastDeepMergeAndKeep;
+    exports.fastDeepMergeAndReplace = require_utils9.fastDeepMergeAndReplace;
     exports.handleValueOrFn = require_handleValueOrFn.handleValueOrFn;
     exports.isAutomatedEnvironment = require_runtimeEnvironment.isAutomatedEnvironment;
     exports.isDevelopmentEnvironment = require_runtimeEnvironment.isDevelopmentEnvironment;
     exports.isProductionEnvironment = require_runtimeEnvironment.isProductionEnvironment;
     exports.isStaging = require_instance.isStaging;
     exports.isTestEnvironment = require_runtimeEnvironment.isTestEnvironment;
-    exports.logErrorInDevMode = require_utils10.logErrorInDevMode;
+    exports.logErrorInDevMode = require_utils9.logErrorInDevMode;
     exports.noop = require_noop.noop;
-    exports.runIfFunctionOrReturn = require_utils10.runIfFunctionOrReturn;
-    exports.timeLimit = require_utils10.timeLimit;
+    exports.runIfFunctionOrReturn = require_utils9.runIfFunctionOrReturn;
+    exports.timeLimit = require_utils9.timeLimit;
   }
 });
 
@@ -59731,7 +59037,7 @@ var require_utils9 = __commonJS({
 var require_dist6 = __commonJS({
   "../../node_modules/.pnpm/@clerk+express@2.1.78_express@5.2.1_react-dom@19.1.4_react@19.1.4__react@19.1.4/node_modules/@clerk/express/dist/index.js"(exports) {
     Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
-    var require_utils10 = require_utils_DNayv6Y4();
+    var require_utils9 = require_utils_DNayv6Y4();
     var _clerk_backend = require_dist5();
     var stream = __require("stream");
     var _clerk_backend_internal = require_internal2();
@@ -59739,15 +59045,15 @@ var require_dist6 = __commonJS({
     var _clerk_shared_keys = require_keys();
     var _clerk_shared_logger = require_logger2();
     var _clerk_shared_proxy = require_proxy();
-    var _clerk_shared_utils = require_utils9();
+    var _clerk_shared_utils = require_utils8();
     var _clerk_shared_deprecated = require_deprecated();
     var clerkClientSingleton2 = {};
     var clerkClient2 = new Proxy(clerkClientSingleton2, {
       get(_target, property) {
         if (property in clerkClientSingleton2) return clerkClientSingleton2[property];
         const env = {
-          ...require_utils10.loadApiEnv(),
-          ...require_utils10.loadClientEnv()
+          ...require_utils9.loadApiEnv(),
+          ...require_utils9.loadClientEnv()
         };
         const client = (0, _clerk_backend.createClerkClient)({
           ...env,
@@ -59783,10 +59089,10 @@ Check if signInUrl is missing from your configuration or if it is not an absolut
     var authenticateRequest3 = (opts) => {
       const { clerkClient: clerkClient3, request: request2, options } = opts;
       const { clerkClient: _clerkClient, debug: _debug, frontendApiProxy: _frontendApiProxy, isSatellite: isSatelliteInput, domain: domainInput, signInUrl: signInUrlInput, proxyUrl: proxyUrlInput, secretKey: secretKeyInput, machineSecretKey: machineSecretKeyInput, publishableKey: publishableKeyInput, ...restOptions } = options || {};
-      const clerkRequest = opts.clerkRequest ?? (0, _clerk_backend_internal.createClerkRequest)(require_utils10.incomingMessageToRequest(request2));
+      const clerkRequest = opts.clerkRequest ?? (0, _clerk_backend_internal.createClerkRequest)(require_utils9.incomingMessageToRequest(request2));
       const env = {
-        ...require_utils10.loadApiEnv(),
-        ...require_utils10.loadClientEnv()
+        ...require_utils9.loadApiEnv(),
+        ...require_utils9.loadClientEnv()
       };
       const secretKey = secretKeyInput || env.secretKey;
       const machineSecretKey = machineSecretKeyInput || env.machineSecretKey;
@@ -59826,8 +59132,8 @@ Check if signInUrl is missing from your configuration or if it is not an absolut
     var resolveDefaultClerkClient2 = (options) => {
       if (!options.apiUrl && !options.apiVersion) return clerkClient2;
       return (0, _clerk_backend.createClerkClient)({
-        ...require_utils10.loadApiEnv(),
-        ...require_utils10.loadClientEnv(),
+        ...require_utils9.loadApiEnv(),
+        ...require_utils9.loadClientEnv(),
         ...options.apiUrl ? { apiUrl: options.apiUrl } : {},
         ...options.apiVersion ? { apiVersion: options.apiVersion } : {},
         userAgent: `@clerk/express@2.1.78`
@@ -59838,18 +59144,18 @@ Check if signInUrl is missing from your configuration or if it is not an absolut
       const frontendApiProxy = options.frontendApiProxy;
       const proxyPath = (0, _clerk_backend_proxy.stripTrailingSlashes)(frontendApiProxy?.path ?? _clerk_backend_proxy.DEFAULT_PROXY_PATH) || _clerk_backend_proxy.DEFAULT_PROXY_PATH;
       const middleware = async (request2, response, next) => {
-        if (require_utils10.requestHasAuthObject(request2)) return next();
+        if (require_utils9.requestHasAuthObject(request2)) return next();
         if ("auth" in request2) _clerk_shared_logger.logger.warnOnce("Clerk: another middleware has already set `req.auth` on this request. Clerk authentication will run anyway and overwrite it. To use another auth library alongside Clerk, configure it to store its state on a different request property.");
         let clerkRequest;
         try {
-          clerkRequest = (0, _clerk_backend_internal.createClerkRequest)(require_utils10.incomingMessageToRequest(request2));
+          clerkRequest = (0, _clerk_backend_internal.createClerkRequest)(require_utils9.incomingMessageToRequest(request2));
         } catch {
           response.status(400).end();
           return;
         }
         const env = {
-          ...require_utils10.loadApiEnv(),
-          ...require_utils10.loadClientEnv()
+          ...require_utils9.loadApiEnv(),
+          ...require_utils9.loadClientEnv()
         };
         const publishableKey = options.publishableKey || env.publishableKey;
         const secretKey = options.secretKey || env.secretKey;
@@ -59864,7 +59170,7 @@ Check if signInUrl is missing from your configuration or if it is not an absolut
           if ((typeof frontendApiProxy.enabled === "function" ? frontendApiProxy.enabled(requestUrl) : frontendApiProxy.enabled) && (requestUrl.pathname === proxyPath || requestUrl.pathname.startsWith(proxyPath + "/"))) {
             let proxyRequest;
             try {
-              proxyRequest = require_utils10.requestToProxyRequest(request2);
+              proxyRequest = require_utils9.requestToProxyRequest(request2);
             } catch {
               response.status(400).end();
               return;
@@ -59917,7 +59223,7 @@ Check if signInUrl is missing from your configuration or if it is not an absolut
           const err = setResponseHeaders2(requestState, response);
           if (err) return next(err);
           if (response.writableEnded) return;
-          const auth = require_utils10.brandRequestAuth((opts) => requestState.toAuth(opts));
+          const auth = require_utils9.brandRequestAuth((opts) => requestState.toAuth(opts));
           Object.assign(request2, { auth });
           next();
         } catch (err) {
@@ -59948,7 +59254,7 @@ Check if signInUrl is missing from your configuration or if it is not an absolut
       };
     };
     var getAuth2 = ((req, options) => {
-      if (!require_utils10.requestHasAuthObject(req)) throw new Error(middlewareRequired2("getAuth"));
+      if (!require_utils9.requestHasAuthObject(req)) throw new Error(middlewareRequired2("getAuth"));
       return (0, _clerk_backend_internal.getAuthObjectForAcceptedToken)({
         authObject: req.auth(options),
         acceptsToken: options?.acceptsToken
@@ -60554,6 +59860,9 @@ var helmet = Object.assign(
     hsts: strictTransportSecurity
   }
 );
+
+// src/app.ts
+var import_cors = __toESM(require_lib3(), 1);
 
 // ../../node_modules/.pnpm/@clerk+shared@4.40.0_react-dom@19.1.4_react@19.1.4__react@19.1.4/node_modules/@clerk/shared/dist/underscore.mjs
 function snakeToCamel(str) {
@@ -66840,10 +66149,10 @@ var ExternalAccount = class _ExternalAccount {
   }
 };
 var Instance = class _Instance {
-  constructor(id, environmentType, allowedOrigins) {
+  constructor(id, environmentType, allowedOrigins2) {
     this.id = id;
     this.environmentType = environmentType;
-    this.allowedOrigins = allowedOrigins;
+    this.allowedOrigins = allowedOrigins2;
   }
   static fromJSON(data) {
     return new _Instance(data.id, data.environment_type, data.allowed_origins);
@@ -101806,9 +101115,13 @@ function requireCompetition(competitionId, ownerId) {
 router3.post(
   "/competitions/:competitionId/analysis",
   async (req, res) => {
-    const competitionId = req.params.competitionId;
+    const params = CreateAnalysisParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: "Invalid competition ID." });
+      return;
+    }
     const ownerId = res.locals.userId;
-    const competition = await requireCompetition(competitionId, ownerId);
+    const competition = await requireCompetition(params.data.competitionId, ownerId);
     if (!competition) {
       res.status(404).json({ error: "Competition not found." });
       return;
@@ -101851,9 +101164,9 @@ router3.post(
     } else {
       aiNote = "No AI provider is configured, so this analysis contains only what the competition record states. Nothing has been inferred.";
     }
-    const [latest] = await db.select({ version: competitionAnalysesTable.version }).from(competitionAnalysesTable).where(eq(competitionAnalysesTable.competitionId, competitionId)).orderBy(desc(competitionAnalysesTable.version)).limit(1);
+    const [latest] = await db.select({ version: competitionAnalysesTable.version }).from(competitionAnalysesTable).where(eq(competitionAnalysesTable.competitionId, params.data.competitionId)).orderBy(desc(competitionAnalysesTable.version)).limit(1);
     const [analysis] = await db.insert(competitionAnalysesTable).values({
-      competitionId,
+      competitionId: params.data.competitionId,
       version: (latest?.version ?? 0) + 1,
       coreProblem: deterministic.coreProblem,
       missingFields: deterministic.missingFields,
@@ -101891,14 +101204,18 @@ router3.post(
 router3.get(
   "/competitions/:competitionId/analysis",
   async (req, res) => {
-    const competitionId = req.params.competitionId;
+    const params = GetAnalysisParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: "Invalid competition ID." });
+      return;
+    }
     const ownerId = res.locals.userId;
-    const competition = await requireCompetition(competitionId, ownerId);
+    const competition = await requireCompetition(params.data.competitionId, ownerId);
     if (!competition) {
       res.status(404).json({ error: "Competition not found." });
       return;
     }
-    const [analysis] = await db.select().from(competitionAnalysesTable).where(eq(competitionAnalysesTable.competitionId, competitionId)).orderBy(desc(competitionAnalysesTable.version)).limit(1);
+    const [analysis] = await db.select().from(competitionAnalysesTable).where(eq(competitionAnalysesTable.competitionId, params.data.competitionId)).orderBy(desc(competitionAnalysesTable.version)).limit(1);
     if (!analysis) {
       res.json({ analysis: null, requirements: [], grouped: [] });
       return;
@@ -101910,25 +101227,29 @@ router3.get(
 router3.patch(
   "/competitions/:competitionId/analysis/requirements/:requirementId",
   async (req, res) => {
-    const competitionId = req.params.competitionId;
+    const params = UpdateRequirementParams.safeParse(req.params);
+    const parsed = UpdateRequirementBody.safeParse(req.body);
+    if (!params.success || !parsed.success) {
+      res.status(400).json({ error: "Invalid requirement update." });
+      return;
+    }
     const ownerId = res.locals.userId;
-    const competition = await requireCompetition(competitionId, ownerId);
+    const competition = await requireCompetition(params.data.competitionId, ownerId);
     if (!competition) {
       res.status(404).json({ error: "Competition not found." });
       return;
     }
-    const text2 = typeof req.body?.text === "string" ? req.body.text.trim() : "";
-    const reviewed = req.body?.reviewed === true;
-    if (!text2) {
+    const trimmedText = parsed.data.text.trim();
+    if (!trimmedText) {
       res.status(400).json({ error: "A requirement needs text." });
       return;
     }
-    const [updated] = await db.update(analysisRequirementsTable).set({ text: text2, reviewed }).where(
+    const [updated] = await db.update(analysisRequirementsTable).set({ text: trimmedText, reviewed: parsed.data.reviewed }).where(
       and(
-        eq(analysisRequirementsTable.id, req.params.requirementId),
+        eq(analysisRequirementsTable.id, params.data.requirementId),
         eq(
           analysisRequirementsTable.analysisId,
-          db.select({ id: competitionAnalysesTable.id }).from(competitionAnalysesTable).where(eq(competitionAnalysesTable.competitionId, competitionId)).limit(1)
+          db.select({ id: competitionAnalysesTable.id }).from(competitionAnalysesTable).where(eq(competitionAnalysesTable.competitionId, params.data.competitionId)).limit(1)
         )
       )
     ).returning();
@@ -101942,17 +101263,23 @@ router3.patch(
 router3.post(
   "/competitions/:competitionId/research",
   async (req, res) => {
-    const competitionId = req.params.competitionId;
+    const params = CreateResearchParams.safeParse(req.params);
+    const parsed = CreateResearchBody.safeParse(req.body);
+    if (!params.success || !parsed.success) {
+      res.status(400).json({ error: "Invalid research request." });
+      return;
+    }
     const ownerId = res.locals.userId;
-    const competition = await requireCompetition(competitionId, ownerId);
+    const competition = await requireCompetition(params.data.competitionId, ownerId);
     if (!competition) {
       res.status(404).json({ error: "Competition not found." });
       return;
     }
-    if (req.body?.manual === true) {
-      const title = typeof req.body.title === "string" ? req.body.title.trim() : "";
-      const summary = typeof req.body.summary === "string" ? req.body.summary.trim() : "";
-      const sourceUrl = typeof req.body.sourceUrl === "string" ? req.body.sourceUrl.trim() : "";
+    const data = parsed.data;
+    if (data.manual === true) {
+      const title = data.title?.trim() ?? "";
+      const summary = data.summary?.trim() ?? "";
+      const sourceUrl = data.sourceUrl?.trim() ?? "";
       if (!title || !summary) {
         res.status(400).json({
           error: "A manual finding needs a title and a summary."
@@ -101964,16 +101291,16 @@ router3.post(
         return;
       }
       const [created] = await db.insert(researchFindingsTable).values({
-        competitionId,
+        competitionId: params.data.competitionId,
         title,
         summary,
         sourceUrl: sourceUrl || null,
         provider: "manual",
-        sourceType: normaliseResearchSourceType(req.body.sourceType),
+        sourceType: normaliseResearchSourceType(data.sourceType),
         claimKind: "SOURCE_SUPPORTED",
-        supports: typeof req.body.supports === "string" ? req.body.supports : null,
-        limitations: typeof req.body.limitations === "string" ? req.body.limitations : null,
-        excerpt: typeof req.body.excerpt === "string" ? req.body.excerpt : null,
+        supports: data.supports ?? null,
+        limitations: data.limitations ?? null,
+        excerpt: data.excerpt ?? null,
         manual: true
       }).returning();
       res.status(201).json({ finding: created, providerOutcomes: [] });
@@ -101986,7 +101313,7 @@ router3.post(
       });
       return;
     }
-    const query = typeof req.body?.query === "string" ? req.body.query.trim() : "";
+    const query = data.query?.trim() ?? "";
     if (query.length < 3) {
       res.status(400).json({ error: "A research query needs at least three characters." });
       return;
@@ -101995,14 +101322,14 @@ router3.post(
       res.status(400).json({ error: "That research query is too long." });
       return;
     }
-    const requested = Array.isArray(req.body?.providers) ? req.body.providers.filter(
+    const requested = Array.isArray(data.providers) ? data.providers.filter(
       (provider) => RESEARCH_PROVIDERS.includes(provider)
     ) : [...RESEARCH_PROVIDERS];
     const search = await runResearchSearch(query, { providers: requested });
     const saved = await db.insert(researchFindingsTable).values(
       search.outcomes.flatMap(
         (outcome) => outcome.results.map((result) => ({
-          competitionId,
+          competitionId: params.data.competitionId,
           title: result.title,
           sourceUrl: result.url,
           provider: result.provider,
@@ -102039,31 +101366,39 @@ function isHttpUrl(value) {
 router3.get(
   "/competitions/:competitionId/research",
   async (req, res) => {
-    const competitionId = req.params.competitionId;
+    const params = ListResearchParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: "Invalid competition ID." });
+      return;
+    }
     const ownerId = res.locals.userId;
-    const competition = await requireCompetition(competitionId, ownerId);
+    const competition = await requireCompetition(params.data.competitionId, ownerId);
     if (!competition) {
       res.status(404).json({ error: "Competition not found." });
       return;
     }
-    const findings = await db.select().from(researchFindingsTable).where(eq(researchFindingsTable.competitionId, competitionId)).orderBy(desc(researchFindingsTable.retrievedAt));
+    const findings = await db.select().from(researchFindingsTable).where(eq(researchFindingsTable.competitionId, params.data.competitionId)).orderBy(desc(researchFindingsTable.retrievedAt));
     res.json({ findings });
   }
 );
 router3.delete(
   "/competitions/:competitionId/research/:findingId",
   async (req, res) => {
-    const competitionId = req.params.competitionId;
+    const params = DeleteResearchParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: "Invalid finding ID." });
+      return;
+    }
     const ownerId = res.locals.userId;
-    const competition = await requireCompetition(competitionId, ownerId);
+    const competition = await requireCompetition(params.data.competitionId, ownerId);
     if (!competition) {
       res.status(404).json({ error: "Competition not found." });
       return;
     }
     const [deleted] = await db.delete(researchFindingsTable).where(
       and(
-        eq(researchFindingsTable.id, req.params.findingId),
-        eq(researchFindingsTable.competitionId, competitionId)
+        eq(researchFindingsTable.id, params.data.findingId),
+        eq(researchFindingsTable.competitionId, params.data.competitionId)
       )
     ).returning();
     if (!deleted) {
@@ -102076,15 +101411,19 @@ router3.delete(
 router3.post(
   "/competitions/:competitionId/gaps",
   async (req, res) => {
-    const competitionId = req.params.competitionId;
+    const params = CreateGapsParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: "Invalid competition ID." });
+      return;
+    }
     const ownerId = res.locals.userId;
-    const competition = await requireCompetition(competitionId, ownerId);
+    const competition = await requireCompetition(params.data.competitionId, ownerId);
     if (!competition) {
       res.status(404).json({ error: "Competition not found." });
       return;
     }
-    const findings = await db.select().from(researchFindingsTable).where(eq(researchFindingsTable.competitionId, competitionId));
-    const [analysis] = await db.select().from(competitionAnalysesTable).where(eq(competitionAnalysesTable.competitionId, competitionId)).orderBy(desc(competitionAnalysesTable.version)).limit(1);
+    const findings = await db.select().from(researchFindingsTable).where(eq(researchFindingsTable.competitionId, params.data.competitionId));
+    const [analysis] = await db.select().from(competitionAnalysesTable).where(eq(competitionAnalysesTable.competitionId, params.data.competitionId)).orderBy(desc(competitionAnalysesTable.version)).limit(1);
     const requirements = analysis ? await db.select().from(analysisRequirementsTable).where(eq(analysisRequirementsTable.analysisId, analysis.id)) : [];
     const brief = briefFromCompetition(competition);
     const deterministic = buildDeterministicGaps({
@@ -102150,7 +101489,7 @@ router3.post(
     }
     const saved = await db.insert(researchGapsTable).values(
       gaps.map((gap) => ({
-        competitionId,
+        competitionId: params.data.competitionId,
         need: gap.need,
         targetUser: gap.targetUser,
         supportingFindingIds: gap.supportingFindingIds,
@@ -102177,23 +101516,31 @@ router3.post(
 router3.get(
   "/competitions/:competitionId/gaps",
   async (req, res) => {
-    const competitionId = req.params.competitionId;
+    const params = ListGapsParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: "Invalid competition ID." });
+      return;
+    }
     const ownerId = res.locals.userId;
-    const competition = await requireCompetition(competitionId, ownerId);
+    const competition = await requireCompetition(params.data.competitionId, ownerId);
     if (!competition) {
       res.status(404).json({ error: "Competition not found." });
       return;
     }
-    const gaps = await db.select().from(researchGapsTable).where(eq(researchGapsTable.competitionId, competitionId)).orderBy(desc(researchGapsTable.createdAt));
+    const gaps = await db.select().from(researchGapsTable).where(eq(researchGapsTable.competitionId, params.data.competitionId)).orderBy(desc(researchGapsTable.createdAt));
     res.json({ gaps });
   }
 );
 router3.post(
   "/competitions/:competitionId/ideas",
   async (req, res) => {
-    const competitionId = req.params.competitionId;
+    const params = CreateIdeasParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: "Invalid competition ID." });
+      return;
+    }
     const ownerId = res.locals.userId;
-    const competition = await requireCompetition(competitionId, ownerId);
+    const competition = await requireCompetition(params.data.competitionId, ownerId);
     if (!competition) {
       res.status(404).json({ error: "Competition not found." });
       return;
@@ -102205,9 +101552,9 @@ router3.post(
         (new Date(brief.deadline).getTime() - Date.now()) / 36e5
       )
     );
-    const [analysis] = await db.select().from(competitionAnalysesTable).where(eq(competitionAnalysesTable.competitionId, competitionId)).orderBy(desc(competitionAnalysesTable.version)).limit(1);
+    const [analysis] = await db.select().from(competitionAnalysesTable).where(eq(competitionAnalysesTable.competitionId, params.data.competitionId)).orderBy(desc(competitionAnalysesTable.version)).limit(1);
     const requirements = analysis ? await db.select().from(analysisRequirementsTable).where(eq(analysisRequirementsTable.analysisId, analysis.id)) : [];
-    const findings = await db.select().from(researchFindingsTable).where(eq(researchFindingsTable.competitionId, competitionId));
+    const findings = await db.select().from(researchFindingsTable).where(eq(researchFindingsTable.competitionId, params.data.competitionId));
     const providerInstance = currentAiProvider();
     if (!providerInstance) {
       const notConfigured = aiNotConfiguredResponse();
@@ -102277,7 +101624,7 @@ router3.post(
     }
     const saved = await db.insert(ideaCandidatesTable).values(
       ideas.map((idea) => ({
-        competitionId,
+        competitionId: params.data.competitionId,
         name: idea.name,
         pitch: idea.pitch,
         targetUser: idea.targetUser,
@@ -102303,15 +101650,19 @@ router3.post(
 router3.get(
   "/competitions/:competitionId/ideas",
   async (req, res) => {
-    const competitionId = req.params.competitionId;
+    const params = ListIdeasParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: "Invalid competition ID." });
+      return;
+    }
     const ownerId = res.locals.userId;
-    const competition = await requireCompetition(competitionId, ownerId);
+    const competition = await requireCompetition(params.data.competitionId, ownerId);
     if (!competition) {
       res.status(404).json({ error: "Competition not found." });
       return;
     }
-    const ideas = await db.select().from(ideaCandidatesTable).where(eq(ideaCandidatesTable.competitionId, competitionId)).orderBy(desc(ideaCandidatesTable.createdAt));
-    const rubric = await db.select().from(ideaRubricsTable).where(eq(ideaRubricsTable.competitionId, competitionId)).limit(1);
+    const ideas = await db.select().from(ideaCandidatesTable).where(eq(ideaCandidatesTable.competitionId, params.data.competitionId)).orderBy(desc(ideaCandidatesTable.createdAt));
+    const rubric = await db.select().from(ideaRubricsTable).where(eq(ideaRubricsTable.competitionId, params.data.competitionId)).limit(1);
     const evaluations = ideas.length ? await db.select().from(ideaEvaluationsTable).where(
       inArray(
         ideaEvaluationsTable.ideaId,
@@ -102346,25 +101697,44 @@ router3.get(
 router3.post(
   "/competitions/:competitionId/ideas/:ideaId/evaluate",
   async (req, res) => {
-    const competitionId = req.params.competitionId;
+    const params = EvaluateIdeaParams.safeParse(req.params);
+    const parsed = EvaluateIdeaBody.safeParse(req.body);
+    if (!params.success) {
+      res.status(400).json({ error: "Invalid evaluation request.", code: "INVALID_PARAMS" });
+      return;
+    }
+    if (!parsed.success) {
+      const hasScoreError = parsed.error.issues.some(
+        (issue2) => issue2.path.includes("score") && issue2.path.includes("scores")
+      );
+      if (hasScoreError) {
+        res.status(400).json({
+          error: "No scores could be produced. Score the idea by hand, or configure an AI provider.",
+          code: "NO_SCORES"
+        });
+        return;
+      }
+      res.status(400).json({ error: "Invalid evaluation request.", code: "INVALID_BODY" });
+      return;
+    }
     const ownerId = res.locals.userId;
-    const competition = await requireCompetition(competitionId, ownerId);
+    const competition = await requireCompetition(params.data.competitionId, ownerId);
     if (!competition) {
       res.status(404).json({ error: "Competition not found." });
       return;
     }
     const [idea] = await db.select().from(ideaCandidatesTable).where(
       and(
-        eq(ideaCandidatesTable.id, req.params.ideaId),
-        eq(ideaCandidatesTable.competitionId, competitionId)
+        eq(ideaCandidatesTable.id, params.data.ideaId),
+        eq(ideaCandidatesTable.competitionId, params.data.competitionId)
       )
     ).limit(1);
     if (!idea) {
       res.status(404).json({ error: "Idea not found." });
       return;
     }
-    const provided = Array.isArray(req.body?.scores) ? req.body.scores : [];
-    const rubric = await db.select().from(ideaRubricsTable).where(eq(ideaRubricsTable.competitionId, competitionId)).limit(1);
+    const provided = parsed.data.scores;
+    const rubric = await db.select().from(ideaRubricsTable).where(eq(ideaRubricsTable.competitionId, params.data.competitionId)).limit(1);
     const weights = normaliseWeights(
       rubric[0]?.weights ?? void 0
     );
@@ -102455,17 +101825,21 @@ router3.post(
 router3.put(
   "/competitions/:competitionId/rubric",
   async (req, res) => {
-    const competitionId = req.params.competitionId;
+    const params = SaveRubricParams.safeParse(req.params);
+    const parsed = SaveRubricBody.safeParse(req.body);
+    if (!params.success || !parsed.success) {
+      res.status(400).json({ error: "Invalid rubric request." });
+      return;
+    }
     const ownerId = res.locals.userId;
-    const competition = await requireCompetition(competitionId, ownerId);
+    const competition = await requireCompetition(params.data.competitionId, ownerId);
     if (!competition) {
       res.status(404).json({ error: "Competition not found." });
       return;
     }
-    const provided = req.body?.weights && typeof req.body.weights === "object" ? req.body.weights : {};
-    const weights = normaliseWeights(provided);
+    const weights = normaliseWeights(parsed.data.weights);
     const [saved] = await db.insert(ideaRubricsTable).values({
-      competitionId,
+      competitionId: params.data.competitionId,
       weights
     }).onConflictDoUpdate({
       target: ideaRubricsTable.competitionId,
@@ -102477,27 +101851,22 @@ router3.put(
 router3.post(
   "/competitions/:competitionId/ideas/:ideaId/decision",
   async (req, res) => {
-    const competitionId = req.params.competitionId;
+    const params = DecideIdeaParams.safeParse(req.params);
+    const parsed = DecideIdeaBody.safeParse(req.body);
+    if (!params.success || !parsed.success) {
+      res.status(400).json({ error: "Invalid decision request." });
+      return;
+    }
     const ownerId = res.locals.userId;
-    const competition = await requireCompetition(competitionId, ownerId);
+    const competition = await requireCompetition(params.data.competitionId, ownerId);
     if (!competition) {
       res.status(404).json({ error: "Competition not found." });
       return;
     }
-    const status = String(req.body?.status ?? "");
-    if (status !== "selected" && status !== "rejected") {
-      res.status(400).json({ error: "A decision must be selected or rejected." });
-      return;
-    }
-    const rationale = typeof req.body?.rationale === "string" ? req.body.rationale.trim() : "";
-    if (!rationale) {
-      res.status(400).json({ error: "Record why this idea was chosen or rejected." });
-      return;
-    }
-    const [updated] = await db.update(ideaCandidatesTable).set({ status, decisionRationale: rationale }).where(
+    const [updated] = await db.update(ideaCandidatesTable).set({ status: parsed.data.status, decisionRationale: parsed.data.rationale }).where(
       and(
-        eq(ideaCandidatesTable.id, req.params.ideaId),
-        eq(ideaCandidatesTable.competitionId, competitionId)
+        eq(ideaCandidatesTable.id, params.data.ideaId),
+        eq(ideaCandidatesTable.competitionId, params.data.competitionId)
       )
     ).returning();
     if (!updated) {
@@ -102510,17 +101879,26 @@ router3.post(
 router3.post(
   "/competitions/:competitionId/ideas/:ideaId/brief",
   async (req, res) => {
-    const competitionId = req.params.competitionId;
     const ownerId = res.locals.userId;
-    const competition = await requireCompetition(competitionId, ownerId);
+    const competitionIdResult = CreateBriefParams.shape.competitionId.safeParse(req.params.competitionId);
+    if (!competitionIdResult.success) {
+      res.status(400).json({ error: "Invalid competition ID." });
+      return;
+    }
+    const competition = await requireCompetition(competitionIdResult.data, ownerId);
     if (!competition) {
       res.status(404).json({ error: "Competition not found." });
       return;
     }
+    const params = CreateBriefParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: "Invalid brief request." });
+      return;
+    }
     const [idea] = await db.select().from(ideaCandidatesTable).where(
       and(
-        eq(ideaCandidatesTable.id, req.params.ideaId),
-        eq(ideaCandidatesTable.competitionId, competitionId)
+        eq(ideaCandidatesTable.id, params.data.ideaId),
+        eq(ideaCandidatesTable.competitionId, params.data.competitionId)
       )
     ).limit(1);
     if (!idea) {
@@ -102547,7 +101925,7 @@ router3.post(
       claimKind: idea.claimKind
     };
     const brief = briefFromCompetition(competition);
-    const [analysis] = await db.select().from(competitionAnalysesTable).where(eq(competitionAnalysesTable.competitionId, competitionId)).orderBy(desc(competitionAnalysesTable.version)).limit(1);
+    const [analysis] = await db.select().from(competitionAnalysesTable).where(eq(competitionAnalysesTable.competitionId, params.data.competitionId)).orderBy(desc(competitionAnalysesTable.version)).limit(1);
     const requirements = analysis ? await db.select().from(analysisRequirementsTable).where(eq(analysisRequirementsTable.analysisId, analysis.id)) : [];
     let parsed = buildBriefFromIdea(candidate);
     let method = "DETERMINISTIC";
@@ -102584,7 +101962,7 @@ router3.post(
       } catch (error62) {
         const failure2 = aiErrorResponse(error62);
         const saved2 = await persistBrief(
-          competitionId,
+          params.data.competitionId,
           idea.id,
           parsed.brief,
           parsed.missingSections,
@@ -102600,7 +101978,7 @@ router3.post(
       }
     }
     const saved = await persistBrief(
-      competitionId,
+      params.data.competitionId,
       idea.id,
       parsed.brief,
       parsed.missingSections,
@@ -102634,14 +102012,18 @@ async function persistBrief(competitionId, ideaId, brief, missingSections, metho
 router3.get(
   "/competitions/:competitionId/briefs",
   async (req, res) => {
-    const competitionId = req.params.competitionId;
+    const params = ListBriefsParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: "Invalid competition ID." });
+      return;
+    }
     const ownerId = res.locals.userId;
-    const competition = await requireCompetition(competitionId, ownerId);
+    const competition = await requireCompetition(params.data.competitionId, ownerId);
     if (!competition) {
       res.status(404).json({ error: "Competition not found." });
       return;
     }
-    const briefs = await db.select().from(buildBriefsTable).where(eq(buildBriefsTable.competitionId, competitionId)).orderBy(desc(buildBriefsTable.createdAt));
+    const briefs = await db.select().from(buildBriefsTable).where(eq(buildBriefsTable.competitionId, params.data.competitionId)).orderBy(desc(buildBriefsTable.createdAt));
     res.json({ briefs });
   }
 );
@@ -105221,6 +104603,32 @@ app.use(
     crossOriginResourcePolicy: { policy: "same-origin" }
   })
 );
+var allowedOrigins = (process.env.ALLOWED_ORIGINS ?? "").split(",").map((o) => o.trim()).filter(Boolean);
+var corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    const isAllowed = allowedOrigins.some((allowed) => {
+      if (allowed.includes("*")) {
+        const regex = new RegExp("^" + allowed.replace(/\*/g, ".*") + "$");
+        return regex.test(origin);
+      }
+      return allowed === origin;
+    });
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      logger2.warn({ origin }, "CORS blocked request from unauthorized origin");
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+  // Allow cookies/auth headers for allowed origins
+  methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Test-User-Id"],
+  maxAge: 86400
+  // Cache preflight for 24 hours
+};
+app.use((0, import_cors.default)(corsOptions));
 app.use(
   (0, import_pino_http.default)({
     logger: logger2,
@@ -105240,9 +104648,10 @@ app.use(
     }
   })
 );
+var bodySizeLimit = process.env.BODY_SIZE_LIMIT ?? "1mb";
+app.use(import_express7.default.json({ limit: bodySizeLimit }));
+app.use(import_express7.default.urlencoded({ extended: true, limit: bodySizeLimit }));
 app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
-app.use(import_express7.default.json());
-app.use(import_express7.default.urlencoded({ extended: true }));
 if (process.env.CLERK_SECRET_KEY || process.env.CLERK_PUBLISHABLE_KEY) {
   app.use(
     clerkMiddleware((req) => ({
@@ -105272,6 +104681,28 @@ app.use((req, _res, next) => {
 });
 app.use("/api", rateLimiterWrapper);
 app.use("/api", routes_default);
+app.use((err, _req, res, _next) => {
+  const isProd = process.env.NODE_ENV === "production";
+  logger2.error({ err: err.message, stack: isProd ? void 0 : err.stack }, "Unhandled error");
+  if (isProd) {
+    res.status(500).json({
+      error: "Internal server error",
+      code: "INTERNAL_ERROR"
+    });
+  } else {
+    res.status(500).json({
+      error: err.message,
+      code: "INTERNAL_ERROR",
+      stack: err.stack
+    });
+  }
+});
+app.use((_req, res) => {
+  res.status(404).json({
+    error: "Not found",
+    code: "NOT_FOUND"
+  });
+});
 var app_default = app;
 export {
   analysisRequirementsTable,
@@ -105578,6 +105009,13 @@ serve-static/index.js:
    * Copyright(c) 2014-2016 Douglas Christopher Wilson
    * MIT Licensed
    *)
+
+object-assign/index.js:
+  (*
+  object-assign
+  (c) Sindre Sorhus
+  @license MIT
+  *)
 
 is-extglob/index.js:
   (*!

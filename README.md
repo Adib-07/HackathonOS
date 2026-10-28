@@ -937,17 +937,20 @@ No automated coverage reporting configured. Run `pnpm vitest run --coverage` aft
 
 - **Authentication**: Clerk session cookies, `requireAuthenticatedUser` middleware on all `/api/*` except health
 - **Authorization**: Every query joins `competitions.owner_id = current_user_id`
-- **Rate Limiting**: `express-rate-limit` per IP; in-process window limiters for research (8/min) and AI (12/min)
-- **CORS**: Same-origin only (Vercel rewrites `/api/*` to same domain)
+- **Rate Limiting**: `express-rate-limit` per IP/user; in-process window limiters for research (8/min), AI (12/min), plan generation (5/min), write ops (30/min)
+- **CORS**: Explicit allow-list via `ALLOWED_ORIGINS` env var; credentials only for allowed origins
 - **Helmet**: `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`
 - **CSP**: Strict policy allowing Clerk, Cloudflare Challenges, Google Fonts, Clerk images/telemetry
 - **Secret Scanning**: Evidence submission rejects strings matching API key, token, private key patterns
-- **Input Validation**: All request bodies validated with Zod schemas (`safeParse`)
+- **Input Validation**: All request bodies/params/queries validated with Zod schemas (`safeParse`)
+- **Body Size Limits**: `express.json({ limit: BODY_SIZE_LIMIT })` default 1MB, configurable
+- **Error Handling**: Centralized error handler; no stack traces or internal details in production
 - **SQL Injection Prevention**: Drizzle ORM parameterized queries only
+- **Dependency Security**: `pnpm-workspace.yaml` `minimumReleaseAge: 1440` (1-day delay on new npm versions); overrides for known vulnerabilities
+- **Secret Detection**: `gitleaks` in CI; `.gitleaks.toml` with allowlist for test fixtures
 
 ### Planned / Not Yet Implemented
 
-- [ ] Automated dependency scanning (Dependabot / Renovate)
 - [ ] CSP nonce/script-hash for inline scripts
 - [ ] Audit logging for sensitive operations (delete competition, evidence)
 - [ ] Secret rotation automation
