@@ -14,20 +14,11 @@ import app, {
   researchGapsTable,
 } from "../dist/app.mjs";
 import { eq } from "drizzle-orm";
-import { setupTestDatabase } from "./setup.mjs";
-import { cleanupTestUser, uniqueTestUser } from "./test-helpers.mjs";
-
-await setupTestDatabase();
 
 let server;
 let baseUrl = "";
-const createdUsers = [];
-
-function newUser() {
-  const u = uniqueTestUser("intel");
-  createdUsers.push(u);
-  return u;
-}
+const ownerA = "intel-owner-a";
+const ownerB = "intel-owner-b";
 
 const DEADLINE = new Date(Date.now() + 14 * 86400000).toISOString();
 
@@ -50,10 +41,22 @@ async function call(path, { method = "GET", body, userId } = {}) {
   return { status: res.status, json, text };
 }
 
-async function createCompetition(userId, overrides = {}) {
+let competitionId = "";
+
+before(async () => {
+  process.env.NODE_ENV = "test";
+  await new Promise((resolve) => {
+    server = createServer(app);
+    server.listen(0, "127.0.0.1", () => {
+      const addr = server.address();
+      baseUrl = `http://127.0.0.1:${addr.port}`;
+      resolve();
+    });
+  });
+
   const created = await call("/api/competitions", {
     method: "POST",
-    userId,
+    userId: ownerA,
     body: {
       name: "Intel Test Hackathon",
       organizer: "Verification Lab",
@@ -66,28 +69,19 @@ async function createCompetition(userId, overrides = {}) {
         "Neighbourhoods cannot tell which solar installers actually deliver.",
       officialUrl: "https://example.com/event",
       rulesUrl: "https://example.com/rules",
-      ...overrides,
     },
   });
   assert.equal(created.status, 201);
-  return created.json.id;
-}
-
-before(async () => {
-  process.env.NODE_ENV = "test";
-  await new Promise((resolve) => {
-    server = createServer(app);
-    server.listen(0, "127.0.0.1", () => {
-      const addr = server.address();
-      baseUrl = `http://127.0.0.1:${addr.port}`;
-      resolve();
-    });
-  });
+  competitionId = created.json.id;
 });
 
 after(async () => {
-  for (const u of createdUsers) {
-    await cleanupTestUser(u);
+  try {
+    await db
+      .delete(competitionsTable)
+      .where(eq(competitionsTable.id, competitionId));
+  } catch (err) {
+    console.warn("Cleanup warning:", err.message);
   }
   if (server) await new Promise((resolve) => server.close(resolve));
   if (pool) await pool.end();
@@ -96,9 +90,6 @@ after(async () => {
 // --- authentication and ownership ---------------------------------------
 
 test("every intel route requires authentication", async () => {
-  const userId = newUser();
-  const competitionId = await createCompetition(userId);
-
   const calls = [
     ["POST", `/api/competitions/${competitionId}/analysis`],
     ["GET", `/api/competitions/${competitionId}/analysis`],
@@ -117,47 +108,31 @@ test("every intel route requires authentication", async () => {
 });
 
 test("another owner cannot reach the intel routes", async () => {
-  const userA = newUser();
-  const userB = newUser();
-  const competitionId = await createCompetition(userA);
-
   const res = await call(`/api/competitions/${competitionId}/analysis`, {
     method: "POST",
-    userId: userB,
+    userId: ownerB,
   });
   assert.equal(res.status, 404);
 });
 
 test("another owner cannot read the research findings", async () => {
-  const userA = newUser();
-  const userB = newUser();
-  const competitionId = await createCompetition(userA);
-
   const res = await call(`/api/competitions/${competitionId}/research`, {
-    userId: userB,
+    userId: ownerB,
   });
   assert.equal(res.status, 404);
 });
 
 test("another owner cannot read the ideas", async () => {
-  const userA = newUser();
-  const userB = newUser();
-  const competitionId = await createCompetition(userA);
-
   const res = await call(`/api/competitions/${competitionId}/ideas`, {
-    userId: userB,
+    userId: ownerB,
   });
   assert.equal(res.status, 404);
 });
 
 test("another owner cannot delete a finding", async () => {
-  const userA = newUser();
-  const userB = newUser();
-  const competitionId = await createCompetition(userA);
-
   const res = await call(`/api/competitions/${competitionId}/research`, {
     method: "POST",
-    userId: userA,
+    userId: ownerA,
     body: {
       manual: true,
       title: "A manual note",
@@ -170,12 +145,13 @@ test("another owner cannot delete a finding", async () => {
 
   const other = await call(
     `/api/competitions/${competitionId}/research/${findingId}`,
-    { method: "DELETE", userId: userB },
+    { method: "DELETE", userId: ownerB },
   );
   assert.equal(other.status, 404);
 
+  // The record must still be there.
   const still = await call(`/api/competitions/${competitionId}/research`, {
-    userId: userA,
+    userId: ownerA,
   });
   assert.ok(still.json.findings.some((item) => item.id === findingId));
 });
@@ -183,12 +159,9 @@ test("another owner cannot delete a finding", async () => {
 // --- problem analysis ---------------------------------------------------
 
 test("problem analysis runs without an AI provider and uses the stored record", async () => {
-  const userId = newUser();
-  const competitionId = await createCompetition(userId);
-
   const res = await call(`/api/competitions/${competitionId}/analysis`, {
     method: "POST",
-    userId,
+    userId: ownerA,
   });
   assert.equal(res.status, 201);
   assert.ok(res.json.analysis);
@@ -214,12 +187,8 @@ test("problem analysis runs without an AI provider and uses the stored record", 
 });
 
 test("problem analysis names the fields that are missing", async () => {
-  const userId = newUser();
-  const competitionId = await createCompetition(userId);
-
   const res = await call(`/api/competitions/${competitionId}/analysis`, {
-    method: "POST",
-    userId,
+    userId: ownerA,
   });
   const missing = res.json.analysis.missingFields;
   assert.ok(missing.includes("Judging criteria"));
@@ -228,90 +197,67 @@ test("problem analysis names the fields that are missing", async () => {
 });
 
 test("the analysis can be read back", async () => {
-  const userId = newUser();
-  const competitionId = await createCompetition(userId);
-
-  await call(`/api/competitions/${competitionId}/analysis`, {
-    method: "POST",
-    userId,
-  });
-
   const res = await call(`/api/competitions/${competitionId}/analysis`, {
-    userId,
+    userId: ownerA,
   });
   assert.equal(res.status, 200);
   assert.ok(res.json.analysis);
-  assert.equal(res.json.analysis.method, "DETERMINISTIC");
+  assert.ok(res.json.requirements.length > 0);
 });
 
 test("a requirement can be edited and marked reviewed", async () => {
-  const userId = newUser();
-  const competitionId = await createCompetition(userId);
-
-  await call(`/api/competitions/${competitionId}/analysis`, {
-    method: "POST",
-    userId,
-  });
-
   const listed = await call(`/api/competitions/${competitionId}/analysis`, {
-    userId,
+    userId: ownerA,
   });
   const requirement = listed.json.requirements[0];
 
   const res = await call(
     `/api/competitions/${competitionId}/analysis/requirements/${requirement.id}`,
-    { method: "PATCH", userId, body: { reviewed: true } },
+    {
+      method: "PATCH",
+      userId: ownerA,
+      body: { text: "Edited requirement text.", reviewed: true },
+    },
   );
   assert.equal(res.status, 200);
-  assert.equal(res.json.reviewed, true);
-
-  const res2 = await call(
-    `/api/competitions/${competitionId}/analysis/requirements/${requirement.id}`,
-    { method: "PATCH", userId, body: { text: "Updated requirement text." } },
-  );
-  assert.equal(res2.status, 200);
-  assert.equal(res2.json.text, "Updated requirement text.");
+  assert.equal(res.json.requirement.text, "Edited requirement text.");
+  assert.equal(res.json.requirement.reviewed, true);
 });
 
 test("another owner cannot edit a requirement", async () => {
-  const userA = newUser();
-  const userB = newUser();
-  const competitionId = await createCompetition(userA);
-
-  await call(`/api/competitions/${competitionId}/analysis`, {
-    method: "POST",
-    userId: userA,
-  });
-
   const listed = await call(`/api/competitions/${competitionId}/analysis`, {
-    userId: userA,
+    userId: ownerA,
   });
   const requirement = listed.json.requirements[0];
 
   const res = await call(
     `/api/competitions/${competitionId}/analysis/requirements/${requirement.id}`,
-    { method: "PATCH", userId: userB, body: { reviewed: true } },
+    {
+      method: "PATCH",
+      userId: ownerB,
+      body: { text: "Tampered" },
+    },
   );
   assert.equal(res.status, 404);
+
+  const after = await call(`/api/competitions/${competitionId}/analysis`, {
+    userId: ownerA,
+  });
+  const unchanged = after.json.requirements.find(
+    (item) => item.id === requirement.id,
+  );
+  assert.notEqual(unchanged.text, "Tampered");
 });
 
 test("an empty requirement is rejected", async () => {
-  const userId = newUser();
-  const competitionId = await createCompetition(userId);
-
-  await call(`/api/competitions/${competitionId}/analysis`, {
-    method: "POST",
-    userId,
-  });
-
   const listed = await call(`/api/competitions/${competitionId}/analysis`, {
-    userId,
+    userId: ownerA,
   });
   const requirement = listed.json.requirements[0];
 
   const res = await call(
     `/api/competitions/${competitionId}/analysis/requirements/${requirement.id}`,
-    { method: "PATCH", userId, body: { text: "   " } },
+    { method: "PATCH", userId: ownerA, body: { text: "   " } },
   );
   assert.equal(res.status, 400);
 });
@@ -319,12 +265,9 @@ test("an empty requirement is rejected", async () => {
 // --- research -----------------------------------------------------------
 
 test("a manual research finding is stored and labelled as a source", async () => {
-  const userId = newUser();
-  const competitionId = await createCompetition(userId);
-
   const res = await call(`/api/competitions/${competitionId}/research`, {
     method: "POST",
-    userId,
+    userId: ownerA,
     body: {
       manual: true,
       title: "Installer comparison site",
@@ -343,24 +286,18 @@ test("a manual research finding is stored and labelled as a source", async () =>
 });
 
 test("a manual finding needs a title and a summary", async () => {
-  const userId = newUser();
-  const competitionId = await createCompetition(userId);
-
   const res = await call(`/api/competitions/${competitionId}/research`, {
     method: "POST",
-    userId,
+    userId: ownerA,
     body: { manual: true, title: "Only a title" },
   });
   assert.equal(res.status, 400);
 });
 
 test("a manual finding rejects a non-http source URL", async () => {
-  const userId = newUser();
-  const competitionId = await createCompetition(userId);
-
   const res = await call(`/api/competitions/${competitionId}/research`, {
     method: "POST",
-    userId,
+    userId: ownerA,
     body: {
       manual: true,
       title: "Bad url",
@@ -372,34 +309,17 @@ test("a manual finding rejects a non-http source URL", async () => {
 });
 
 test("a research query that is too short is rejected", async () => {
-  const userId = newUser();
-  const competitionId = await createCompetition(userId);
-
   const res = await call(`/api/competitions/${competitionId}/research`, {
     method: "POST",
-    userId,
+    userId: ownerA,
     body: { query: "ab" },
   });
   assert.equal(res.status, 400);
 });
 
 test("research findings are readable and deletable by the owner", async () => {
-  const userId = newUser();
-  const competitionId = await createCompetition(userId);
-
-  await call(`/api/competitions/${competitionId}/research`, {
-    method: "POST",
-    userId,
-    body: {
-      manual: true,
-      title: "Findable finding",
-      summary: "Can be listed and deleted.",
-      sourceUrl: "https://example.com/findable",
-    },
-  });
-
   const listed = await call(`/api/competitions/${competitionId}/research`, {
-    userId,
+    userId: ownerA,
   });
   assert.equal(listed.status, 200);
   assert.ok(listed.json.findings.length >= 1);
@@ -407,7 +327,7 @@ test("research findings are readable and deletable by the owner", async () => {
   const target = listed.json.findings[0];
   const removed = await call(
     `/api/competitions/${competitionId}/research/${target.id}`,
-    { method: "DELETE", userId },
+    { method: "DELETE", userId: ownerA },
   );
   assert.equal(removed.status, 200);
   assert.equal(removed.json.deleted, true);
@@ -416,30 +336,25 @@ test("research findings are readable and deletable by the owner", async () => {
 // --- gap analysis -------------------------------------------------------
 
 test("gap analysis reports where the evidence runs out", async () => {
-  const userId = newUser();
-  const competitionId = await createCompetition(userId);
-
   const res = await call(`/api/competitions/${competitionId}/gaps`, {
     method: "POST",
-    userId,
+    userId: ownerA,
   });
   assert.equal(res.status, 201);
   assert.ok(res.json.evidenceGaps.length > 0);
   assert.ok(res.json.nextInvestigations.length > 0);
   assert.ok(res.json.gaps.length >= 1);
 
+  // No gap may claim to be a verified fact.
   for (const gap of res.json.gaps) {
     assert.notEqual(gap.claimKind, "VERIFIED_FACT");
   }
 });
 
 test("gap analysis refuses to claim a competitor does not exist", async () => {
-  const userId = newUser();
-  const competitionId = await createCompetition(userId);
-
   const res = await call(`/api/competitions/${competitionId}/gaps`, {
     method: "POST",
-    userId,
+    userId: ownerA,
   });
   const all = res.json.evidenceGaps.join(" ");
   assert.match(all, /no claim is made about which competitors exist/i);
@@ -448,25 +363,22 @@ test("gap analysis refuses to claim a competitor does not exist", async () => {
 // --- ideas --------------------------------------------------------------
 
 test("idea generation reports a clear configuration error without a provider", async () => {
-  const userId = newUser();
-  const competitionId = await createCompetition(userId, { teamSize: 3 });
-
   const res = await call(`/api/competitions/${competitionId}/ideas`, {
     method: "POST",
-    userId,
+    userId: ownerA,
   });
   assert.equal(res.status, 503);
   assert.equal(res.json.code, "AI_NOT_CONFIGURED");
   assert.ok(res.json.missing.includes("OPENAI_API_KEY"));
+  // The context tells the team what the ideas would have been scoped to.
   assert.ok(res.json.context.hoursRemaining > 0);
   assert.equal(res.json.context.teamSize, 3);
+  // No secret value may appear anywhere in the response.
   assert.ok(!res.text.includes("sk-"));
 });
 
 test("an idea can be scored by hand and the total is computed", async () => {
-  const userId = newUser();
-  const competitionId = await createCompetition(userId);
-
+  // Insert an idea directly so the scoring path can be tested without a model.
   const [idea] = await db
     .insert(ideaCandidatesTable)
     .values({
@@ -495,7 +407,7 @@ test("an idea can be scored by hand and the total is computed", async () => {
     `/api/competitions/${competitionId}/ideas/${idea.id}/evaluate`,
     {
       method: "POST",
-      userId,
+      userId: ownerA,
       body: {
         scores: [
           {
@@ -528,9 +440,6 @@ test("an idea can be scored by hand and the total is computed", async () => {
 });
 
 test("an invalid score is rejected", async () => {
-  const userId = newUser();
-  const competitionId = await createCompetition(userId);
-
   const [idea] = await db
     .insert(ideaCandidatesTable)
     .values({
@@ -558,19 +467,16 @@ test("an invalid score is rejected", async () => {
     `/api/competitions/${competitionId}/ideas/${idea.id}/evaluate`,
     {
       method: "POST",
-      userId,
+      userId: ownerA,
       body: { scores: [{ dimension: "PROBLEM_RELEVANCE", score: "high" }] },
     },
   );
+  // A non-numeric score is dropped, leaving nothing to evaluate.
   assert.equal(res.status, 400);
   assert.equal(res.json.code, "NO_SCORES");
 });
 
 test("another owner cannot score an idea", async () => {
-  const userA = newUser();
-  const userB = newUser();
-  const competitionId = await createCompetition(userA);
-
   const [idea] = await db
     .insert(ideaCandidatesTable)
     .values({
@@ -596,18 +502,15 @@ test("another owner cannot score an idea", async () => {
 
   const res = await call(
     `/api/competitions/${competitionId}/ideas/${idea.id}/evaluate`,
-    { method: "POST", userId: userB, body: { scores: [] } },
+    { method: "POST", userId: ownerB, body: { scores: [] } },
   );
   assert.equal(res.status, 404);
 });
 
 test("a rubric can be saved and is normalised", async () => {
-  const userId = newUser();
-  const competitionId = await createCompetition(userId);
-
   const res = await call(`/api/competitions/${competitionId}/rubric`, {
     method: "PUT",
-    userId,
+    userId: ownerA,
     body: {
       weights: {
         PROBLEM_RELEVANCE: 30,
@@ -629,34 +532,8 @@ test("a rubric can be saved and is normalised", async () => {
 });
 
 test("ideas are listed with their comparison", async () => {
-  const userId = newUser();
-  const competitionId = await createCompetition(userId);
-
-  await db
-    .insert(ideaCandidatesTable)
-    .values({
-      competitionId,
-      name: "Listed Idea",
-      pitch: "p",
-      targetUser: "u",
-      problemSolved: "ps",
-      proposedSolution: "s",
-      differentiator: "d",
-      coreUserJourney: "j",
-      mvpFeatures: [],
-      excludedFeatures: [],
-      architectureSuggestion: "a",
-      dataAndIntegrations: "d",
-      feasibilityNote: "f",
-      risks: [],
-      demoStrategy: "demo",
-      supportingEvidence: [],
-      unverifiedAssumptions: [],
-      claimKind: "INFERENCE",
-    });
-
   const res = await call(`/api/competitions/${competitionId}/ideas`, {
-    userId,
+    userId: ownerA,
   });
   assert.equal(res.status, 200);
   assert.ok(res.json.ideas.length >= 1);
@@ -665,36 +542,14 @@ test("ideas are listed with their comparison", async () => {
 });
 
 test("a decision needs a rationale", async () => {
-  const userId = newUser();
-  const competitionId = await createCompetition(userId);
-
-  const [idea] = await db
-    .insert(ideaCandidatesTable)
-    .values({
-      competitionId,
-      name: "Decision Idea",
-      pitch: "p",
-      targetUser: "u",
-      problemSolved: "ps",
-      proposedSolution: "s",
-      differentiator: "d",
-      coreUserJourney: "j",
-      mvpFeatures: [],
-      excludedFeatures: [],
-      architectureSuggestion: "a",
-      dataAndIntegrations: "d",
-      feasibilityNote: "f",
-      risks: [],
-      demoStrategy: "demo",
-      supportingEvidence: [],
-      unverifiedAssumptions: [],
-      claimKind: "INFERENCE",
-    })
-    .returning();
+  const listed = await call(`/api/competitions/${competitionId}/ideas`, {
+    userId: ownerA,
+  });
+  const idea = listed.json.ideas[0];
 
   const noReason = await call(
     `/api/competitions/${competitionId}/ideas/${idea.id}/decision`,
-    { method: "POST", userId, body: { status: "selected" } },
+    { method: "POST", userId: ownerA, body: { status: "selected" } },
   );
   assert.equal(noReason.status, 400);
 
@@ -702,7 +557,7 @@ test("a decision needs a rationale", async () => {
     `/api/competitions/${competitionId}/ideas/${idea.id}/decision`,
     {
       method: "POST",
-      userId,
+      userId: ownerA,
       body: { status: "selected", rationale: "Best fit for the recorded problem." },
     },
   );
@@ -717,117 +572,65 @@ test("a decision needs a rationale", async () => {
 // --- build brief --------------------------------------------------------
 
 test("a build brief is saved against the right competition", async () => {
-  const userId = newUser();
-  const competitionId = await createCompetition(userId);
-
-  const [idea] = await db
-    .insert(ideaCandidatesTable)
-    .values({
-      competitionId,
-      name: "Selected Idea",
-      pitch: "p",
-      targetUser: "u",
-      problemSolved: "ps",
-      proposedSolution: "s",
-      differentiator: "d",
-      coreUserJourney: "j",
-      mvpFeatures: [],
-      excludedFeatures: [],
-      architectureSuggestion: "a",
-      dataAndIntegrations: "d",
-      feasibilityNote: "f",
-      risks: [],
-      demoStrategy: "demo",
-      supportingEvidence: [],
-      unverifiedAssumptions: [],
-      claimKind: "INFERENCE",
-      status: "selected",
-    })
-    .returning();
+  const listed = await call(`/api/competitions/${competitionId}/ideas`, {
+    userId: ownerA,
+  });
+  const idea = listed.json.ideas.find((item) => item.status === "selected");
 
   const res = await call(
     `/api/competitions/${competitionId}/ideas/${idea.id}/brief`,
-    { method: "POST", userId },
+    { method: "POST", userId: ownerA },
   );
   assert.equal(res.status, 201);
   assert.equal(res.json.brief.competitionId, competitionId);
   assert.equal(res.json.brief.ideaId, idea.id);
   assert.equal(res.json.brief.ideaName, idea.name);
   assert.ok(res.json.brief.content.problemStatement);
+  // Sections that could not be filled are reported rather than invented.
   assert.ok(Array.isArray(res.json.missingSections));
 });
 
 test("briefs are readable and are scoped to the competition", async () => {
-  const userA = newUser();
-  const userB = newUser();
-  const competitionId = await createCompetition(userA);
-
-  const [idea] = await db
-    .insert(ideaCandidatesTable)
-    .values({
-      competitionId,
-      name: "Brief Idea",
-      pitch: "p",
-      targetUser: "u",
-      problemSolved: "ps",
-      proposedSolution: "s",
-      differentiator: "d",
-      coreUserJourney: "j",
-      mvpFeatures: [],
-      excludedFeatures: [],
-      architectureSuggestion: "a",
-      dataAndIntegrations: "d",
-      feasibilityNote: "f",
-      risks: [],
-      demoStrategy: "demo",
-      supportingEvidence: [],
-      unverifiedAssumptions: [],
-      claimKind: "INFERENCE",
-      status: "selected",
-    })
-    .returning();
-
-  await call(
-    `/api/competitions/${competitionId}/ideas/${idea.id}/brief`,
-    { method: "POST", userId: userA },
-  );
-
   const res = await call(`/api/competitions/${competitionId}/briefs`, {
-    userId: userA,
+    userId: ownerA,
   });
   assert.equal(res.status, 200);
   assert.ok(res.json.briefs.length >= 1);
   assert.equal(res.json.briefs[0].competitionId, competitionId);
 
   const other = await call(`/api/competitions/${competitionId}/briefs`, {
-    userId: userB,
+    userId: ownerB,
   });
   assert.equal(other.status, 404);
 });
 
 test("a brief cannot be written for another owner's competition", async () => {
-  const res = await call(`/api/competitions/00000000-0000-0000-0000-000000000000/ideas/x/brief`, {
+  const res = await call(`/api/competitions/${competitionId}/ideas/x/brief`, {
     method: "POST",
-    userId: newUser(),
+    userId: ownerB,
   });
   assert.equal(res.status, 404);
 });
 
 test("no intel artefact leaks another competition's data", async () => {
-  const userId = newUser();
-  const competitionId = await createCompetition(userId, { name: "First Competition" });
-  const competitionId2 = await createCompetition(userId, { name: "Second Competition" });
-
-  await call(`/api/competitions/${competitionId2}/analysis`, {
+  // A second competition for the same owner, with its own analysis.
+  const other = await call("/api/competitions", {
     method: "POST",
-    userId,
+    userId: ownerA,
+    body: { name: "Second Intel Test", deadline: DEADLINE },
+  });
+  assert.equal(other.status, 201);
+
+  await call(`/api/competitions/${other.json.id}/analysis`, {
+    method: "POST",
+    userId: ownerA,
   });
 
   const first = await call(`/api/competitions/${competitionId}/analysis`, {
-    userId,
+    userId: ownerA,
   });
-  const second = await call(`/api/competitions/${competitionId2}/analysis`, {
-    userId,
+  const second = await call(`/api/competitions/${other.json.id}/analysis`, {
+    userId: ownerA,
   });
 
   assert.notEqual(
@@ -836,12 +639,17 @@ test("no intel artefact leaks another competition's data", async () => {
     "each competition keeps its own analysis",
   );
 
+  // The requirement sets must not overlap between competitions.
   const firstIds = new Set(first.json.requirements.map((item) => item.id));
   const shared = second.json.requirements.filter((item) => firstIds.has(item.id));
   assert.equal(shared.length, 0, "requirements must not be shared across competitions");
 
+  // The second competition has a smaller set, because its brief records
+  // almost nothing. That difference is the point.
   assert.notEqual(
     first.json.requirements.length,
     second.json.requirements.length,
   );
+
+  await db.delete(competitionsTable).where(eq(competitionsTable.id, other.json.id));
 });

@@ -61,16 +61,3 @@ attached_assets/
 .env
 .env.*
 !.env.example
-
-# Build outputs
-api/bundle.mjs
-
-# Test output
-test-results/
-playwright-report/
-.playwright-artifacts-*/
-
-# Test output
-test-results/
-playwright-report/
-.playwright-artifacts-*/
