@@ -64,3 +64,8 @@ attached_assets/
 
 # Build outputs
 api/bundle.mjs
+
+# Test output
+test-results/
+playwright-report/
+.playwright-artifacts-*/
