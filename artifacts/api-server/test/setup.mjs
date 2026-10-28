@@ -35,11 +35,24 @@ export async function setupTestDatabase() {
       const filePath = path.join(migrationsDir, file);
       const sql = fs.readFileSync(filePath, "utf-8");
       
-      // Split by statement (simple approach - assumes statements end with ;)
-      const statements = sql
-        .split(";")
-        .map(s => s.trim())
-        .filter(s => s.length > 0 && !s.startsWith("--"));
+      // Split by statement using drizzle-kit's statement-breakpoint marker,
+      // or fall back to semicolon splitting with comment handling
+      let statements;
+      if (sql.includes("--> statement-breakpoint")) {
+        statements = sql
+          .split("--> statement-breakpoint")
+          .map(s => s.trim())
+          .filter(s => s.length > 0);
+      } else {
+        // Improved semicolon splitting that preserves statements with leading comments
+        statements = sql
+          .split(";")
+          .map(s => s.trim())
+          .filter(s => s.length > 0)
+          // Remove standalone comment lines but keep comments attached to statements
+          .map(s => s.split("\n").filter(line => !line.trim().startsWith("--") || line.trim().startsWith("-->")).join("\n").trim())
+          .filter(s => s.length > 0);
+      }
       
       for (const stmt of statements) {
         if (stmt.length > 0) {
@@ -49,6 +62,7 @@ export async function setupTestDatabase() {
             // Ignore "already exists" errors for idempotency
             if (err.code === "42P07" || // duplicate_table
                 err.code === "42710" || // duplicate_object
+                err.code === "42701" || // duplicate_column
                 err.code === "23505") { // unique_violation (for backfill)
               console.log("[test-setup] Skipping (already exists):", stmt.substring(0, 80) + "...");
             } else {

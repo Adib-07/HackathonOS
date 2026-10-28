@@ -16,7 +16,30 @@ declare global {
       membership?: CompetitionMemberRecord;
       membershipRole?: string;
     }
+    // Express adds these properties at runtime but they're not in the types
+    interface Request {
+      url: string;
+      originalUrl: string;
+      path: string;
+    }
   }
+}
+
+/**
+ * Extract competitionId from request URL.
+ * Handles paths like /competitions/:competitionId/... (without /api prefix)
+ * or /api/competitions/:competitionId/...
+ */
+function extractCompetitionId(req: Express.Request): string | null {
+  // Use req.url which is the raw URL including query string
+  // Path format: /competitions/:competitionId/... or /api/competitions/:competitionId/...
+  const path = req.url.split("?")[0];
+  const match = path.match(/\/competitions\/([a-f0-9-]{36})/i);
+  if (match) return match[1];
+  
+  // Fallback: try with /api prefix
+  const match2 = path.match(/\/api\/competitions\/([a-f0-9-]{36})/i);
+  return match2 ? match2[1] : null;
 }
 
 /**
@@ -25,21 +48,20 @@ declare global {
  * Does NOT enforce access - use requireMember/requireRole for that.
  */
 export const loadCompetitionMembership: RequestHandler = async (req, res, next) => {
-  const competitionId = req.params.competitionId;
+  const competitionId = extractCompetitionId(req);
   const userId = res.locals.userId;
 
-  if (!competitionId) {
+  if (!competitionId || !userId) {
     return next();
   }
 
   try {
-    const compId = String(competitionId);
     const [membership] = await db
       .select()
       .from(competitionMembersTable)
       .where(
         and(
-          eq(competitionMembersTable.competitionId, compId),
+          eq(competitionMembersTable.competitionId, competitionId),
           eq(competitionMembersTable.userId, userId),
           eq(competitionMembersTable.status, "active"),
         ),
@@ -48,7 +70,7 @@ export const loadCompetitionMembership: RequestHandler = async (req, res, next) 
 
     res.locals.membership = membership;
     res.locals.membershipRole = membership?.role ?? null;
-    res.locals.competitionId = compId;
+    res.locals.competitionId = competitionId;
     next();
   } catch (error) {
     req.log.error({ error, competitionId, userId }, "Failed to load membership");
@@ -57,17 +79,24 @@ export const loadCompetitionMembership: RequestHandler = async (req, res, next) 
 };
 
 /**
+ * Apply membership loading to all competition routes that have :competitionId param.
+ * This middleware extracts competitionId from the URL path.
+ */
+export const conditionalLoadMembership: RequestHandler = async (req, res, next) => {
+  return loadCompetitionMembership(req, res, next);
+};
+
+/**
  * Require active membership in the competition.
  * Non-members get 404 (not 403) to avoid information leakage.
  */
 export const requireMember: RequestHandler = (req, res, next) => {
   if (!res.locals.membership) {
-    // Check if competition exists at all (for proper 404)
     res.status(404).json({ error: "Competition not found." });
     return;
   }
   next();
-};
+}
 
 /**
  * Require specific role(s) in the competition.
@@ -90,7 +119,7 @@ export const requireRole = (...allowedRoles: string[]): RequestHandler => {
     }
     next();
   };
-};
+}
 
 /**
  * Require owner role (highest privilege).
@@ -121,7 +150,7 @@ export const preventIdor = (paramName: string): RequestHandler => {
     }
     next();
   };
-};
+}
 
 /**
  * Zod schemas for team-related input validation

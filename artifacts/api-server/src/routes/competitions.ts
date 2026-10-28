@@ -51,6 +51,7 @@ import {
   requireOwner,
   requireLead,
   loadCompetitionMembership,
+  conditionalLoadMembership,
   createInviteSchema,
   createShareLinkSchema,
   updateMemberRoleSchema,
@@ -61,15 +62,8 @@ import {
 
 const router: IRouter = Router();
 
-// Middleware that only loads membership when competitionId param exists
-const conditionalLoadMembership: RequestHandler = async (req, res, next) => {
-  if (!req.params.competitionId) {
-    return next();
-  }
-  return loadCompetitionMembership(req, res, next);
-};
-
 // Apply conditional membership loading to all competition routes
+// This middleware extracts competitionId from the URL path
 router.use(conditionalLoadMembership);
 
 function serializeCompetition(competition: DbCompetition) {
