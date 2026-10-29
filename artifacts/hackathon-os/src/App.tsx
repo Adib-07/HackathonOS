@@ -47,8 +47,10 @@ function stripBase(path: string): string {
     : path;
 }
 
-if (!clerkPubKey) {
-  throw new Error('Missing VITE_CLERK_PUBLISHABLE_KEY in .env file');
+function validateClerkKey() {
+  if (!clerkPubKey) {
+    throw new Error('Missing VITE_CLERK_PUBLISHABLE_KEY in .env file');
+  }
 }
 
 const clerkAppearance = {
@@ -207,6 +209,8 @@ function RouteFallback() {
 
 function ClerkProviderWithRoutes() {
   const [, setLocation] = useLocation();
+
+  validateClerkKey();
 
   return (
     <ClerkProvider

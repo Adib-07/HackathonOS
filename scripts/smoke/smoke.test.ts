@@ -42,8 +42,11 @@ test.describe('Smoke tests against live site', () => {
 
     // Wait for the page to fully load and React to hydrate
     await page.waitForLoadState('domcontentloaded');
-    await page.waitForTimeout(2000); // Give React time to hydrate
-
+    
+    // Wait for Clerk to determine auth state and React to render content
+    // The landing page should show "PRIVATE HACKATHON WORKSPACE" or sign-in button
+    await page.waitForSelector('text=PRIVATE HACKATHON WORKSPACE, text=Welcome back, text=Sign in', { timeout: 15000 });
+    
     // Check that the page has actual content (not blank)
     const bodyText = await page.locator('body').textContent();
     expect(bodyText).toBeTruthy();
@@ -86,7 +89,9 @@ test.describe('Smoke tests against live site', () => {
     expect(response?.status()).toBe(200);
 
     await page.waitForLoadState('domcontentloaded');
-    await page.waitForTimeout(1000);
+    
+    // Wait for Clerk sign-in form to render
+    await page.waitForSelector('text=Welcome back, text=Sign in, text=Email address', { timeout: 15000 });
 
     // Check for Clerk sign-in form
     const hasSignInForm = await page.locator('text=Welcome back, text=Sign in, text=Email address').count();
