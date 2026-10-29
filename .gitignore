@@ -61,3 +61,10 @@ attached_assets/
 .env
 .env.*
 !.env.example
+
+# Test output
+test-results/
+playwright-report/
+
+# Generated at build time
+api/bundle.mjs
