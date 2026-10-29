@@ -87,6 +87,8 @@ overrides:
   source-map-js: 1.2.2
   # Security fix for vite vulnerabilities (GHSA-587h-7wmj-h5pm, GHSA-698v-4r3x-3vcv, GHSA-r825-w8mm-5pxw)
   vite: 7.3.7
+  # Security fix for qs vulnerability (GHSA-6pq8-jhm2-2vcw) - DoS via qs.stringify
+  qs: '>=6.16.1'
   # replit uses linux-x64 only, we can exclude all other platforms
   # "esbuild>@esbuild/darwin-arm64": "-"
   "esbuild>@esbuild/darwin-x64": "-"

@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security Hardening (chore/security-ci branch)
+- **CORS**: Explicit allow-list via `ALLOWED_ORIGINS` env var; credentials only for allowed origins
+- **Body Size Limits**: `express.json({ limit: BODY_SIZE_LIMIT })` default 1MB, configurable
+- **Centralized Error Handler**: No stack traces or internal details in production responses
+- **Zod Validation**: All request params/queries/bodies validated via `safeParse` on all routes
+- **Rate Limiting**: Per-user/IP limits via `express-rate-limit`; in-process window limiters for research (8/min), AI (12/min), plan generation (5/min), write ops (30/min)
+- **Dependency Security**: `pnpm-workspace.yaml` overrides for `qs>=6.16.1` (GHSA-6pq8-jhm2-2vcw)
+- **Secret Detection**: `gitleaks` in CI with `.gitleaks.toml`; allowlist for test fixtures
+- **CI Pipeline**: `.github/workflows/ci.yml` with pnpm 11, Node 24, frozen lockfile, lint, typecheck, test, build, audit (fail on high/critical), gitleaks; concurrency cancels superseded runs
+- **Dependabot**: `.github/dependabot.yml` for weekly grouped updates across all packages
+- **Docs**: Updated `SECURITY.md` and `README.md` Security sections; added `docs/security-review.md` audit table
+
 ### Added
 - Retrospective lifecycle stage with 4 real phases (`retrospective_what_worked`, `retrospective_what_failed`, `retrospective_lessons_learned`, `retrospective_next_steps`)
 - Settings & Integrations page (`/settings`) with workspace identity, competition defaults, connected tools, and danger zone

@@ -21,6 +21,43 @@ import {
   researchGapsTable,
 } from "@workspace/db";
 import {
+  CreateAnalysisParams,
+  CreateAnalysisResponse,
+  CreateBriefParams,
+  CreateBriefResponse,
+  CreateGapsParams,
+  CreateGapsResponse,
+  CreateIdeasParams,
+  CreateIdeasResponse,
+  CreateResearchBody,
+  CreateResearchParams,
+  CreateResearchResponse,
+  DecideIdeaBody,
+  DecideIdeaParams,
+  DecideIdeaResponse,
+  DeleteResearchParams,
+  DeleteResearchResponse,
+  EvaluateIdeaBody,
+  EvaluateIdeaParams,
+  EvaluateIdeaResponse,
+  GetAnalysisParams,
+  GetAnalysisResponse,
+  ListBriefsParams,
+  ListBriefsResponse,
+  ListGapsParams,
+  ListGapsResponse,
+  ListIdeasParams,
+  ListIdeasResponse,
+  ListResearchParams,
+  ListResearchResponse,
+  SaveRubricBody,
+  SaveRubricParams,
+  SaveRubricResponse,
+  UpdateRequirementBody,
+  UpdateRequirementParams,
+  UpdateRequirementResponse,
+} from "@workspace/api-zod";
+import {
   CLAIM_KINDS,
   RESEARCH_PROVIDERS,
   normaliseClaimKind,
@@ -101,10 +138,14 @@ function requireCompetition(
 router.post(
   "/competitions/:competitionId/analysis",
   async (req, res): Promise<void> => {
-    const competitionId = req.params.competitionId;
+    const params = CreateAnalysisParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: "Invalid competition ID." });
+      return;
+    }
     const ownerId = res.locals.userId as string;
 
-    const competition = await requireCompetition(competitionId, ownerId);
+    const competition = await requireCompetition(params.data.competitionId, ownerId);
     if (!competition) {
       res.status(404).json({ error: "Competition not found." });
       return;
@@ -157,14 +198,14 @@ router.post(
     const [latest] = await db
       .select({ version: competitionAnalysesTable.version })
       .from(competitionAnalysesTable)
-      .where(eq(competitionAnalysesTable.competitionId, competitionId))
+      .where(eq(competitionAnalysesTable.competitionId, params.data.competitionId))
       .orderBy(desc(competitionAnalysesTable.version))
       .limit(1);
 
     const [analysis] = await db
       .insert(competitionAnalysesTable)
       .values({
-        competitionId,
+        competitionId: params.data.competitionId,
         version: (latest?.version ?? 0) + 1,
         coreProblem: deterministic.coreProblem,
         missingFields: deterministic.missingFields,
@@ -209,10 +250,14 @@ router.post(
 router.get(
   "/competitions/:competitionId/analysis",
   async (req, res): Promise<void> => {
-    const competitionId = req.params.competitionId;
+    const params = GetAnalysisParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: "Invalid competition ID." });
+      return;
+    }
     const ownerId = res.locals.userId as string;
 
-    const competition = await requireCompetition(competitionId, ownerId);
+    const competition = await requireCompetition(params.data.competitionId, ownerId);
     if (!competition) {
       res.status(404).json({ error: "Competition not found." });
       return;
@@ -221,7 +266,7 @@ router.get(
     const [analysis] = await db
       .select()
       .from(competitionAnalysesTable)
-      .where(eq(competitionAnalysesTable.competitionId, competitionId))
+      .where(eq(competitionAnalysesTable.competitionId, params.data.competitionId))
       .orderBy(desc(competitionAnalysesTable.version))
       .limit(1);
 
@@ -242,34 +287,38 @@ router.get(
 router.patch(
   "/competitions/:competitionId/analysis/requirements/:requirementId",
   async (req, res): Promise<void> => {
-    const competitionId = req.params.competitionId;
+    const params = UpdateRequirementParams.safeParse(req.params);
+    const parsed = UpdateRequirementBody.safeParse(req.body);
+    if (!params.success || !parsed.success) {
+      res.status(400).json({ error: "Invalid requirement update." });
+      return;
+    }
     const ownerId = res.locals.userId as string;
 
-    const competition = await requireCompetition(competitionId, ownerId);
+    const competition = await requireCompetition(params.data.competitionId, ownerId);
     if (!competition) {
       res.status(404).json({ error: "Competition not found." });
       return;
     }
 
-    const text = typeof req.body?.text === "string" ? req.body.text.trim() : "";
-    const reviewed = req.body?.reviewed === true;
-    if (!text) {
+    const trimmedText = parsed.data.text.trim();
+    if (!trimmedText) {
       res.status(400).json({ error: "A requirement needs text." });
       return;
     }
 
     const [updated] = await db
       .update(analysisRequirementsTable)
-      .set({ text, reviewed })
+      .set({ text: trimmedText, reviewed: parsed.data.reviewed })
       .where(
         and(
-          eq(analysisRequirementsTable.id, req.params.requirementId),
+          eq(analysisRequirementsTable.id, params.data.requirementId),
           eq(
             analysisRequirementsTable.analysisId,
             db
               .select({ id: competitionAnalysesTable.id })
               .from(competitionAnalysesTable)
-              .where(eq(competitionAnalysesTable.competitionId, competitionId))
+              .where(eq(competitionAnalysesTable.competitionId, params.data.competitionId))
               .limit(1) as never,
           ),
         ),
@@ -290,23 +339,28 @@ router.patch(
 router.post(
   "/competitions/:competitionId/research",
   async (req, res): Promise<void> => {
-    const competitionId = req.params.competitionId;
+    const params = CreateResearchParams.safeParse(req.params);
+    const parsed = CreateResearchBody.safeParse(req.body);
+    if (!params.success || !parsed.success) {
+      res.status(400).json({ error: "Invalid research request." });
+      return;
+    }
     const ownerId = res.locals.userId as string;
 
-    const competition = await requireCompetition(competitionId, ownerId);
+    const competition = await requireCompetition(params.data.competitionId, ownerId);
     if (!competition) {
       res.status(404).json({ error: "Competition not found." });
       return;
     }
 
+    const data = parsed.data;
+
     // A finding the user recorded by hand. This branch is checked first
     // because a manual finding has no search query.
-    if (req.body?.manual === true) {
-      const title = typeof req.body.title === "string" ? req.body.title.trim() : "";
-      const summary =
-        typeof req.body.summary === "string" ? req.body.summary.trim() : "";
-      const sourceUrl =
-        typeof req.body.sourceUrl === "string" ? req.body.sourceUrl.trim() : "";
+    if (data.manual === true) {
+      const title = data.title?.trim() ?? "";
+      const summary = data.summary?.trim() ?? "";
+      const sourceUrl = data.sourceUrl?.trim() ?? "";
       if (!title || !summary) {
         res.status(400).json({
           error: "A manual finding needs a title and a summary.",
@@ -321,21 +375,16 @@ router.post(
       const [created] = await db
         .insert(researchFindingsTable)
         .values({
-          competitionId,
+          competitionId: params.data.competitionId,
           title,
           summary,
           sourceUrl: sourceUrl || null,
           provider: "manual",
-          sourceType: normaliseResearchSourceType(req.body.sourceType),
+          sourceType: normaliseResearchSourceType(data.sourceType),
           claimKind: "SOURCE_SUPPORTED",
-          supports:
-            typeof req.body.supports === "string" ? req.body.supports : null,
-          limitations:
-            typeof req.body.limitations === "string"
-              ? req.body.limitations
-              : null,
-          excerpt:
-            typeof req.body.excerpt === "string" ? req.body.excerpt : null,
+          supports: data.supports ?? null,
+          limitations: data.limitations ?? null,
+          excerpt: data.excerpt ?? null,
           manual: true,
         })
         .returning();
@@ -353,7 +402,7 @@ router.post(
       return;
     }
 
-    const query = typeof req.body?.query === "string" ? req.body.query.trim() : "";
+    const query = data.query?.trim() ?? "";
     if (query.length < 3) {
       res
         .status(400)
@@ -365,8 +414,8 @@ router.post(
       return;
     }
 
-    const requested = Array.isArray(req.body?.providers)
-      ? (req.body.providers as string[]).filter((provider): provider is never =>
+    const requested = Array.isArray(data.providers)
+      ? data.providers.filter((provider) =>
           (RESEARCH_PROVIDERS as readonly string[]).includes(provider),
         )
       : [...RESEARCH_PROVIDERS];
@@ -378,7 +427,7 @@ router.post(
       .values(
         search.outcomes.flatMap((outcome) =>
           outcome.results.map((result) => ({
-            competitionId,
+            competitionId: params.data.competitionId,
             title: result.title,
             sourceUrl: result.url,
             provider: result.provider,
@@ -419,10 +468,14 @@ function isHttpUrl(value: string): boolean {
 router.get(
   "/competitions/:competitionId/research",
   async (req, res): Promise<void> => {
-    const competitionId = req.params.competitionId;
+    const params = ListResearchParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: "Invalid competition ID." });
+      return;
+    }
     const ownerId = res.locals.userId as string;
 
-    const competition = await requireCompetition(competitionId, ownerId);
+    const competition = await requireCompetition(params.data.competitionId, ownerId);
     if (!competition) {
       res.status(404).json({ error: "Competition not found." });
       return;
@@ -431,7 +484,7 @@ router.get(
     const findings = await db
       .select()
       .from(researchFindingsTable)
-      .where(eq(researchFindingsTable.competitionId, competitionId))
+      .where(eq(researchFindingsTable.competitionId, params.data.competitionId))
       .orderBy(desc(researchFindingsTable.retrievedAt));
 
     res.json({ findings });
@@ -441,10 +494,14 @@ router.get(
 router.delete(
   "/competitions/:competitionId/research/:findingId",
   async (req, res): Promise<void> => {
-    const competitionId = req.params.competitionId;
+    const params = DeleteResearchParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: "Invalid finding ID." });
+      return;
+    }
     const ownerId = res.locals.userId as string;
 
-    const competition = await requireCompetition(competitionId, ownerId);
+    const competition = await requireCompetition(params.data.competitionId, ownerId);
     if (!competition) {
       res.status(404).json({ error: "Competition not found." });
       return;
@@ -454,8 +511,8 @@ router.delete(
       .delete(researchFindingsTable)
       .where(
         and(
-          eq(researchFindingsTable.id, req.params.findingId),
-          eq(researchFindingsTable.competitionId, competitionId),
+          eq(researchFindingsTable.id, params.data.findingId),
+          eq(researchFindingsTable.competitionId, params.data.competitionId),
         ),
       )
       .returning();
@@ -474,10 +531,14 @@ router.delete(
 router.post(
   "/competitions/:competitionId/gaps",
   async (req, res): Promise<void> => {
-    const competitionId = req.params.competitionId;
+    const params = CreateGapsParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: "Invalid competition ID." });
+      return;
+    }
     const ownerId = res.locals.userId as string;
 
-    const competition = await requireCompetition(competitionId, ownerId);
+    const competition = await requireCompetition(params.data.competitionId, ownerId);
     if (!competition) {
       res.status(404).json({ error: "Competition not found." });
       return;
@@ -486,12 +547,12 @@ router.post(
     const findings = await db
       .select()
       .from(researchFindingsTable)
-      .where(eq(researchFindingsTable.competitionId, competitionId));
+      .where(eq(researchFindingsTable.competitionId, params.data.competitionId));
 
     const [analysis] = await db
       .select()
       .from(competitionAnalysesTable)
-      .where(eq(competitionAnalysesTable.competitionId, competitionId))
+      .where(eq(competitionAnalysesTable.competitionId, params.data.competitionId))
       .orderBy(desc(competitionAnalysesTable.version))
       .limit(1);
 
@@ -575,7 +636,7 @@ router.post(
       .insert(researchGapsTable)
       .values(
         gaps.map((gap) => ({
-          competitionId,
+          competitionId: params.data.competitionId,
           need: gap.need,
           targetUser: gap.targetUser,
           supportingFindingIds: gap.supportingFindingIds,
@@ -605,10 +666,14 @@ router.post(
 router.get(
   "/competitions/:competitionId/gaps",
   async (req, res): Promise<void> => {
-    const competitionId = req.params.competitionId;
+    const params = ListGapsParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: "Invalid competition ID." });
+      return;
+    }
     const ownerId = res.locals.userId as string;
 
-    const competition = await requireCompetition(competitionId, ownerId);
+    const competition = await requireCompetition(params.data.competitionId, ownerId);
     if (!competition) {
       res.status(404).json({ error: "Competition not found." });
       return;
@@ -617,7 +682,7 @@ router.get(
     const gaps = await db
       .select()
       .from(researchGapsTable)
-      .where(eq(researchGapsTable.competitionId, competitionId))
+      .where(eq(researchGapsTable.competitionId, params.data.competitionId))
       .orderBy(desc(researchGapsTable.createdAt));
 
     res.json({ gaps });
@@ -629,10 +694,14 @@ router.get(
 router.post(
   "/competitions/:competitionId/ideas",
   async (req, res): Promise<void> => {
-    const competitionId = req.params.competitionId;
+    const params = CreateIdeasParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: "Invalid competition ID." });
+      return;
+    }
     const ownerId = res.locals.userId as string;
 
-    const competition = await requireCompetition(competitionId, ownerId);
+    const competition = await requireCompetition(params.data.competitionId, ownerId);
     if (!competition) {
       res.status(404).json({ error: "Competition not found." });
       return;
@@ -649,7 +718,7 @@ router.post(
     const [analysis] = await db
       .select()
       .from(competitionAnalysesTable)
-      .where(eq(competitionAnalysesTable.competitionId, competitionId))
+      .where(eq(competitionAnalysesTable.competitionId, params.data.competitionId))
       .orderBy(desc(competitionAnalysesTable.version))
       .limit(1);
 
@@ -663,7 +732,7 @@ router.post(
     const findings = await db
       .select()
       .from(researchFindingsTable)
-      .where(eq(researchFindingsTable.competitionId, competitionId));
+      .where(eq(researchFindingsTable.competitionId, params.data.competitionId));
 
     const providerInstance = currentAiProvider();
     if (!providerInstance) {
@@ -744,7 +813,7 @@ router.post(
       .insert(ideaCandidatesTable)
       .values(
         ideas.map((idea) => ({
-          competitionId,
+          competitionId: params.data.competitionId,
           name: idea.name,
           pitch: idea.pitch,
           targetUser: idea.targetUser,
@@ -773,10 +842,14 @@ router.post(
 router.get(
   "/competitions/:competitionId/ideas",
   async (req, res): Promise<void> => {
-    const competitionId = req.params.competitionId;
+    const params = ListIdeasParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: "Invalid competition ID." });
+      return;
+    }
     const ownerId = res.locals.userId as string;
 
-    const competition = await requireCompetition(competitionId, ownerId);
+    const competition = await requireCompetition(params.data.competitionId, ownerId);
     if (!competition) {
       res.status(404).json({ error: "Competition not found." });
       return;
@@ -785,13 +858,13 @@ router.get(
     const ideas = await db
       .select()
       .from(ideaCandidatesTable)
-      .where(eq(ideaCandidatesTable.competitionId, competitionId))
+      .where(eq(ideaCandidatesTable.competitionId, params.data.competitionId))
       .orderBy(desc(ideaCandidatesTable.createdAt));
 
     const rubric = await db
       .select()
       .from(ideaRubricsTable)
-      .where(eq(ideaRubricsTable.competitionId, competitionId))
+      .where(eq(ideaRubricsTable.competitionId, params.data.competitionId))
       .limit(1);
 
     const evaluations = ideas.length
@@ -839,10 +912,30 @@ router.get(
 router.post(
   "/competitions/:competitionId/ideas/:ideaId/evaluate",
   async (req, res): Promise<void> => {
-    const competitionId = req.params.competitionId;
+    const params = EvaluateIdeaParams.safeParse(req.params);
+    const parsed = EvaluateIdeaBody.safeParse(req.body);
+    if (!params.success) {
+      res.status(400).json({ error: "Invalid evaluation request.", code: "INVALID_PARAMS" });
+      return;
+    }
+    if (!parsed.success) {
+      // Check if the error is specifically about invalid scores
+      const hasScoreError = parsed.error.issues.some(
+        (issue) => issue.path.includes("score") && issue.path.includes("scores")
+      );
+      if (hasScoreError) {
+        res.status(400).json({
+          error: "No scores could be produced. Score the idea by hand, or configure an AI provider.",
+          code: "NO_SCORES",
+        });
+        return;
+      }
+      res.status(400).json({ error: "Invalid evaluation request.", code: "INVALID_BODY" });
+      return;
+    }
     const ownerId = res.locals.userId as string;
 
-    const competition = await requireCompetition(competitionId, ownerId);
+    const competition = await requireCompetition(params.data.competitionId, ownerId);
     if (!competition) {
       res.status(404).json({ error: "Competition not found." });
       return;
@@ -853,8 +946,8 @@ router.post(
       .from(ideaCandidatesTable)
       .where(
         and(
-          eq(ideaCandidatesTable.id, req.params.ideaId),
-          eq(ideaCandidatesTable.competitionId, competitionId),
+          eq(ideaCandidatesTable.id, params.data.ideaId),
+          eq(ideaCandidatesTable.competitionId, params.data.competitionId),
         ),
       )
       .limit(1);
@@ -864,11 +957,11 @@ router.post(
       return;
     }
 
-    const provided = Array.isArray(req.body?.scores) ? req.body.scores : [];
+    const provided = parsed.data.scores;
     const rubric = await db
       .select()
       .from(ideaRubricsTable)
-      .where(eq(ideaRubricsTable.competitionId, competitionId))
+      .where(eq(ideaRubricsTable.competitionId, params.data.competitionId))
       .limit(1);
 
     const weights = normaliseWeights(
@@ -988,26 +1081,26 @@ router.post(
 router.put(
   "/competitions/:competitionId/rubric",
   async (req, res): Promise<void> => {
-    const competitionId = req.params.competitionId;
+    const params = SaveRubricParams.safeParse(req.params);
+    const parsed = SaveRubricBody.safeParse(req.body);
+    if (!params.success || !parsed.success) {
+      res.status(400).json({ error: "Invalid rubric request." });
+      return;
+    }
     const ownerId = res.locals.userId as string;
 
-    const competition = await requireCompetition(competitionId, ownerId);
+    const competition = await requireCompetition(params.data.competitionId, ownerId);
     if (!competition) {
       res.status(404).json({ error: "Competition not found." });
       return;
     }
 
-    const provided =
-      req.body?.weights && typeof req.body.weights === "object"
-        ? (req.body.weights as Record<string, number>)
-        : {};
-
-    const weights = normaliseWeights(provided);
+    const weights = normaliseWeights(parsed.data.weights);
 
     const [saved] = await db
       .insert(ideaRubricsTable)
       .values({
-        competitionId,
+        competitionId: params.data.competitionId,
         weights: weights as never,
       })
       .onConflictDoUpdate({
@@ -1023,37 +1116,27 @@ router.put(
 router.post(
   "/competitions/:competitionId/ideas/:ideaId/decision",
   async (req, res): Promise<void> => {
-    const competitionId = req.params.competitionId;
+    const params = DecideIdeaParams.safeParse(req.params);
+    const parsed = DecideIdeaBody.safeParse(req.body);
+    if (!params.success || !parsed.success) {
+      res.status(400).json({ error: "Invalid decision request." });
+      return;
+    }
     const ownerId = res.locals.userId as string;
 
-    const competition = await requireCompetition(competitionId, ownerId);
+    const competition = await requireCompetition(params.data.competitionId, ownerId);
     if (!competition) {
       res.status(404).json({ error: "Competition not found." });
       return;
     }
 
-    const status = String(req.body?.status ?? "");
-    if (status !== "selected" && status !== "rejected") {
-      res.status(400).json({ error: "A decision must be selected or rejected." });
-      return;
-    }
-
-    const rationale =
-      typeof req.body?.rationale === "string" ? req.body.rationale.trim() : "";
-    if (!rationale) {
-      res
-        .status(400)
-        .json({ error: "Record why this idea was chosen or rejected." });
-      return;
-    }
-
     const [updated] = await db
       .update(ideaCandidatesTable)
-      .set({ status, decisionRationale: rationale })
+      .set({ status: parsed.data.status, decisionRationale: parsed.data.rationale })
       .where(
         and(
-          eq(ideaCandidatesTable.id, req.params.ideaId),
-          eq(ideaCandidatesTable.competitionId, competitionId),
+          eq(ideaCandidatesTable.id, params.data.ideaId),
+          eq(ideaCandidatesTable.competitionId, params.data.competitionId),
         ),
       )
       .returning();
@@ -1072,12 +1155,25 @@ router.post(
 router.post(
   "/competitions/:competitionId/ideas/:ideaId/brief",
   async (req, res): Promise<void> => {
-    const competitionId = req.params.competitionId;
     const ownerId = res.locals.userId as string;
 
-    const competition = await requireCompetition(competitionId, ownerId);
+    // Validate competitionId first to check ownership before validating ideaId
+    const competitionIdResult = CreateBriefParams.shape.competitionId.safeParse(req.params.competitionId);
+    if (!competitionIdResult.success) {
+      res.status(400).json({ error: "Invalid competition ID." });
+      return;
+    }
+
+    const competition = await requireCompetition(competitionIdResult.data, ownerId);
     if (!competition) {
       res.status(404).json({ error: "Competition not found." });
+      return;
+    }
+
+    // Now validate the full params including ideaId
+    const params = CreateBriefParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: "Invalid brief request." });
       return;
     }
 
@@ -1086,8 +1182,8 @@ router.post(
       .from(ideaCandidatesTable)
       .where(
         and(
-          eq(ideaCandidatesTable.id, req.params.ideaId),
-          eq(ideaCandidatesTable.competitionId, competitionId),
+          eq(ideaCandidatesTable.id, params.data.ideaId),
+          eq(ideaCandidatesTable.competitionId, params.data.competitionId),
         ),
       )
       .limit(1);
@@ -1121,7 +1217,7 @@ router.post(
     const [analysis] = await db
       .select()
       .from(competitionAnalysesTable)
-      .where(eq(competitionAnalysesTable.competitionId, competitionId))
+      .where(eq(competitionAnalysesTable.competitionId, params.data.competitionId))
       .orderBy(desc(competitionAnalysesTable.version))
       .limit(1);
 
@@ -1170,7 +1266,7 @@ router.post(
         // The brief built from the idea alone is still saved, with a note.
         const failure = aiErrorResponse(error);
         const saved = await persistBrief(
-          competitionId,
+          params.data.competitionId,
           idea.id,
           parsed.brief,
           parsed.missingSections,
@@ -1187,7 +1283,7 @@ router.post(
     }
 
     const saved = await persistBrief(
-      competitionId,
+      params.data.competitionId,
       idea.id,
       parsed.brief,
       parsed.missingSections,
@@ -1236,10 +1332,14 @@ async function persistBrief(
 router.get(
   "/competitions/:competitionId/briefs",
   async (req, res): Promise<void> => {
-    const competitionId = req.params.competitionId;
+    const params = ListBriefsParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: "Invalid competition ID." });
+      return;
+    }
     const ownerId = res.locals.userId as string;
 
-    const competition = await requireCompetition(competitionId, ownerId);
+    const competition = await requireCompetition(params.data.competitionId, ownerId);
     if (!competition) {
       res.status(404).json({ error: "Competition not found." });
       return;
@@ -1248,7 +1348,7 @@ router.get(
     const briefs = await db
       .select()
       .from(buildBriefsTable)
-      .where(eq(buildBriefsTable.competitionId, competitionId))
+      .where(eq(buildBriefsTable.competitionId, params.data.competitionId))
       .orderBy(desc(buildBriefsTable.createdAt));
 
     res.json({ briefs });

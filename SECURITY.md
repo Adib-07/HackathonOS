@@ -119,13 +119,17 @@ This is a **defense-in-depth** measure; secrets should never reach the API.
 | **Auth** | Clerk session cookies, `requireAuthenticatedUser` middleware |
 | **Authorization** | Every query joins `competitions.owner_id = current_user_id` |
 | **Transport** | HTTPS enforced by Vercel; HSTS via Vercel |
+| **CORS** | Explicit allow-list via `ALLOWED_ORIGINS` env var; credentials only for allowed origins |
 | **Headers** | Helmet: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: camera=(), microphone=(), geolocation=()` |
 | **CSP** | `default-src 'self'`, allow Clerk, Cloudflare Challenges, Google Fonts, Clerk images/telemetry |
-| **Input Validation** | Zod `safeParse` on all request bodies/params |
+| **Input Validation** | Zod `safeParse` on all request bodies/params/queries |
+| **Body Size Limits** | `express.json({ limit: BODY_SIZE_LIMIT })` default 1MB, configurable |
+| **Error Handling** | Centralized error handler; no stack traces or internal details in production |
 | **SQL Safety** | Drizzle ORM parameterized queries only |
-| **Rate Limiting** | `express-rate-limit` per IP; in-process window limiters for research (8/min) and AI (12/min) |
+| **Rate Limiting** | `express-rate-limit` per IP/user; in-process window limiters for research (8/min) and AI (12/min); plan generation (5/min), write ops (30/min) |
 | **Secret Scanning** | Evidence submission blocks credential-like strings |
-| **Dependency Security** | `pnpm-workspace.yaml` `minimumReleaseAge: 1440` (1-day delay on new npm versions) |
+| **Dependency Security** | `pnpm-workspace.yaml` `minimumReleaseAge: 1440` (1-day delay on new npm versions); overrides for known vulnerabilities |
+| **Secret Detection** | `gitleaks` in CI; `.gitleaks.toml` with allowlist for test fixtures |
 
 ---
 
@@ -140,6 +144,12 @@ pnpm outdated
 
 # Run security-focused tests
 pnpm --filter @workspace/api-server test  # includes security-headers.test.mjs
+
+# Scan for secrets in git history
+gitleaks detect --source . --verbose --redact --config .gitleaks.toml
+
+# Run security audit in CI mode
+pnpm audit --prod --audit-level=high
 ```
 
 ---

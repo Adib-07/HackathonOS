@@ -1,0 +1,279 @@
+# Dependabot configuration for HackathonOS
+# Automatically updates dependencies and creates PRs for security patches
+
+version: 2
+updates:
+  # Main workspace dependencies
+  - package-ecosystem: "pnpm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "pnpm"
+    commit-message:
+      prefix: "chore(deps):"
+      include: "scope"
+    reviewers:
+      - "Adib-07"
+    assignees:
+      - "Adib-07"
+    # Group related updates
+    groups:
+      dev-dependencies:
+        patterns:
+          - "@types/*"
+          - "typescript"
+          - "prettier"
+          - "@playwright/*"
+          - "playwright"
+        update-types:
+          - "minor"
+          - "patch"
+      security-only:
+        patterns:
+          - "*"
+        update-types:
+          - "security"
+
+  # API server dependencies
+  - package-ecosystem: "pnpm"
+    directory: "/artifacts/api-server"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "api-server"
+    commit-message:
+      prefix: "chore(deps):"
+      include: "scope"
+    reviewers:
+      - "Adib-07"
+    assignees:
+      - "Adib-07"
+    groups:
+      express-ecosystem:
+        patterns:
+          - "express"
+          - "express-*"
+          - "@types/express"
+          - "@types/express-*"
+        update-types:
+          - "minor"
+          - "patch"
+      clerk:
+        patterns:
+          - "@clerk/*"
+        update-types:
+          - "minor"
+          - "patch"
+      drizzle:
+        patterns:
+          - "drizzle-orm"
+          - "drizzle-kit"
+        update-types:
+          - "minor"
+          - "patch"
+      zod:
+        patterns:
+          - "zod"
+          - "@workspace/api-zod"
+        update-types:
+          - "minor"
+          - "patch"
+      security-only:
+        patterns:
+          - "*"
+        update-types:
+          - "security"
+
+  # Hackathon OS frontend dependencies
+  - package-ecosystem: "pnpm"
+    directory: "/artifacts/hackathon-os"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "frontend"
+    commit-message:
+      prefix: "chore(deps):"
+      include: "scope"
+    reviewers:
+      - "Adib-07"
+    assignees:
+      - "Adib-07"
+    groups:
+      react-ecosystem:
+        patterns:
+          - "react"
+          - "react-*"
+          - "@types/react*"
+          - "framer-motion"
+          - "lucide-react"
+          - "radix-ui"
+          - "@radix-ui/*"
+          - "tailwindcss"
+          - "@tailwindcss/*"
+          - "tailwind-merge"
+          - "class-variance-authority"
+          - "clsx"
+        update-types:
+          - "minor"
+          - "patch"
+      tanstack:
+        patterns:
+          - "@tanstack/*"
+        update-types:
+          - "minor"
+          - "patch"
+      vite:
+        patterns:
+          - "vite"
+          - "@vitejs/*"
+          - "@replit/vite-*"
+        update-types:
+          - "minor"
+          - "patch"
+      zod:
+        patterns:
+          - "zod"
+          - "@workspace/api-zod"
+          - "@workspace/api-client-react"
+        update-types:
+          - "minor"
+          - "patch"
+      security-only:
+        patterns:
+          - "*"
+        update-types:
+          - "security"
+
+  # Database dependencies
+  - package-ecosystem: "pnpm"
+    directory: "/lib/db"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "database"
+    commit-message:
+      prefix: "chore(deps):"
+      include: "scope"
+    reviewers:
+      - "Adib-07"
+    assignees:
+      - "Adib-07"
+    groups:
+      drizzle:
+        patterns:
+          - "drizzle-orm"
+          - "drizzle-kit"
+        update-types:
+          - "minor"
+          - "patch"
+      security-only:
+        patterns:
+          - "*"
+        update-types:
+          - "security"
+
+  # API Zod shared library
+  - package-ecosystem: "pnpm"
+    directory: "/lib/api-zod"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "api-zod"
+    commit-message:
+      prefix: "chore(deps):"
+      include: "scope"
+    reviewers:
+      - "Adib-07"
+    assignees:
+      - "Adib-07"
+    groups:
+      zod:
+        patterns:
+          - "zod"
+        update-types:
+          - "minor"
+          - "patch"
+      security-only:
+        patterns:
+          - "*"
+        update-types:
+          - "security"
+
+  # API Client React
+  - package-ecosystem: "pnpm"
+    directory: "/lib/api-client-react"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "api-client"
+    commit-message:
+      prefix: "chore(deps):"
+      include: "scope"
+    reviewers:
+      - "Adib-07"
+    assignees:
+      - "Adib-07"
+    groups:
+      zod:
+        patterns:
+          - "zod"
+          - "@workspace/api-zod"
+        update-types:
+          - "minor"
+          - "patch"
+      security-only:
+        patterns:
+          - "*"
+        update-types:
+          - "security"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "chore(deps):"
+      include: "scope"
+    reviewers:
+      - "Adib-07"
+    assignees:
+      - "Adib-07"

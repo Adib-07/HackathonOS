@@ -1,5 +1,6 @@
-import express, { type Express } from "express";
+import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import helmet from "helmet";
+import cors from "cors";
 import { clerkMiddleware } from "@clerk/express";
 import { publishableKeyFromHost } from "@clerk/shared/keys";
 import pinoHttp from "pino-http";
@@ -70,6 +71,45 @@ app.use(
   }),
 );
 
+// CORS - explicit allow-list from env var
+// Format: ALLOWED_ORIGINS="https://hackathonos-mu.vercel.app,https://*.vercel.app"
+// In production, only the exact production domain is allowed.
+// In preview, the Vercel preview pattern is allowed.
+// Credentials only for allowed origins.
+const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? "")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+const corsOptions: cors.CorsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, server-to-server)
+    if (!origin) return callback(null, true);
+
+    const isAllowed = allowedOrigins.some((allowed) => {
+      if (allowed.includes("*")) {
+        // Convert wildcard pattern to regex
+        const regex = new RegExp("^" + allowed.replace(/\*/g, ".*") + "$");
+        return regex.test(origin);
+      }
+      return allowed === origin;
+    });
+
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      logger.warn({ origin }, "CORS blocked request from unauthorized origin");
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true, // Allow cookies/auth headers for allowed origins
+  methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Test-User-Id"],
+  maxAge: 86400, // Cache preflight for 24 hours
+};
+
+app.use(cors(corsOptions));
+
 app.use(
   pinoHttp({
     logger,
@@ -89,9 +129,15 @@ app.use(
     },
   }),
 );
+
+// Body size limit - prevent DoS via large payloads
+// Default 1MB, configurable via BODY_SIZE_LIMIT (e.g., "2mb", "500kb")
+const bodySizeLimit = process.env.BODY_SIZE_LIMIT ?? "1mb";
+app.use(express.json({ limit: bodySizeLimit }));
+app.use(express.urlencoded({ extended: true, limit: bodySizeLimit }));
+
 app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+
 if (process.env.CLERK_SECRET_KEY || process.env.CLERK_PUBLISHABLE_KEY) {
   app.use(
     clerkMiddleware((req) => ({
@@ -129,6 +175,37 @@ app.use((req, _res, next) => {
 // Apply rate limiting to API routes (after auth so userId is available)
 app.use("/api", rateLimiterWrapper);
 app.use("/api", router);
+
+// Centralized error handler - MUST BE LAST
+// In production: no stack traces, no internal details
+// In development: include stack trace for debugging
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+  const isProd = process.env.NODE_ENV === "production";
+
+  logger.error({ err: err.message, stack: isProd ? undefined : err.stack }, "Unhandled error");
+
+  // Don't leak internal errors in production
+  if (isProd) {
+    res.status(500).json({
+      error: "Internal server error",
+      code: "INTERNAL_ERROR",
+    });
+  } else {
+    res.status(500).json({
+      error: err.message,
+      code: "INTERNAL_ERROR",
+      stack: err.stack,
+    });
+  }
+});
+
+// 404 handler for unmatched routes
+app.use((_req: Request, res: Response) => {
+  res.status(404).json({
+    error: "Not found",
+    code: "NOT_FOUND",
+  });
+});
 
 export default app;
 
