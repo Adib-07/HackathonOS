@@ -9,6 +9,24 @@ let dbInstance: ReturnType<typeof drizzle> | null = null;
 
 function createPool(): pg.Pool {
   const databaseUrl = process.env.DATABASE_URL;
+  const isTest = process.env.NODE_ENV === "test";
+  const isCI = process.env.CI === "true";
+  const hasTestDatabaseUrl = !!process.env.DATABASE_URL_TEST;
+
+  // CI Guard: In test mode, require CI=true and DATABASE_URL_TEST to be set
+  // This prevents tests from accidentally running against a non-CI database
+  if (isTest) {
+    if (!isCI) {
+      throw new Error(
+        "[db] TEST GUARD: Refusing to run tests outside CI environment. Set CI=true to run tests.",
+      );
+    }
+    if (!hasTestDatabaseUrl) {
+      throw new Error(
+        "[db] TEST GUARD: DATABASE_URL_TEST not set. Tests require an isolated test database. Set DATABASE_URL_TEST in CI.",
+      );
+    }
+  }
 
   if (!databaseUrl) {
     const isProduction = process.env.NODE_ENV === "production";

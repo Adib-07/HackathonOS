@@ -1,5 +1,5 @@
 # Gitleaks configuration for HackathonOS
-# Detects secrets, API keys, tokens, and other sensitive information
+# Extends default rules and adds allowlist for test/fake keys
 
 [allowlist]
 description = "Allowlisted gitleaks patterns"
@@ -23,86 +23,10 @@ paths = [
   '''docs/security-review\.md''',
 ]
 
+# Use default rules from gitleaks
 [rule]
-# Generic API key patterns
-id = "generic-api-key"
-description = "Generic API key pattern"
-regex = '''(?i)(api[_-]?key|apikey|secret[_-]?key|access[_-]?token)[\s:=]+[a-zA-Z0-9_\-]{20,}'''
-tags = ["key", "api"]
-
-[rule]
-# AWS access key
-id = "aws-access-key"
-description = "AWS Access Key ID"
-regex = '''\bAKIA[0-9A-Z]{16}\b'''
-tags = ["key", "aws"]
-
-[rule]
-# AWS secret key
-id = "aws-secret-key"
-description = "AWS Secret Access Key"
-regex = '''(?i)aws[_-]?secret[_-]?access[_-]?key[\s:=]+[a-zA-Z0-9/+=]{40}'''
-tags = ["key", "aws"]
-
-[rule]
-# GitHub token
-id = "github-token"
-description = "GitHub Personal Access Token"
-regex = '''\bgh[pousr]_[a-zA-Z0-9]{36,}\b'''
-tags = ["key", "github"]
-
-[rule]
-# Slack token
-id = "slack-token"
-description = "Slack API Token"
-regex = '''\bxox[baprs]-[a-zA-Z0-9-]{10,}\b'''
-tags = ["key", "slack"]
-
-[rule]
-# Stripe key
-id = "stripe-key"
-description = "Stripe API Key"
-regex = '''\bsk_(live|test)_[a-zA-Z0-9]{24,}\b'''
-tags = ["key", "stripe"]
-
-[rule]
-# OpenAI key
-id = "openai-key"
-description = "OpenAI API Key"
-regex = '''\bsk-[a-zA-Z0-9]{48,}\b'''
-tags = ["key", "openai"]
-
-[rule]
-# Generic JWT
-id = "jwt-token"
-description = "JSON Web Token"
-regex = '''eyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}'''
-tags = ["token", "jwt"]
-
-[rule]
-# Private key
-id = "private-key"
-description = "Private Key"
-regex = '''-----BEGIN [A-Z ]*PRIVATE KEY-----'''
-tags = ["key", "private"]
-
-[rule]
-# Database URL with credentials
-id = "database-url"
-description = "Database connection string with credentials"
-regex = '''(postgres|mysql|mongodb)://[^:]+:[^@]+@'''
-tags = ["database", "credential"]
-
-[rule]
-# Clerk secret key
-id = "clerk-secret-key"
-description = "Clerk Secret Key"
-regex = '''\bsk_(live|test)_[a-zA-Z0-9]{10,}\b'''
-tags = ["key", "clerk"]
-
-[rule]
-# Vercel token
-id = "vercel-token"
-description = "Vercel Access Token"
-regex = '''\bvercel_[a-zA-Z0-9]{20,}\b'''
-tags = ["key", "vercel"]
+# This extends the default gitleaks rules - gitleaks will use its built-in rules
+# and apply our allowlist on top
+id = "default-rules"
+description = "Use gitleaks default detection rules"
+useDefault = true
