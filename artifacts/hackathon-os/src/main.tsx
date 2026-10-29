@@ -2,11 +2,9 @@ import { createRoot } from 'react-dom/client';
 
 import App from './App';
 import { ErrorBoundary } from '@/components/error-boundary';
-import { validateClientEnv } from '@/lib/client-env';
+import { ClientEnvGuard } from '@/components/ClientEnvGuard';
 
 import './index.css';
-
-validateClientEnv();
 
 createRoot(document.getElementById('root')!, {
   // Keeps caught errors off reportError(), which would raise the dev overlay.
@@ -15,6 +13,8 @@ createRoot(document.getElementById('root')!, {
   },
 }).render(
   <ErrorBoundary>
-    <App />
+    <ClientEnvGuard>
+      <App />
+    </ClientEnvGuard>
   </ErrorBoundary>,
 );
