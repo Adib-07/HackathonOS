@@ -5,6 +5,7 @@ import { shadcn } from '@clerk/themes';
 import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import { Redirect, Route, Router as WouterRouter, Switch, useLocation } from 'wouter';
 import { ErrorBoundary } from '@/components/error-boundary';
+import { ClerkLoader } from '@/components/ClerkLoader';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Brand, WorkspaceShell } from '@/components/workspace';
@@ -212,8 +213,11 @@ function ClerkProviderWithRoutes() {
 
   validateClerkKey();
 
+  // Allow test to override timeout via window global
+  const testTimeoutMs = typeof window !== 'undefined' && (window as any).__CLERK_TEST_TIMEOUT_MS__;
+
   return (
-    <ClerkProvider
+    <ClerkLoader
       publishableKey={clerkPubKey}
       proxyUrl={clerkProxyUrl}
       appearance={clerkAppearance}
@@ -235,6 +239,7 @@ function ClerkProviderWithRoutes() {
       }}
       routerPush={(to) => setLocation(stripBase(to))}
       routerReplace={(to) => setLocation(stripBase(to), { replace: true })}
+      loadTimeoutMs={testTimeoutMs}
     >
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
@@ -256,7 +261,7 @@ function ClerkProviderWithRoutes() {
           <Toaster />
         </TooltipProvider>
       </QueryClientProvider>
-    </ClerkProvider>
+    </ClerkLoader>
   );
 }
 
