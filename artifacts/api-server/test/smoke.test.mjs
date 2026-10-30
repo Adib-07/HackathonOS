@@ -34,7 +34,11 @@ test("smoke: built bundle imports and /api/healthz returns 200 without env", asy
           return res.json();
         })
         .then((json) => {
-          assert.deepEqual(json, { status: "ok" }, "healthz should return {status:'ok'}");
+          assert.deepEqual(
+            json,
+            { status: "ok" },
+            "healthz should return {status:'ok'}",
+          );
           server.close(() => resolve());
         })
         .catch(reject);
@@ -42,4 +46,3 @@ test("smoke: built bundle imports and /api/healthz returns 200 without env", asy
     server.on("error", reject);
   });
 });
-

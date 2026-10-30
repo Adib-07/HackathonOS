@@ -1,12 +1,12 @@
-import { useMemo, useState, useEffect } from 'react';
-import { Link, useRoute } from 'wouter';
-import { useClerk, useUser } from '@clerk/react';
+import { useMemo, useState, useEffect } from "react";
+import { Link, useRoute } from "wouter";
+import { useClerk, useUser } from "@clerk/react";
 import {
   useListCompetitions,
   useUpdateCompetition,
   type CompetitionUpdate,
-} from '@workspace/api-client-react';
-import { useHealthCheck } from '@workspace/api-client-react';
+} from "@workspace/api-client-react";
+import { useHealthCheck } from "@workspace/api-client-react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -25,7 +25,7 @@ import {
   X,
   Github,
   Key,
-} from 'lucide-react';
+} from "lucide-react";
 import {
   Button,
   EmptyState,
@@ -39,7 +39,7 @@ import {
   Card,
   Section,
   Badge,
-} from '@/components/workspace';
+} from "@/components/workspace";
 
 interface Competition {
   id: string;
@@ -51,45 +51,52 @@ interface Competition {
 }
 
 export default function SettingsPage() {
-  const [, params] = useRoute('/settings');
+  const [, params] = useRoute("/settings");
   const { user } = useUser();
   const { signOut } = useClerk();
   const competitionsQuery = useListCompetitions();
   const healthQuery = useHealthCheck();
   const updateCompetition = useUpdateCompetition();
   const [dangerMode, setDangerMode] = useState<string | null>(null);
-  const [workspaceName, setWorkspaceName] = useState('');
+  const [workspaceName, setWorkspaceName] = useState("");
   const [saving, setSaving] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const [dbStatus, setDbStatus] = useState<'checking' | 'connected' | 'error'>('checking');
+  const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">(
+    "idle",
+  );
+  const [dbStatus, setDbStatus] = useState<"checking" | "connected" | "error">(
+    "checking",
+  );
 
   const competitions = competitionsQuery.data ?? [];
   const hasCompetitions = competitions.length > 0;
 
   // Check database health on mount
   useEffect(() => {
-    if (healthQuery.data?.status === 'ok' || healthQuery.data?.status === 'healthy') {
-      setDbStatus('connected');
+    if (
+      healthQuery.data?.status === "ok" ||
+      healthQuery.data?.status === "healthy"
+    ) {
+      setDbStatus("connected");
     } else if (healthQuery.isError) {
-      setDbStatus('error');
+      setDbStatus("error");
     }
   }, [healthQuery.data, healthQuery.isError]);
 
   const handleSaveWorkspace = async () => {
     if (!workspaceName.trim()) return;
     setSaving(true);
-    setSaveStatus('idle');
+    setSaveStatus("idle");
     try {
       // Persist workspace name - for now we'll use localStorage as a simple approach
       // In a real app, this would be an API call
-      localStorage.setItem('hackathon-os-workspace-name', workspaceName.trim());
+      localStorage.setItem("hackathon-os-workspace-name", workspaceName.trim());
       // Update document title
       document.title = `${workspaceName.trim()} | HackathonOS`;
-      setSaveStatus('success');
-      setTimeout(() => setSaveStatus('idle'), 3000);
+      setSaveStatus("success");
+      setTimeout(() => setSaveStatus("idle"), 3000);
     } catch {
-      setSaveStatus('error');
-      setTimeout(() => setSaveStatus('idle'), 3000);
+      setSaveStatus("error");
+      setTimeout(() => setSaveStatus("idle"), 3000);
     } finally {
       setSaving(false);
     }
@@ -97,20 +104,25 @@ export default function SettingsPage() {
 
   // Load workspace name on mount
   useEffect(() => {
-    const saved = localStorage.getItem('hackathon-os-workspace-name');
+    const saved = localStorage.getItem("hackathon-os-workspace-name");
     if (saved) {
       setWorkspaceName(saved);
       document.title = `${saved} | HackathonOS`;
     }
   }, []);
 
-  const handleUpdateCompetition = (id: string, data: Partial<CompetitionUpdate>) => {
+  const handleUpdateCompetition = (
+    id: string,
+    data: Partial<CompetitionUpdate>,
+  ) => {
     updateCompetition.mutate({ competitionId: id, data });
   };
 
   const handleDeleteCompetition = (id: string) => {
-    console.log('Delete competition:', id);
-    alert('Delete competition functionality requires API endpoint implementation');
+    console.log("Delete competition:", id);
+    alert(
+      "Delete competition functionality requires API endpoint implementation",
+    );
     setDangerMode(null);
   };
 
@@ -140,7 +152,11 @@ export default function SettingsPage() {
 
       <div className="settings-grid">
         {/* Workspace Identity */}
-        <Section title="Workspace Identity" icon={<User size={18} />} description="How your workspace appears in the sidebar and browser title.">
+        <Section
+          title="Workspace Identity"
+          icon={<User size={18} />}
+          description="How your workspace appears in the sidebar and browser title."
+        >
           <Card>
             <div className="card-content" style={{ paddingBottom: 0 }}>
               <FormField
@@ -155,27 +171,40 @@ export default function SettingsPage() {
                   placeholder="Personal workspace"
                   className="input-field workspace-name-input"
                   data-testid="input-workspace-name"
-                  aria-invalid={workspaceName.length > 0 && workspaceName.trim().length < 2}
+                  aria-invalid={
+                    workspaceName.length > 0 && workspaceName.trim().length < 2
+                  }
                 />
               </FormField>
               {workspaceName.length > 0 && workspaceName.trim().length < 2 && (
-                <span className="field-error" role="alert">Workspace name must be at least 2 characters</span>
+                <span className="field-error" role="alert">
+                  Workspace name must be at least 2 characters
+                </span>
               )}
               <div className="settings-actions">
                 <Button
                   variant="primary"
                   onClick={handleSaveWorkspace}
-                  disabled={saving || !workspaceName.trim() || workspaceName.trim().length < 2}
+                  disabled={
+                    saving ||
+                    !workspaceName.trim() ||
+                    workspaceName.trim().length < 2
+                  }
                   data-testid="button-save-workspace"
                 >
-                  <Save size={14} /> {saving ? 'Saving…' : saveStatus === 'success' ? 'Saved!' : 'Save workspace name'}
+                  <Save size={14} />{" "}
+                  {saving
+                    ? "Saving…"
+                    : saveStatus === "success"
+                      ? "Saved!"
+                      : "Save workspace name"}
                 </Button>
-                {saveStatus === 'success' && (
+                {saveStatus === "success" && (
                   <Badge variant="success" className="ml-2">
                     <Check size={12} /> Saved
                   </Badge>
                 )}
-                {saveStatus === 'error' && (
+                {saveStatus === "error" && (
                   <Badge variant="destructive" className="ml-2">
                     <X size={12} /> Failed
                   </Badge>
@@ -186,7 +215,11 @@ export default function SettingsPage() {
         </Section>
 
         {/* Competition Defaults */}
-        <Section title="Competition Defaults" icon={<Globe size={18} />} description="Default values applied when creating new competition workspaces.">
+        <Section
+          title="Competition Defaults"
+          icon={<Globe size={18} />}
+          description="Default values applied when creating new competition workspaces."
+        >
           <Card>
             <div className="card-content" style={{ paddingBottom: 0 }}>
               {hasCompetitions ? (
@@ -208,7 +241,10 @@ export default function SettingsPage() {
                   title="No competitions yet"
                   detail="Create your first competition to set defaults for future ones."
                   action={
-                    <ActionLink href="/competitions" data-testid="link-create-first-competition">
+                    <ActionLink
+                      href="/competitions"
+                      data-testid="link-create-first-competition"
+                    >
                       Create a competition
                     </ActionLink>
                   }
@@ -219,7 +255,11 @@ export default function SettingsPage() {
         </Section>
 
         {/* Connected Tools */}
-        <Section title="Connected Tools" icon={<Shield size={18} />} description="External services connected to your workspace. Status reflects real connectivity checks.">
+        <Section
+          title="Connected Tools"
+          icon={<Shield size={18} />}
+          description="External services connected to your workspace. Status reflects real connectivity checks."
+        >
           <Card>
             <div className="card-content" style={{ paddingBottom: 0 }}>
               <div className="tools-list">
@@ -231,7 +271,13 @@ export default function SettingsPage() {
                 />
                 <ToolRow
                   name="Database (PostgreSQL)"
-                  status={dbStatus === 'connected' ? 'connected' : dbStatus === 'checking' ? 'available' : 'not-configured'}
+                  status={
+                    dbStatus === "connected"
+                      ? "connected"
+                      : dbStatus === "checking"
+                        ? "available"
+                        : "not-configured"
+                  }
                   description="Primary data store for competitions, plans, and evidence"
                   icon={<Database size={16} />}
                 />
@@ -241,7 +287,12 @@ export default function SettingsPage() {
                   description="Configure deadline reminders and status updates"
                   icon={<Mail size={16} />}
                   action={
-                    <Button variant="quiet" disabled data-testid="button-configure-email" title="Coming soon">
+                    <Button
+                      variant="quiet"
+                      disabled
+                      data-testid="button-configure-email"
+                      title="Coming soon"
+                    >
                       Configure
                     </Button>
                   }
@@ -252,7 +303,12 @@ export default function SettingsPage() {
                   description="Link repositories and track commits against plan tasks"
                   icon={<Github size={16} />}
                   action={
-                    <Button variant="quiet" disabled data-testid="button-configure-github" title="Coming soon">
+                    <Button
+                      variant="quiet"
+                      disabled
+                      data-testid="button-configure-github"
+                      title="Coming soon"
+                    >
                       Connect
                     </Button>
                   }
@@ -276,12 +332,13 @@ export default function SettingsPage() {
                   {competitions.map((comp) => (
                     <div
                       key={comp.id}
-                      className={`danger-item ${dangerMode === comp.id ? 'danger-confirm' : ''}`}
+                      className={`danger-item ${dangerMode === comp.id ? "danger-confirm" : ""}`}
                     >
                       {dangerMode === comp.id ? (
                         <>
                           <p className="danger-confirm-text">
-                            Delete <strong>{comp.name}</strong>? This cannot be undone.
+                            Delete <strong>{comp.name}</strong>? This cannot be
+                            undone.
                           </p>
                           <div className="danger-confirm-buttons">
                             <Button
@@ -291,7 +348,9 @@ export default function SettingsPage() {
                               data-testid={`button-confirm-delete-${comp.id}`}
                             >
                               <Trash2 size={14} />
-                              {updateCompetition.isPending ? 'Deleting…' : 'Yes, delete'}
+                              {updateCompetition.isPending
+                                ? "Deleting…"
+                                : "Yes, delete"}
                             </Button>
                             <Button
                               variant="secondary"
@@ -304,7 +363,9 @@ export default function SettingsPage() {
                         </>
                       ) : (
                         <>
-                          <span className="danger-competition-name">{comp.name}</span>
+                          <span className="danger-competition-name">
+                            {comp.name}
+                          </span>
                           <Button
                             variant="quiet"
                             onClick={() => setDangerMode(comp.id)}
@@ -366,7 +427,7 @@ function CompetitionDefaultRow({
             type="text"
             value={draftName}
             onChange={(e) => setDraftName(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && finishEdit()}
+            onKeyDown={(e) => e.key === "Enter" && finishEdit()}
             onBlur={finishEdit}
             autoFocus
             className="input-field input-inline"
@@ -383,7 +444,8 @@ function CompetitionDefaultRow({
         )}
         <StatusPill value={competition.status} />
         <span className="competition-meta">
-          <Clock3 size={12} /> Deadline: {new Date(competition.deadline).toLocaleDateString()}
+          <Clock3 size={12} /> Deadline:{" "}
+          {new Date(competition.deadline).toLocaleDateString()}
         </span>
       </div>
       <div className="competition-default-actions">
@@ -396,16 +458,28 @@ function CompetitionDefaultRow({
             >
               <Check size={12} />
             </Button>
-            <Button variant="quiet" onClick={cancelEdit} data-testid={`button-cancel-edit-${competition.id}`}>
+            <Button
+              variant="quiet"
+              onClick={cancelEdit}
+              data-testid={`button-cancel-edit-${competition.id}`}
+            >
               <X size={12} />
             </Button>
           </>
         ) : (
           <>
-            <Button variant="quiet" onClick={() => setEditing(true)} data-testid={`button-edit-${competition.id}`}>
+            <Button
+              variant="quiet"
+              onClick={() => setEditing(true)}
+              data-testid={`button-edit-${competition.id}`}
+            >
               Edit
             </Button>
-            <Button variant="quiet" onClick={onDeleteClick} data-testid={`button-delete-trigger-${competition.id}`}>
+            <Button
+              variant="quiet"
+              onClick={onDeleteClick}
+              data-testid={`button-delete-trigger-${competition.id}`}
+            >
               <Trash2 size={12} />
             </Button>
           </>
@@ -423,16 +497,29 @@ function ToolRow({
   action,
 }: {
   name: string;
-  status: 'connected' | 'available' | 'not-configured';
+  status: "connected" | "available" | "not-configured";
   description: string;
   icon: React.ReactNode;
   action?: React.ReactNode;
 }) {
-  const statusLabel = status === 'connected' ? 'Connected' : status === 'available' ? 'Available' : 'Not configured';
-  const statusVariant = status === 'connected' ? 'success' : status === 'available' ? 'warning' : 'default';
+  const statusLabel =
+    status === "connected"
+      ? "Connected"
+      : status === "available"
+        ? "Available"
+        : "Not configured";
+  const statusVariant =
+    status === "connected"
+      ? "success"
+      : status === "available"
+        ? "warning"
+        : "default";
 
   return (
-    <div className="tool-row" data-testid={`tool-${name.toLowerCase().replace(/\s+/g, '-')}`}>
+    <div
+      className="tool-row"
+      data-testid={`tool-${name.toLowerCase().replace(/\s+/g, "-")}`}
+    >
       <div className="tool-icon">{icon}</div>
       <div className="tool-info">
         <div className="tool-name-row">

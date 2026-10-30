@@ -1,4 +1,9 @@
-import express, { type Express, type Request, type Response, type NextFunction } from "express";
+import express, {
+  type Express,
+  type Request,
+  type Response,
+  type NextFunction,
+} from "express";
 import helmet from "helmet";
 import cors from "cors";
 import { clerkMiddleware } from "@clerk/express";
@@ -155,7 +160,9 @@ if (process.env.CLERK_SECRET_KEY || process.env.CLERK_PUBLISHABLE_KEY) {
     "CLERK_SECRET_KEY (or CLERK_PUBLISHABLE_KEY) is required in production but was not provided.",
   );
 } else {
-  logger.warn("Clerk keys not configured; running in development/test mode without Clerk middleware");
+  logger.warn(
+    "Clerk keys not configured; running in development/test mode without Clerk middleware",
+  );
 }
 
 // Attach userId to request for rate limiter key generation
@@ -182,7 +189,10 @@ app.use("/api", router);
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   const isProd = process.env.NODE_ENV === "production";
 
-  logger.error({ err: err.message, stack: isProd ? undefined : err.stack }, "Unhandled error");
+  logger.error(
+    { err: err.message, stack: isProd ? undefined : err.stack },
+    "Unhandled error",
+  );
 
   // Don't leak internal errors in production
   if (isProd) {

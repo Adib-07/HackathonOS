@@ -18,22 +18,25 @@
 if (process.env.CI !== "true") {
   throw new Error(
     "Tests can only run in CI (CI=true required). " +
-    "This prevents accidental execution against production databases."
+      "This prevents accidental execution against production databases.",
   );
 }
 
 if (!process.env.DATABASE_URL?.includes("test")) {
   throw new Error(
     "Tests must use a test database (DATABASE_URL must contain 'test'). " +
-    `Current DATABASE_URL: ${process.env.DATABASE_URL || "not set"}`
+      `Current DATABASE_URL: ${process.env.DATABASE_URL || "not set"}`,
   );
 }
 
 if (process.env.NODE_ENV !== "test") {
   throw new Error(
     "Tests must run with NODE_ENV=test. " +
-    `Current NODE_ENV: ${process.env.NODE_ENV || "not set"}`
+      `Current NODE_ENV: ${process.env.NODE_ENV || "not set"}`,
   );
 }
 
-console.log("[test-guard] CI environment validated: CI=true, test database, NODE_ENV=" + process.env.NODE_ENV);
+console.log(
+  "[test-guard] CI environment validated: CI=true, test database, NODE_ENV=" +
+    process.env.NODE_ENV,
+);

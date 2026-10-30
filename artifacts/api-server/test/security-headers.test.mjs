@@ -31,8 +31,10 @@ before(async () => {
   process.env.TEST_ALLOW_PRODUCTION_ENV = "true";
   // Use valid Clerk key formats (base64-encoded frontend API for pk_test_)
   process.env.CLERK_SECRET_KEY = "sk_test_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-  process.env.CLERK_PUBLISHABLE_KEY = "pk_test_Y2xlcmsudGVzdC5hY2NvdW50cy5kZXYk";
-  process.env.DATABASE_URL = "postgresql://test:test@localhost:5432/hackathon_os_test";
+  process.env.CLERK_PUBLISHABLE_KEY =
+    "pk_test_Y2xlcmsudGVzdC5hY2NvdW50cy5kZXYk";
+  process.env.DATABASE_URL =
+    "postgresql://test:test@localhost:5432/hackathon_os_test";
 
   // Dynamic import after env vars are set
   const mod = await import("../dist/app.mjs");
@@ -60,16 +62,28 @@ test("health endpoint returns 200 with security headers", async () => {
   // Check security headers
   assert.equal(res.headers.get("x-content-type-options"), "nosniff");
   assert.equal(res.headers.get("x-frame-options"), "DENY");
-  assert.equal(res.headers.get("referrer-policy"), "strict-origin-when-cross-origin");
+  assert.equal(
+    res.headers.get("referrer-policy"),
+    "strict-origin-when-cross-origin",
+  );
   assert.equal(res.headers.get("x-powered-by"), null);
   assert.equal(res.headers.get("cross-origin-opener-policy"), "same-origin");
   assert.equal(res.headers.get("cross-origin-resource-policy"), "same-origin");
   // CSP should be present
   const csp = res.headers.get("content-security-policy");
   assert.ok(csp, "Content-Security-Policy header should be present");
-  assert.ok(csp.includes("default-src 'none'"), "CSP should have default-src 'none'");
-  assert.ok(csp.includes("frame-ancestors 'none'"), "CSP should have frame-ancestors 'none'");
-  assert.ok(csp.includes("connect-src 'self'"), "CSP should allow connect-src 'self'");
+  assert.ok(
+    csp.includes("default-src 'none'"),
+    "CSP should have default-src 'none'",
+  );
+  assert.ok(
+    csp.includes("frame-ancestors 'none'"),
+    "CSP should have frame-ancestors 'none'",
+  );
+  assert.ok(
+    csp.includes("connect-src 'self'"),
+    "CSP should allow connect-src 'self'",
+  );
 });
 
 test("unauthenticated API endpoints return 401", async () => {

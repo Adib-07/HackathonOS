@@ -13,8 +13,8 @@ async function buildAll() {
   const distDir = path.resolve(artifactDir, "dist");
   await rm(distDir, { recursive: true, force: true });
 
-  const isProduction = process.env.NODE_ENV === 'production';
-  const isVercel = process.env.VERCEL === '1';
+  const isProduction = process.env.NODE_ENV === "production";
+  const isVercel = process.env.VERCEL === "1";
 
   // On Vercel, only build app.mjs (the serverless function entry point)
   // index.mjs is the local development server entry and is not used on Vercel
@@ -134,7 +134,7 @@ globalThis.__dirname = __bannerPath.dirname(globalThis.__filename);
   if (result.metafile) {
     await writeFile(
       path.resolve(distDir, "metafile.json"),
-      JSON.stringify(result.metafile, null, 2)
+      JSON.stringify(result.metafile, null, 2),
     );
   }
 }

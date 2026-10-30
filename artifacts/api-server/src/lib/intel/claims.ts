@@ -42,8 +42,7 @@ export const CLAIM_KIND_DESCRIPTIONS: Record<ClaimKind, string> = {
   INFERENCE:
     "Derived from the competition record or the findings. Plausible, but not stated anywhere.",
   HYPOTHESIS: "A guess that still needs to be tested.",
-  UNKNOWN:
-    "The information is missing. Nothing has been assumed in its place.",
+  UNKNOWN: "The information is missing. Nothing has been assumed in its place.",
 };
 
 /**
@@ -102,20 +101,21 @@ export const REQUIREMENT_CATEGORIES = [
 
 export type RequirementCategory = (typeof REQUIREMENT_CATEGORIES)[number];
 
-export const REQUIREMENT_CATEGORY_LABELS: Record<RequirementCategory, string> = {
-  CORE_PROBLEM: "Core problem",
-  TARGET_USERS: "Target users",
-  PAIN_POINTS: "Existing pain points",
-  REQUIRED_OUTCOMES: "Required outcomes",
-  JUDGING_CRITERIA: "Judging criteria",
-  MANDATORY_DELIVERABLES: "Mandatory deliverables",
-  TECHNICAL_CONSTRAINTS: "Technical constraints",
-  TIME_CONSTRAINTS: "Time constraints",
-  TEAM_SKILLS: "Team skills",
-  AVAILABLE_RESOURCES: "Available resources",
-  EXCLUSIONS: "Exclusions and prohibited approaches",
-  UNANSWERED_QUESTIONS: "Unanswered questions",
-};
+export const REQUIREMENT_CATEGORY_LABELS: Record<RequirementCategory, string> =
+  {
+    CORE_PROBLEM: "Core problem",
+    TARGET_USERS: "Target users",
+    PAIN_POINTS: "Existing pain points",
+    REQUIRED_OUTCOMES: "Required outcomes",
+    JUDGING_CRITERIA: "Judging criteria",
+    MANDATORY_DELIVERABLES: "Mandatory deliverables",
+    TECHNICAL_CONSTRAINTS: "Technical constraints",
+    TIME_CONSTRAINTS: "Time constraints",
+    TEAM_SKILLS: "Team skills",
+    AVAILABLE_RESOURCES: "Available resources",
+    EXCLUSIONS: "Exclusions and prohibited approaches",
+    UNANSWERED_QUESTIONS: "Unanswered questions",
+  };
 
 /** Research source types. Each maps to a provider that can actually return one. */
 export const RESEARCH_SOURCE_TYPES = [
@@ -192,7 +192,10 @@ export function supportLevelFor(kind: ClaimKind): SupportLevel {
  */
 export function normaliseClaimKind(value: unknown): ClaimKind {
   if (typeof value !== "string") return "INFERENCE";
-  const upper = value.trim().toUpperCase().replace(/[\s-]+/g, "_");
+  const upper = value
+    .trim()
+    .toUpperCase()
+    .replace(/[\s-]+/g, "_");
   return (CLAIM_KINDS as readonly string[]).includes(upper)
     ? (upper as ClaimKind)
     : "INFERENCE";
@@ -201,7 +204,10 @@ export function normaliseClaimKind(value: unknown): ClaimKind {
 /** Normalise a requirement source coming from a model. */
 export function normaliseRequirementSource(value: unknown): RequirementSource {
   if (typeof value !== "string") return "AI_INFERENCE";
-  const upper = value.trim().toUpperCase().replace(/[\s-]+/g, "_");
+  const upper = value
+    .trim()
+    .toUpperCase()
+    .replace(/[\s-]+/g, "_");
   return (REQUIREMENT_SOURCES as readonly string[]).includes(upper)
     ? (upper as RequirementSource)
     : "AI_INFERENCE";
@@ -212,7 +218,10 @@ export function normaliseRequirementCategory(
   value: unknown,
 ): RequirementCategory {
   if (typeof value !== "string") return "CORE_PROBLEM";
-  const upper = value.trim().toUpperCase().replace(/[\s-]+/g, "_");
+  const upper = value
+    .trim()
+    .toUpperCase()
+    .replace(/[\s-]+/g, "_");
   return (REQUIREMENT_CATEGORIES as readonly string[]).includes(upper)
     ? (upper as RequirementCategory)
     : "CORE_PROBLEM";
@@ -223,7 +232,10 @@ export function normaliseResearchSourceType(
   value: unknown,
 ): ResearchSourceType {
   if (typeof value !== "string") return "TECHNICAL_APPROACH";
-  const upper = value.trim().toUpperCase().replace(/[\s-]+/g, "_");
+  const upper = value
+    .trim()
+    .toUpperCase()
+    .replace(/[\s-]+/g, "_");
   return (RESEARCH_SOURCE_TYPES as readonly string[]).includes(upper)
     ? (upper as ResearchSourceType)
     : "TECHNICAL_APPROACH";

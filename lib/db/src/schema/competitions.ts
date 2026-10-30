@@ -44,10 +44,14 @@ export const competitionsTable = pgTable(
       .defaultNow()
       .$onUpdate(() => new Date()),
   },
-  (table) => [index("competitions_owner_deadline_idx").on(table.ownerId, table.deadline)],
+  (table) => [
+    index("competitions_owner_deadline_idx").on(table.ownerId, table.deadline),
+  ],
 );
 
-export const insertCompetitionSchema = createInsertSchema(competitionsTable).omit({
+export const insertCompetitionSchema = createInsertSchema(
+  competitionsTable,
+).omit({
   id: true,
   ownerId: true,
   createdAt: true,

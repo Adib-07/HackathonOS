@@ -51,6 +51,7 @@ psql "$DATABASE_URL" -c "\dt"
 ```
 
 Expected tables:
+
 - `competitions`
 - `workflow_plans`
 - `workflow_tasks`
@@ -84,10 +85,10 @@ Expected tables:
 
 ### Copy Keys
 
-| Key | Where to Use |
-|-----|--------------|
+| Key                                                 | Where to Use                                                           |
+| --------------------------------------------------- | ---------------------------------------------------------------------- |
 | **Publishable Key** (`pk_test_...` / `pk_live_...`) | `CLERK_PUBLISHABLE_KEY` (API), `VITE_CLERK_PUBLISHABLE_KEY` (Frontend) |
-| **Secret Key** (`sk_test_...` / `sk_live_...`) | `CLERK_SECRET_KEY` (API only) |
+| **Secret Key** (`sk_test_...` / `sk_live_...`)      | `CLERK_SECRET_KEY` (API only)                                          |
 
 > **Critical**: `VITE_CLERK_PUBLISHABLE_KEY` is **baked into the frontend bundle at build time**. It must match the Clerk application used in production.
 
@@ -104,29 +105,29 @@ Expected tables:
 
 ### Vercel Project Settings
 
-| Setting | Value | Source |
-|---------|-------|--------|
-| **Framework Preset** | Other | `vercel.json` defines everything |
-| **Build Command** | `pnpm run build` | `vercel.json` |
-| **Install Command** | `pnpm install --frozen-lockfile` | `vercel.json` |
-| **Output Directory** | `artifacts/hackathon-os/dist/public` | `vercel.json` |
-| **Node.js Version** | 24.x | `package.json` `"engines"` |
-| **Install Command** | `pnpm install --frozen-lockfile` | `vercel.json` |
+| Setting              | Value                                | Source                           |
+| -------------------- | ------------------------------------ | -------------------------------- |
+| **Framework Preset** | Other                                | `vercel.json` defines everything |
+| **Build Command**    | `pnpm run build`                     | `vercel.json`                    |
+| **Install Command**  | `pnpm install --frozen-lockfile`     | `vercel.json`                    |
+| **Output Directory** | `artifacts/hackathon-os/dist/public` | `vercel.json`                    |
+| **Node.js Version**  | 24.x                                 | `package.json` `"engines"`       |
+| **Install Command**  | `pnpm install --frozen-lockfile`     | `vercel.json`                    |
 
 ### Environment Variables (Project Settings → Environment Variables)
 
-| Variable | Target | Value |
-|----------|--------|-------|
-| `DATABASE_URL` | Production, Preview | Neon pooled connection string |
-| `CLERK_SECRET_KEY` | Production, Preview | `sk_test_...` or `sk_live_...` |
-| `CLERK_PUBLISHABLE_KEY` | Production, Preview | `pk_test_...` or `pk_live_...` |
-| `VITE_CLERK_PUBLISHABLE_KEY` | Production, Preview | **Same as above** (public) |
-| `BASE_PATH` | Production, Preview | `/` (or subpath like `/hackathonos`) |
-| `VITE_CLERK_PROXY_URL` | Production, Preview | `https://hackathonos-mu.vercel.app/api/__clerk` |
-| `OPENAI_API_KEY` | Production, Preview | Optional (enables AI features) |
-| `OPENAI_BASE_URL` | Production, Preview | Optional |
-| `OPENAI_MODEL` | Production, Preview | Optional (default `gpt-4o-mini`) |
-| `LOG_LEVEL` | Production, Preview | `info` |
+| Variable                     | Target              | Value                                           |
+| ---------------------------- | ------------------- | ----------------------------------------------- |
+| `DATABASE_URL`               | Production, Preview | Neon pooled connection string                   |
+| `CLERK_SECRET_KEY`           | Production, Preview | `sk_test_...` or `sk_live_...`                  |
+| `CLERK_PUBLISHABLE_KEY`      | Production, Preview | `pk_test_...` or `pk_live_...`                  |
+| `VITE_CLERK_PUBLISHABLE_KEY` | Production, Preview | **Same as above** (public)                      |
+| `BASE_PATH`                  | Production, Preview | `/` (or subpath like `/hackathonos`)            |
+| `VITE_CLERK_PROXY_URL`       | Production, Preview | `https://hackathonos-mu.vercel.app/api/__clerk` |
+| `OPENAI_API_KEY`             | Production, Preview | Optional (enables AI features)                  |
+| `OPENAI_BASE_URL`            | Production, Preview | Optional                                        |
+| `OPENAI_MODEL`               | Production, Preview | Optional (default `gpt-4o-mini`)                |
+| `LOG_LEVEL`                  | Production, Preview | `info`                                          |
 
 > **Scope**: Set all to **Production** and **Preview** so preview deployments work.
 
@@ -190,6 +191,7 @@ curl https://hackathonos-mu.vercel.app/api/readyz
 ### CSP Verification
 
 Check browser console for CSP violations. The policy in `vercel.json` allows:
+
 - Scripts: `self`, `*.clerk.accounts.dev`, `*.clerk.com`, `challenges.cloudflare.com`
 - Styles: `self`, `unsafe-inline`, `fonts.googleapis.com`
 - Fonts: `self`, `data:`, `fonts.gstatic.com`
@@ -225,32 +227,32 @@ If assets blocked → adjust `Content-Security-Policy` in `vercel.json` headers.
 
 ### Build Failures
 
-| Error | Cause | Fix |
-|-------|-------|-----|
-| `invalid_function_runtime` | Node 20 deprecated | Ensure `engines.node: "24.x"` in root `package.json` |
+| Error                              | Cause                      | Fix                                                                          |
+| ---------------------------------- | -------------------------- | ---------------------------------------------------------------------------- |
+| `invalid_function_runtime`         | Node 20 deprecated         | Ensure `engines.node: "24.x"` in root `package.json`                         |
 | `Build output directory not found` | `outputDirectory` mismatch | Verify `vercel.json` `outputDirectory: "artifacts/hackathon-os/dist/public"` |
-| TypeScript errors in build | `tsc` fails | Run `pnpm run typecheck` locally first |
-| `esbuild` fails | API server syntax error | Check `artifacts/api-server/dist/` for clues |
-| `vite build` fails | Frontend import error | Check `artifacts/hackathon-os/src/` imports |
+| TypeScript errors in build         | `tsc` fails                | Run `pnpm run typecheck` locally first                                       |
+| `esbuild` fails                    | API server syntax error    | Check `artifacts/api-server/dist/` for clues                                 |
+| `vite build` fails                 | Frontend import error      | Check `artifacts/hackathon-os/src/` imports                                  |
 
 ### Runtime Errors
 
-| Symptom | Likely Cause | Fix |
-|---------|--------------|-----|
-| Clerk auth fails (401) | Keys mismatch or domain not allowed | Verify `CLERK_PUBLISHABLE_KEY` = `VITE_CLERK_PUBLISHABLE_KEY`; Clerk domains include Vercel URL |
-| API returns 500 | Unhandled exception | Check Vercel Function Logs → filter by request |
-| `/readyz` returns 503 | DB unreachable | Verify `DATABASE_URL`; Neon allows Vercel IPs; check SSL mode |
-| CSP blocks Clerk/Fonts | Policy too strict | Verify `vercel.json` headers match Clerk domains |
-| `FUNCTION_INVOCATION_FAILED` | Function crashed on start | Check `PORT` env var (not needed on Vercel); check Clerk keys |
-| Large bundle warning | Chunks > 500 kB | Add `manualChunks` to `vite.config.ts`; lazy-load more routes |
+| Symptom                      | Likely Cause                        | Fix                                                                                             |
+| ---------------------------- | ----------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Clerk auth fails (401)       | Keys mismatch or domain not allowed | Verify `CLERK_PUBLISHABLE_KEY` = `VITE_CLERK_PUBLISHABLE_KEY`; Clerk domains include Vercel URL |
+| API returns 500              | Unhandled exception                 | Check Vercel Function Logs → filter by request                                                  |
+| `/readyz` returns 503        | DB unreachable                      | Verify `DATABASE_URL`; Neon allows Vercel IPs; check SSL mode                                   |
+| CSP blocks Clerk/Fonts       | Policy too strict                   | Verify `vercel.json` headers match Clerk domains                                                |
+| `FUNCTION_INVOCATION_FAILED` | Function crashed on start           | Check `PORT` env var (not needed on Vercel); check Clerk keys                                   |
+| Large bundle warning         | Chunks > 500 kB                     | Add `manualChunks` to `vite.config.ts`; lazy-load more routes                                   |
 
 ### Database Issues
 
-| Issue | Fix |
-|-------|-----|
-| Migration fails | Check `lib/db/drizzle/` SQL; run `pnpm run migrate:status` |
-| Connection timeout | Use Neon pooled connection string; add `?pgbouncer=true` |
-| Schema drift | Never edit production DB directly; use migrations only |
+| Issue              | Fix                                                        |
+| ------------------ | ---------------------------------------------------------- |
+| Migration fails    | Check `lib/db/drizzle/` SQL; run `pnpm run migrate:status` |
+| Connection timeout | Use Neon pooled connection string; add `?pgbouncer=true`   |
+| Schema drift       | Never edit production DB directly; use migrations only     |
 
 ---
 
@@ -308,20 +310,20 @@ jobs:
 
 ## 11. Environment Variable Reference (Complete)
 
-| Variable | Required | Scope | Where Used | Notes |
-|----------|----------|-------|------------|-------|
-| `DATABASE_URL` | ✅ | Runtime | API server | Neon pooled connection string |
-| `CLERK_SECRET_KEY` | ✅ | Runtime | API server | `sk_test_` or `sk_live_` |
-| `CLERK_PUBLISHABLE_KEY` | ✅ | Runtime | API server | `pk_test_` or `pk_live_` |
-| `VITE_CLERK_PUBLISHABLE_KEY` | ✅ | **Build-time** | Frontend | **Public** — baked into bundle |
-| `BASE_PATH` | ❌ | Build + Runtime | Both | Subpath deployment |
-| `VITE_CLERK_PROXY_URL` | ❌ | Build-time | Frontend | Clerk proxy for cookieless |
-| `OPENAI_API_KEY` | ❌ | Runtime | API (intel) | Enables AI features |
-| `OPENAI_BASE_URL` | ❌ | Runtime | API (intel) | Custom endpoint |
-| `OPENAI_MODEL` | ❌ | Runtime | API (intel) | Default `gpt-4o-mini` |
-| `LOG_LEVEL` | ❌ | Runtime | API server | `debug`, `info`, `warn`, `error` |
-| `PORT` | ❌ | Runtime | API server | Local only (Vercel ignores) |
-| `NODE_ENV` | ❌ | Runtime | Both | `development`/`production` |
+| Variable                     | Required | Scope           | Where Used  | Notes                            |
+| ---------------------------- | -------- | --------------- | ----------- | -------------------------------- |
+| `DATABASE_URL`               | ✅       | Runtime         | API server  | Neon pooled connection string    |
+| `CLERK_SECRET_KEY`           | ✅       | Runtime         | API server  | `sk_test_` or `sk_live_`         |
+| `CLERK_PUBLISHABLE_KEY`      | ✅       | Runtime         | API server  | `pk_test_` or `pk_live_`         |
+| `VITE_CLERK_PUBLISHABLE_KEY` | ✅       | **Build-time**  | Frontend    | **Public** — baked into bundle   |
+| `BASE_PATH`                  | ❌       | Build + Runtime | Both        | Subpath deployment               |
+| `VITE_CLERK_PROXY_URL`       | ❌       | Build-time      | Frontend    | Clerk proxy for cookieless       |
+| `OPENAI_API_KEY`             | ❌       | Runtime         | API (intel) | Enables AI features              |
+| `OPENAI_BASE_URL`            | ❌       | Runtime         | API (intel) | Custom endpoint                  |
+| `OPENAI_MODEL`               | ❌       | Runtime         | API (intel) | Default `gpt-4o-mini`            |
+| `LOG_LEVEL`                  | ❌       | Runtime         | API server  | `debug`, `info`, `warn`, `error` |
+| `PORT`                       | ❌       | Runtime         | API server  | Local only (Vercel ignores)      |
+| `NODE_ENV`                   | ❌       | Runtime         | Both        | `development`/`production`       |
 
 ---
 
@@ -342,14 +344,14 @@ jobs:
 
 ## 13. Cost Estimation (Rough)
 
-| Service | Tier | Monthly Cost |
-|---------|------|--------------|
-| Vercel | Pro | $20 (includes functions, bandwidth) |
-| Neon | Free / Scale | $0 / $19+ |
-| Clerk | Free / Pro | $0 / $25+ |
-| OpenAI | Pay-per-use | ~$5-50 depending on usage |
-| **Total (Free tiers)** | | **$0** |
-| **Total (Pro)** | | **~$44-94/mo** |
+| Service                | Tier         | Monthly Cost                        |
+| ---------------------- | ------------ | ----------------------------------- |
+| Vercel                 | Pro          | $20 (includes functions, bandwidth) |
+| Neon                   | Free / Scale | $0 / $19+                           |
+| Clerk                  | Free / Pro   | $0 / $25+                           |
+| OpenAI                 | Pay-per-use  | ~$5-50 depending on usage           |
+| **Total (Free tiers)** |              | **$0**                              |
+| **Total (Pro)**        |              | **~$44-94/mo**                      |
 
 ---
 

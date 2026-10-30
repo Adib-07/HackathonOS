@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { useListCompetitions, type Competition } from "@workspace/api-client-react";
+import {
+  useListCompetitions,
+  type Competition,
+} from "@workspace/api-client-react";
 import {
   ArrowRight,
   CalendarClock,
@@ -117,7 +120,8 @@ export default function CompetitionsPage() {
                       {competition.currentTrack ? (
                         <>
                           {" "}
-                          <span className="tiny-dot" /> {competition.currentTrack}
+                          <span className="tiny-dot" />{" "}
+                          {competition.currentTrack}
                         </>
                       ) : null}
                     </small>

@@ -43,16 +43,16 @@ graph TD
 
 ### Request Flow Details
 
-| Layer | Technology | Responsibility |
-|-------|------------|----------------|
-| **DNS/CDN** | Vercel Edge | TLS termination, geo-routing, rewrite rules |
-| **Static** | Vercel Static | Serves `index.html`, assets (JS/CSS/fonts) with long-term cache |
-| **Rewrites** | `vercel.json` | `/api/*` → serverless function; `/*` → `index.html` (SPA fallback) |
-| **Function** | Node.js 24.x (Express) | All `/api/*` routes, auth, DB, AI, research |
-| **Auth** | Clerk | Session cookie validation, user management |
-| **Database** | Neon (PostgreSQL) | Primary persistence, Drizzle ORM |
-| **AI** | OpenAI-compatible | Problem analysis, research gaps, ideas, evaluation, briefs |
-| **Search** | Multiple providers | Web research with fallback chain |
+| Layer        | Technology             | Responsibility                                                     |
+| ------------ | ---------------------- | ------------------------------------------------------------------ |
+| **DNS/CDN**  | Vercel Edge            | TLS termination, geo-routing, rewrite rules                        |
+| **Static**   | Vercel Static          | Serves `index.html`, assets (JS/CSS/fonts) with long-term cache    |
+| **Rewrites** | `vercel.json`          | `/api/*` → serverless function; `/*` → `index.html` (SPA fallback) |
+| **Function** | Node.js 24.x (Express) | All `/api/*` routes, auth, DB, AI, research                        |
+| **Auth**     | Clerk                  | Session cookie validation, user management                         |
+| **Database** | Neon (PostgreSQL)      | Primary persistence, Drizzle ORM                                   |
+| **AI**       | OpenAI-compatible      | Problem analysis, research gaps, ideas, evaluation, briefs         |
+| **Search**   | Multiple providers     | Web research with fallback chain                                   |
 
 ---
 
@@ -61,7 +61,7 @@ graph TD
 ```mermaid
 graph TD
     Root["workspace (root)\npackage.json"]
-    
+
     Root --> FE["@workspace/hackathon-os\nartifacts/hackathon-os"]
     Root --> API["@workspace/api-server\nartifacts/api-server"]
     Root --> DB["@workspace/db\nlib/db"]
@@ -87,16 +87,16 @@ graph TD
 
 ### Package Responsibilities
 
-| Package | Path | Purpose | Exports |
-|---------|------|---------|---------|
-| `@workspace/hackathon-os` | `artifacts/hackathon-os` | Frontend SPA | — (Vite build) |
-| `@workspace/api-server` | `artifacts/api-server` | Express API server | `./src/index.ts`, `./src/app.ts` |
-| `@workspace/db` | `lib/db` | Drizzle schema + migrations | `./src/index.ts`, `./src/schema` |
-| `@workspace/api-zod` | `lib/api-zod` | Zod schemas (generated) | `./src/index.ts` |
-| `@workspace/api-client-react` | `lib/api-client-react` | TanStack Query hooks (generated) | `./src/index.ts` |
-| `@workspace/api-spec` | `lib/api-spec` | OpenAPI + Orval config | — |
-| `@workspace/scripts` | `scripts` | Smoke tests, utilities | — |
-| `@workspace/mockup-sandbox` | `artifacts/mockup-sandbox` | Design tool (not deployed) | — |
+| Package                       | Path                       | Purpose                          | Exports                          |
+| ----------------------------- | -------------------------- | -------------------------------- | -------------------------------- |
+| `@workspace/hackathon-os`     | `artifacts/hackathon-os`   | Frontend SPA                     | — (Vite build)                   |
+| `@workspace/api-server`       | `artifacts/api-server`     | Express API server               | `./src/index.ts`, `./src/app.ts` |
+| `@workspace/db`               | `lib/db`                   | Drizzle schema + migrations      | `./src/index.ts`, `./src/schema` |
+| `@workspace/api-zod`          | `lib/api-zod`              | Zod schemas (generated)          | `./src/index.ts`                 |
+| `@workspace/api-client-react` | `lib/api-client-react`     | TanStack Query hooks (generated) | `./src/index.ts`                 |
+| `@workspace/api-spec`         | `lib/api-spec`             | OpenAPI + Orval config           | —                                |
+| `@workspace/scripts`          | `scripts`                  | Smoke tests, utilities           | —                                |
+| `@workspace/mockup-sandbox`   | `artifacts/mockup-sandbox` | Design tool (not deployed)       | —                                |
 
 ---
 
@@ -105,25 +105,25 @@ graph TD
 ```mermaid
 flowchart TD
     Install["pnpm install --frozen-lockfile\n(uses catalog + overrides)"]
-    
+
     Install --> Typecheck["pnpm run typecheck"]
     Typecheck --> TSCBuild["tsc --build\n(root tsconfig)"]
     Typecheck --> TypecheckFE["tsc -p artifacts/hackathon-os/tsconfig.json"]
     Typecheck --> TypecheckAPI["tsc -p artifacts/api-server/tsconfig.json"]
     Typecheck --> TypecheckDB["tsc -p lib/db/tsconfig.json"]
     Typecheck --> TypecheckScripts["tsc -p scripts/tsconfig.json"]
-    
+
     TSCBuild --> BuildAPI["pnpm --filter @workspace/api-server run build"]
     TSCBuild --> BuildFE["pnpm --filter @workspace/hackathon-os run build"]
-    
+
     BuildAPI --> ESB["esbuild\n→ artifacts/api-server/dist/index.mjs\n→ artifacts/api-server/dist/app.mjs"]
     BuildFE --> ViteBuild["Vite\n→ artifacts/hackathon-os/dist/public"]
-    
+
     ESB --> CopyBundle["cp artifacts/api-server/dist/app.mjs\napi/bundle.mjs"]
-    
+
     CopyBundle --> VercelDeploy["Vercel Deploy"]
     ViteBuild --> VercelDeploy
-    
+
     VercelDeploy --> Verify["Health Checks\n/api/healthz\n/api/readyz"]
 ```
 
@@ -191,13 +191,13 @@ sequenceDiagram
 
 ### Key Implementation Details
 
-| Step | File | Notes |
-|------|------|-------|
-| Auth middleware | `artifacts/api-server/src/middlewares/auth.ts` | Uses `@clerk/express` `auth()` |
-| Competition ownership | `artifacts/api-server/src/routes/competitions.ts` | `findOwnedCompetition()` joins owner |
-| Plan generation | `artifacts/api-server/src/lib/planner.ts` | `createPlanDraft()` deadline-aware |
-| Verification | `artifacts/api-server/src/lib/verification.ts` | `evaluateTaskVerification()` recomputed on read |
-| Client hooks | `lib/api-client-react/src/generated/api.ts` | Orval-generated TanStack Query hooks |
+| Step                  | File                                              | Notes                                           |
+| --------------------- | ------------------------------------------------- | ----------------------------------------------- |
+| Auth middleware       | `artifacts/api-server/src/middlewares/auth.ts`    | Uses `@clerk/express` `auth()`                  |
+| Competition ownership | `artifacts/api-server/src/routes/competitions.ts` | `findOwnedCompetition()` joins owner            |
+| Plan generation       | `artifacts/api-server/src/lib/planner.ts`         | `createPlanDraft()` deadline-aware              |
+| Verification          | `artifacts/api-server/src/lib/verification.ts`    | `evaluateTaskVerification()` recomputed on read |
+| Client hooks          | `lib/api-client-react/src/generated/api.ts`       | Orval-generated TanStack Query hooks            |
 
 ---
 
@@ -210,11 +210,11 @@ graph TD
     App["App.tsx\nClerkProvider + QueryClientProvider"]
     App --> Public["Public Routes"]
     App --> Protected["Protected Routes (WorkspaceShell)"]
-    
+
     Public --> Landing["/ (LandingPage)"]
     Public --> SignIn["/sign-in/*"]
     Public --> SignUp["/sign-up/*"]
-    
+
     Protected --> Overview["/ (OverviewPage)"]
     Protected --> Competitions["/competitions (CompetitionsPage)"]
     Protected --> CompetitionDetail["/competitions/:id (CompetitionDetailPage)"]
@@ -228,22 +228,22 @@ graph TD
 
 ```typescript
 // App.tsx
-const CompetitionsPage = lazy(() => import('@/pages/competitions'));
-const CompetitionDetailPage = lazy(() => import('@/pages/competition-detail'));
-const IntelPage = lazy(() => import('@/pages/intel'));
-const PlannerPage = lazy(() => import('@/pages/planner'));
-const WorkflowPage = lazy(() => import('@/pages/workflow'));
-const SettingsPage = lazy(() => import('@/pages/settings'));
+const CompetitionsPage = lazy(() => import("@/pages/competitions"));
+const CompetitionDetailPage = lazy(() => import("@/pages/competition-detail"));
+const IntelPage = lazy(() => import("@/pages/intel"));
+const PlannerPage = lazy(() => import("@/pages/planner"));
+const WorkflowPage = lazy(() => import("@/pages/workflow"));
+const SettingsPage = lazy(() => import("@/pages/settings"));
 ```
 
 ### State Management
 
-| Layer | Tool | Scope |
-|-------|------|-------|
-| Server state | TanStack Query | All API data (competitions, plans, tasks, evidence, intel) |
-| Client state | React `useState` / `useReducer` | UI state (modals, form inputs, sidebar toggle) |
-| Auth state | Clerk React hooks | `useUser()`, `useClerk()`, `useAuth()` |
-| URL state | Wouter | `useRoute()`, `useLocation()`, `Link` |
+| Layer        | Tool                            | Scope                                                      |
+| ------------ | ------------------------------- | ---------------------------------------------------------- |
+| Server state | TanStack Query                  | All API data (competitions, plans, tasks, evidence, intel) |
+| Client state | React `useState` / `useReducer` | UI state (modals, form inputs, sidebar toggle)             |
+| Auth state   | Clerk React hooks               | `useUser()`, `useClerk()`, `useAuth()`                     |
+| URL state    | Wouter                          | `useRoute()`, `useLocation()`, `Link`                      |
 
 ### Component Organization
 
@@ -326,13 +326,13 @@ graph TD
 
 ### Deterministic vs AI-Assisted
 
-| Feature | Deterministic Fallback | AI-Assisted (when provider configured) |
-|---------|------------------------|----------------------------------------|
-| Problem Analysis | Extract from competition record | Add missing fields, unanswered questions |
-| Gap Analysis | Conservative gaps from findings | Additional opportunities |
-| Idea Generation | — (requires AI) | Distinct MVP-scoped ideas |
-| Idea Evaluation | Manual scores only | Model-proposed scores |
-| Build Brief | Structured from idea + requirements | Enhanced sections, missing section detection |
+| Feature          | Deterministic Fallback              | AI-Assisted (when provider configured)       |
+| ---------------- | ----------------------------------- | -------------------------------------------- |
+| Problem Analysis | Extract from competition record     | Add missing fields, unanswered questions     |
+| Gap Analysis     | Conservative gaps from findings     | Additional opportunities                     |
+| Idea Generation  | — (requires AI)                     | Distinct MVP-scoped ideas                    |
+| Idea Evaluation  | Manual scores only                  | Model-proposed scores                        |
+| Build Brief      | Structured from idea + requirements | Enhanced sections, missing section detection |
 
 ### Rate Limiting
 
@@ -412,12 +412,12 @@ frame-ancestors 'none'
 ```typescript
 // artifacts/api-server/src/routes/evidence.ts
 const SECRET_PATTERNS: RegExp[] = [
-  /\bsk_(live|test)_[A-Za-z0-9]{10,}/i,      // Stripe secret
-  /\bpk_(live|test)_[A-Za-z0-9]{10,}/i,      // Stripe publishable
-  /\bAKIA[0-9A-Z]{16}\b/,                     // AWS access key
-  /\bgh[pousr]_[A-Za-z0-9]{20,}\b/,           // GitHub tokens
-  /\bxox[baprs]-[A-Za-z0-9-]{10,}\b/,         // Slack tokens
-  /-----BEGIN [A-Z ]*PRIVATE KEY-----/,       // Private keys
+  /\bsk_(live|test)_[A-Za-z0-9]{10,}/i, // Stripe secret
+  /\bpk_(live|test)_[A-Za-z0-9]{10,}/i, // Stripe publishable
+  /\bAKIA[0-9A-Z]{16}\b/, // AWS access key
+  /\bgh[pousr]_[A-Za-z0-9]{20,}\b/, // GitHub tokens
+  /\bxox[baprs]-[A-Za-z0-9-]{10,}\b/, // Slack tokens
+  /-----BEGIN [A-Z ]*PRIVATE KEY-----/, // Private keys
   /eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/, // JWTs
 ];
 ```
@@ -435,10 +435,10 @@ const SECRET_PATTERNS: RegExp[] = [
 
 ### Health Endpoints
 
-| Endpoint | Purpose | Auth |
-|----------|---------|------|
-| `GET /api/healthz` | Liveness (process alive) | ❌ |
-| `GET /api/readyz` | Readiness (DB reachable) | ❌ |
+| Endpoint           | Purpose                  | Auth |
+| ------------------ | ------------------------ | ---- |
+| `GET /api/healthz` | Liveness (process alive) | ❌   |
+| `GET /api/readyz`  | Readiness (DB reachable) | ❌   |
 
 ### Metrics (Planned)
 
@@ -451,14 +451,14 @@ const SECRET_PATTERNS: RegExp[] = [
 
 ## Scaling Considerations
 
-| Component | Current Limit | Scaling Strategy |
-|-----------|---------------|------------------|
-| Serverless Function | 30s maxDuration, 1024 MB | Optimize cold start; split heavy routes |
-| Neon PG | Connection pool (PgBouncer) | Add connection pooler; read replicas |
-| Clerk | Managed | N/A |
-| AI Provider | Rate limited | Queue + exponential backoff |
-| Search Providers | Rate limited | Cache results; fallback chain |
-| Frontend | Static assets | CDN caching; code splitting |
+| Component           | Current Limit               | Scaling Strategy                        |
+| ------------------- | --------------------------- | --------------------------------------- |
+| Serverless Function | 30s maxDuration, 1024 MB    | Optimize cold start; split heavy routes |
+| Neon PG             | Connection pool (PgBouncer) | Add connection pooler; read replicas    |
+| Clerk               | Managed                     | N/A                                     |
+| AI Provider         | Rate limited                | Queue + exponential backoff             |
+| Search Providers    | Rate limited                | Cache results; fallback chain           |
+| Frontend            | Static assets               | CDN caching; code splitting             |
 
 ---
 

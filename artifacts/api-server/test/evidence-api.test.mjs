@@ -2,7 +2,12 @@ import "../../../scripts/test-guard.mjs";
 import assert from "node:assert/strict";
 import test, { before, after } from "node:test";
 import { createServer } from "node:http";
-import app, { db, pool, competitionsTable, workflowEvidenceTable } from "../dist/app.mjs";
+import app, {
+  db,
+  pool,
+  competitionsTable,
+  workflowEvidenceTable,
+} from "../dist/app.mjs";
 import { and, eq } from "drizzle-orm";
 
 let server;
@@ -75,7 +80,9 @@ before(async () => {
   assert.equal(plan.status, 201);
   planId = plan.json.id;
 
-  const implementation = plan.json.tasks.find((t) => t.phase === "implementation");
+  const implementation = plan.json.tasks.find(
+    (t) => t.phase === "implementation",
+  );
   const testing = plan.json.tasks.find((t) => t.phase === "testing");
   assert.ok(implementation, "expected an implementation task");
   assert.ok(testing, "expected a testing task");
@@ -104,27 +111,36 @@ test("evidence routes require authentication", async () => {
   assert.equal(list.status, 401);
   const create = await call(
     `/api/competitions/${competitionId}/tasks/${taskId}/evidence`,
-    { method: "POST", body: { type: "TEST_RESULT", summary: "x", result: "passed" } },
+    {
+      method: "POST",
+      body: { type: "TEST_RESULT", summary: "x", result: "passed" },
+    },
   );
   assert.equal(create.status, 401);
 });
 
 test("a task with no evidence is DONE but not VERIFIED", async () => {
   // A fresh task has not been started, so it is not_started.
-  const fresh = await call(`/api/competitions/${competitionId}/plans/${planId}`, {
-    userId: ownerA,
-  });
+  const fresh = await call(
+    `/api/competitions/${competitionId}/plans/${planId}`,
+    {
+      userId: ownerA,
+    },
+  );
   const freshTask = fresh.json.tasks.find((t) => t.id === taskId);
   assert.equal(freshTask.verification.state, "not_started");
   assert.equal(freshTask.verification.verified, false);
   assert.equal(freshTask.verification.evidenceCount, 0);
 
   // Marking it done is not the same as verifying it.
-  const marked = await call(`/api/competitions/${competitionId}/tasks/${taskId}`, {
-    method: "PATCH",
-    userId: ownerA,
-    body: { status: "done" },
-  });
+  const marked = await call(
+    `/api/competitions/${competitionId}/tasks/${taskId}`,
+    {
+      method: "PATCH",
+      userId: ownerA,
+      body: { status: "done" },
+    },
+  );
   assert.equal(marked.status, 200);
   assert.equal(marked.json.verification.state, "done");
   assert.equal(marked.json.verification.verified, false);
@@ -185,13 +201,21 @@ test("a client cannot supply its own provenance", async () => {
 test("evidence missing required fields is rejected", async () => {
   const noSummary = await call(
     `/api/competitions/${competitionId}/tasks/${testingTaskId}/evidence`,
-    { method: "POST", userId: ownerA, body: { type: "TEST_RESULT", result: "passed" } },
+    {
+      method: "POST",
+      userId: ownerA,
+      body: { type: "TEST_RESULT", result: "passed" },
+    },
   );
   assert.equal(noSummary.status, 400);
 
   const noResult = await call(
     `/api/competitions/${competitionId}/tasks/${testingTaskId}/evidence`,
-    { method: "POST", userId: ownerA, body: { type: "TEST_RESULT", summary: "x" } },
+    {
+      method: "POST",
+      userId: ownerA,
+      body: { type: "TEST_RESULT", summary: "x" },
+    },
   );
   assert.equal(noResult.status, 400);
 
@@ -280,9 +304,12 @@ test("a passing required test verifies a testing task", async () => {
     body: { status: "done" },
   });
 
-  const after = await call(`/api/competitions/${competitionId}/plans/${planId}`, {
-    userId: ownerA,
-  });
+  const after = await call(
+    `/api/competitions/${competitionId}/plans/${planId}`,
+    {
+      userId: ownerA,
+    },
+  );
   const updated = after.json.tasks.find((t) => t.id === testingTaskId);
   assert.equal(updated.verification.state, "verified");
   assert.equal(updated.verification.verified, true);
@@ -306,9 +333,12 @@ test("a task with a failed required check is not verified", async () => {
   );
   assert.equal(res.status, 201);
 
-  const plan = await call(`/api/competitions/${competitionId}/plans/${planId}`, {
-    userId: ownerA,
-  });
+  const plan = await call(
+    `/api/competitions/${competitionId}/plans/${planId}`,
+    {
+      userId: ownerA,
+    },
+  );
   const task = plan.json.tasks.find((t) => t.id === testingTaskId);
   assert.equal(task.verification.verified, false);
   assert.equal(task.verification.blockedByFailure, true);
@@ -332,18 +362,24 @@ test("a newer passing record supersedes an older failure", async () => {
   );
   assert.equal(res.status, 201);
 
-  const plan = await call(`/api/competitions/${competitionId}/plans/${planId}`, {
-    userId: ownerA,
-  });
+  const plan = await call(
+    `/api/competitions/${competitionId}/plans/${planId}`,
+    {
+      userId: ownerA,
+    },
+  );
   const task = plan.json.tasks.find((t) => t.id === testingTaskId);
   assert.equal(task.verification.state, "verified");
   assert.equal(task.verification.verified, true);
 });
 
 test("a deployment URL alone does not verify a deployment task", async () => {
-  const plan = await call(`/api/competitions/${competitionId}/plans/${planId}`, {
-    userId: ownerA,
-  });
+  const plan = await call(
+    `/api/competitions/${competitionId}/plans/${planId}`,
+    {
+      userId: ownerA,
+    },
+  );
   const deploymentTask = plan.json.tasks.find((t) => t.phase === "deployment");
   assert.ok(deploymentTask, "expected a deployment task");
   await call(`/api/competitions/${competitionId}/tasks/${deploymentTask.id}`, {
@@ -367,9 +403,12 @@ test("a deployment URL alone does not verify a deployment task", async () => {
   );
   assert.equal(urlOnly.status, 201);
 
-  const after = await call(`/api/competitions/${competitionId}/plans/${planId}`, {
-    userId: ownerA,
-  });
+  const after = await call(
+    `/api/competitions/${competitionId}/plans/${planId}`,
+    {
+      userId: ownerA,
+    },
+  );
   const task = after.json.tasks.find((t) => t.id === deploymentTask.id);
   assert.equal(task.verification.verified, false);
   assert.ok(task.verification.missingTypes.includes("HTTP_CHECK"));

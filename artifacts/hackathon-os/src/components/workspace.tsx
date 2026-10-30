@@ -1,9 +1,9 @@
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
-import { Link, useLocation } from 'wouter';
-import { useClerk, useUser } from '@clerk/react';
-import { useGetOverview, useHealthCheck } from '@workspace/api-client-react';
-import { LIFECYCLE_STAGES } from '@/lib/workflow';
-import { useWorkspaceGate } from '@/hooks/useWorkspaceGate';
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { Link, useLocation } from "wouter";
+import { useClerk, useUser } from "@clerk/react";
+import { useGetOverview, useHealthCheck } from "@workspace/api-client-react";
+import { LIFECYCLE_STAGES } from "@/lib/workflow";
+import { useWorkspaceGate } from "@/hooks/useWorkspaceGate";
 import {
   Activity,
   ArrowLeft,
@@ -25,8 +25,13 @@ import {
   X,
   Info,
   AlertCircle,
-} from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+} from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export function Brand({ compact = false }: { compact?: boolean }) {
   return (
@@ -52,11 +57,12 @@ const lifecycleStages = LIFECYCLE_STAGES.map((stage) => ({
   id: stage.id,
   label: stage.label,
   planned: stage.planned,
-  unlockRule: stage.id === "retrospective"
-    ? "Unlocks when Submission is complete or the deadline has passed"
-    : stage.planned
-    ? `Unlocks when a plan includes ${stage.label.toLowerCase()} tasks`
-    : "Shows progress from the saved plan",
+  unlockRule:
+    stage.id === "retrospective"
+      ? "Unlocks when Submission is complete or the deadline has passed"
+      : stage.planned
+        ? `Unlocks when a plan includes ${stage.label.toLowerCase()} tasks`
+        : "Shows progress from the saved plan",
 }));
 
 export function WorkspaceShell({ children }: { children: ReactNode }) {
@@ -65,9 +71,13 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
   const { signOut } = useClerk();
   const healthQuery = useHealthCheck();
   const overviewQuery = useGetOverview();
-  const apiStatus = healthQuery.isError ? 'OFFLINE' : healthQuery.data ? 'HEALTHY' : 'CHECKING';
+  const apiStatus = healthQuery.isError
+    ? "OFFLINE"
+    : healthQuery.data
+      ? "HEALTHY"
+      : "CHECKING";
   const [mobileOpen, setMobileOpen] = useState(false);
-  const activeCompetitionId = overviewQuery.data?.currentCompetition?.id ?? '';
+  const activeCompetitionId = overviewQuery.data?.currentCompetition?.id ?? "";
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const gate = useWorkspaceGate();
 
@@ -75,13 +85,13 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!mobileOpen) return;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         setMobileOpen(false);
         menuButtonRef.current?.focus();
       }
     };
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
   }, [mobileOpen]);
 
   // Close the drawer whenever the route changes.
@@ -89,13 +99,13 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
     setMobileOpen(false);
   }, [location]);
 
-  const workflowLocked = gate.isLocked('workflow');
-  const workflowUnlockReason = gate.getUnlockReason('workflow');
+  const workflowLocked = gate.isLocked("workflow");
+  const workflowUnlockReason = gate.getUnlockReason("workflow");
 
   return (
     <TooltipProvider>
       <div className="workspace-frame">
-        <aside className={`sidebar ${mobileOpen ? 'sidebar-open' : ''}`}>
+        <aside className={`sidebar ${mobileOpen ? "sidebar-open" : ""}`}>
           <div className="sidebar-top">
             <Brand />
             <button
@@ -118,8 +128,8 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
           <nav className="primary-navigation" aria-label="Workspace navigation">
             <Link
               href="/"
-              className={`nav-link ${location === '/' ? 'nav-active' : ''}`}
-              aria-current={location === '/' ? 'page' : undefined}
+              className={`nav-link ${location === "/" ? "nav-active" : ""}`}
+              aria-current={location === "/" ? "page" : undefined}
               data-testid="link-overview"
             >
               <LayoutDashboard size={16} />
@@ -127,8 +137,8 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
             </Link>
             <Link
               href="/competitions"
-              className={`nav-link ${location === '/competitions' ? 'nav-active' : ''}`}
-              aria-current={location === '/competitions' ? 'page' : undefined}
+              className={`nav-link ${location === "/competitions" ? "nav-active" : ""}`}
+              aria-current={location === "/competitions" ? "page" : undefined}
               data-testid="link-competitions"
             >
               <FolderKanban size={16} />
@@ -137,9 +147,15 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
-                  href={activeCompetitionId ? `/competitions/${activeCompetitionId}/workflow` : '/competitions'}
-                  className={`nav-link ${location.includes('/workflow') ? 'nav-active' : ''} ${workflowLocked ? 'nav-disabled' : ''}`}
-                  aria-current={location.includes('/workflow') ? 'page' : undefined}
+                  href={
+                    activeCompetitionId
+                      ? `/competitions/${activeCompetitionId}/workflow`
+                      : "/competitions"
+                  }
+                  className={`nav-link ${location.includes("/workflow") ? "nav-active" : ""} ${workflowLocked ? "nav-disabled" : ""}`}
+                  aria-current={
+                    location.includes("/workflow") ? "page" : undefined
+                  }
                   data-testid="link-workflow"
                   aria-disabled={workflowLocked}
                   tabIndex={workflowLocked ? -1 : undefined}
@@ -152,7 +168,9 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
                 >
                   <ListTodo size={16} />
                   <span>Workflow</span>
-                  {workflowLocked && <LockKeyhole size={11} className="nav-lock-icon" />}
+                  {workflowLocked && (
+                    <LockKeyhole size={11} className="nav-lock-icon" />
+                  )}
                 </Link>
               </TooltipTrigger>
               <TooltipContent side="right" align="center">
@@ -164,8 +182,8 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
             </Tooltip>
             <Link
               href="/settings"
-              className={`nav-link ${location === '/settings' ? 'nav-active' : ''}`}
-              aria-current={location === '/settings' ? 'page' : undefined}
+              className={`nav-link ${location === "/settings" ? "nav-active" : ""}`}
+              aria-current={location === "/settings" ? "page" : undefined}
               data-testid="link-settings"
             >
               <Shield size={16} />
@@ -179,7 +197,7 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
               const tooltipText = stage.unlockRule;
               return (
                 <div
-                  className={`planned-row ${isPlanned ? '' : 'planned-row-backed'}`}
+                  className={`planned-row ${isPlanned ? "" : "planned-row-backed"}`}
                   key={stage.id}
                   data-testid={`lifecycle-${stage.id}`}
                   aria-label={tooltipText}
@@ -187,7 +205,10 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
                   <span className="planned-dot" />
                   <span>{stage.label}</span>
                   {isPlanned ? (
-                    <span className="planned-lock-tooltip" data-testid={`lifecycle-lock-${stage.id}`}>
+                    <span
+                      className="planned-lock-tooltip"
+                      data-testid={`lifecycle-lock-${stage.id}`}
+                    >
                       <LockKeyhole size={11} />
                       <span className="tooltip-text">{stage.unlockRule}</span>
                     </span>
@@ -200,19 +221,33 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
           </div>
           <div className="sidebar-bottom">
             <div className="connection-state">
-              <span className={`connection-dot ${healthQuery.isError ? 'connection-dot-error' : ''}`} />
+              <span
+                className={`connection-dot ${healthQuery.isError ? "connection-dot-error" : ""}`}
+              />
               <span>API connection</span>
               <span className="mono">{apiStatus}</span>
             </div>
             <div className="profile-row">
-              <span className="avatar-initials">{(user?.firstName?.[0] ?? user?.emailAddresses?.[0]?.emailAddress?.[0] ?? 'D').toUpperCase()}</span>
+              <span className="avatar-initials">
+                {(
+                  user?.firstName?.[0] ??
+                  user?.emailAddresses?.[0]?.emailAddress?.[0] ??
+                  "D"
+                ).toUpperCase()}
+              </span>
               <span className="profile-copy">
-                <strong>{user?.fullName || user?.primaryEmailAddress?.emailAddress || 'Developer'}</strong>
+                <strong>
+                  {user?.fullName ||
+                    user?.primaryEmailAddress?.emailAddress ||
+                    "Developer"}
+                </strong>
                 <small>Personal account</small>
               </span>
               <button
                 className="icon-button logout-button"
-                onClick={() => signOut({ redirectUrl: import.meta.env.BASE_URL || '/' })}
+                onClick={() =>
+                  signOut({ redirectUrl: import.meta.env.BASE_URL || "/" })
+                }
                 aria-label="Sign out"
                 data-testid="button-sign-out"
               >
@@ -221,61 +256,64 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
             </div>
           </div>
         </aside>
-      {mobileOpen && (
-        <button
-          className="mobile-scrim"
-          onClick={() => setMobileOpen(false)}
-          aria-label="Close navigation overlay"
-          data-testid="button-navigation-scrim"
-        />
-      )}
-      <main className="workspace-main">
-        <header className="topbar">
+        {mobileOpen && (
           <button
-            className="icon-button mobile-menu"
-            onClick={() => setMobileOpen(true)}
-            aria-label="Open navigation"
-            aria-expanded={mobileOpen}
-            ref={menuButtonRef}
-            data-testid="button-open-navigation"
-          >
-            <Menu size={19} />
-          </button>
-          <nav className="breadcrumbs" aria-label="Breadcrumb">
-            <ol className="breadcrumb-list">
-              <li>
-                <Link href="/" className="breadcrumb-root">
-                  HackathonOS
-                </Link>
-              </li>
-              {breadcrumbTrail(location).map((crumb, index) => (
-                <li key={crumb.label} className="breadcrumb-item">
-                  <span className="breadcrumb-slash" aria-hidden="true">
-                    /
-                  </span>
-                  {index === breadcrumbTrail(location).length - 1 || !crumb.href ? (
-                    <span className="breadcrumb-current" aria-current="page">
-                      {crumb.label}
-                    </span>
-                  ) : (
-                    <Link href={crumb.href} className="breadcrumb-link">
-                      {crumb.label}
-                    </Link>
-                  )}
+            className="mobile-scrim"
+            onClick={() => setMobileOpen(false)}
+            aria-label="Close navigation overlay"
+            data-testid="button-navigation-scrim"
+          />
+        )}
+        <main className="workspace-main">
+          <header className="topbar">
+            <button
+              className="icon-button mobile-menu"
+              onClick={() => setMobileOpen(true)}
+              aria-label="Open navigation"
+              aria-expanded={mobileOpen}
+              ref={menuButtonRef}
+              data-testid="button-open-navigation"
+            >
+              <Menu size={19} />
+            </button>
+            <nav className="breadcrumbs" aria-label="Breadcrumb">
+              <ol className="breadcrumb-list">
+                <li>
+                  <Link href="/" className="breadcrumb-root">
+                    HackathonOS
+                  </Link>
                 </li>
-              ))}
-            </ol>
-          </nav>
-          <div className="topbar-right">
-            <span className="environment-label"><span /> PRIVATE WORKSPACE</span>
-            <div className="topbar-divider" />
-            <span className="topbar-shortcut mono">⌘ K</span>
-          </div>
-        </header>
-        <div className="page-content">{children}</div>
-      </main>
-    </div>
-  </TooltipProvider>
+                {breadcrumbTrail(location).map((crumb, index) => (
+                  <li key={crumb.label} className="breadcrumb-item">
+                    <span className="breadcrumb-slash" aria-hidden="true">
+                      /
+                    </span>
+                    {index === breadcrumbTrail(location).length - 1 ||
+                    !crumb.href ? (
+                      <span className="breadcrumb-current" aria-current="page">
+                        {crumb.label}
+                      </span>
+                    ) : (
+                      <Link href={crumb.href} className="breadcrumb-link">
+                        {crumb.label}
+                      </Link>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            </nav>
+            <div className="topbar-right">
+              <span className="environment-label">
+                <span /> PRIVATE WORKSPACE
+              </span>
+              <div className="topbar-divider" />
+              <span className="topbar-shortcut mono">⌘ K</span>
+            </div>
+          </header>
+          <div className="page-content">{children}</div>
+        </main>
+      </div>
+    </TooltipProvider>
   );
 }
 
@@ -290,25 +328,25 @@ interface Breadcrumb {
  * inventing one.
  */
 function breadcrumbTrail(location: string): Breadcrumb[] {
-  if (location === '/') return [{ label: 'Overview' }];
-  if (location === '/competitions') return [{ label: 'Competitions' }];
+  if (location === "/") return [{ label: "Overview" }];
+  if (location === "/competitions") return [{ label: "Competitions" }];
 
   const competitionMatch = location.match(/^\/competitions\/([^/]+)(\/(.+))?$/);
   if (competitionMatch) {
     const [, competitionId, , section] = competitionMatch;
     const trail: Breadcrumb[] = [
-      { label: 'Competitions', href: '/competitions' },
-      { label: 'Competition', href: `/competitions/${competitionId}` },
+      { label: "Competitions", href: "/competitions" },
+      { label: "Competition", href: `/competitions/${competitionId}` },
     ];
-    if (section === 'planner') {
-      trail.push({ label: 'Planner' });
-    } else if (section === 'workflow') {
-      trail.push({ label: 'Workflow' });
+    if (section === "planner") {
+      trail.push({ label: "Planner" });
+    } else if (section === "workflow") {
+      trail.push({ label: "Workflow" });
     }
     return trail;
   }
 
-  return [{ label: 'Overview' }];
+  return [{ label: "Overview" }];
 }
 
 export function PageHeading({
@@ -336,19 +374,16 @@ export function PageHeading({
 
 export function Button({
   children,
-  variant = 'primary',
-  className = '',
+  variant = "primary",
+  className = "",
   ...props
 }: {
   children: ReactNode;
-  variant?: 'primary' | 'secondary' | 'quiet' | 'danger';
+  variant?: "primary" | "secondary" | "quiet" | "danger";
   className?: string;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
-    <button
-      className={`button button-${variant} ${className}`}
-      {...props}
-    >
+    <button className={`button button-${variant} ${className}`} {...props}>
       {children}
     </button>
   );
@@ -371,7 +406,7 @@ export function IconButton({
 
 export function Panel({
   children,
-  className = '',
+  className = "",
 }: {
   children: ReactNode;
   className?: string;
@@ -381,7 +416,7 @@ export function Panel({
 
 export function Card({
   children,
-  className = '',
+  className = "",
   header,
   footer,
 }: {
@@ -401,7 +436,7 @@ export function Card({
 
 export function Section({
   children,
-  className = '',
+  className = "",
   title,
   icon,
   description,
@@ -413,11 +448,25 @@ export function Section({
   description?: string;
 }) {
   return (
-    <section className={`section ${className}`} aria-labelledby={title ? `section-${title.toLowerCase().replace(/\s+/g, '-')}` : undefined}>
+    <section
+      className={`section ${className}`}
+      aria-labelledby={
+        title
+          ? `section-${title.toLowerCase().replace(/\s+/g, "-")}`
+          : undefined
+      }
+    >
       {(title || icon) && (
         <div className="section-head">
           {icon && <span className="section-icon">{icon}</span>}
-          {title && <h2 id={`section-${title.toLowerCase().replace(/\s+/g, '-')}`} className="section-title">{title}</h2>}
+          {title && (
+            <h2
+              id={`section-${title.toLowerCase().replace(/\s+/g, "-")}`}
+              className="section-title"
+            >
+              {title}
+            </h2>
+          )}
         </div>
       )}
       {description && <p className="section-description">{description}</p>}
@@ -428,26 +477,32 @@ export function Section({
 
 export function Badge({
   children,
-  variant = 'default',
-  className = '',
+  variant = "default",
+  className = "",
 }: {
   children: ReactNode;
-  variant?: 'default' | 'success' | 'warning' | 'destructive' | 'info';
+  variant?: "default" | "success" | "warning" | "destructive" | "info";
   className?: string;
 }) {
   return (
-    <span className={`badge badge-${variant} ${className}`} data-testid={`badge-${variant}`}>
+    <span
+      className={`badge badge-${variant} ${className}`}
+      data-testid={`badge-${variant}`}
+    >
       {children}
     </span>
   );
 }
 
 export function StatusPill({ value }: { value: string }) {
-  const status = value.toLowerCase().replaceAll('_', '-');
+  const status = value.toLowerCase().replaceAll("_", "-");
   return (
-    <span className={`status-pill status-${status}`} data-testid={`status-${status}`}>
+    <span
+      className={`status-pill status-${status}`}
+      data-testid={`status-${status}`}
+    >
       <span className="status-indicator" />
-      {value.replaceAll('_', ' ')}
+      {value.replaceAll("_", " ")}
     </span>
   );
 }
@@ -469,13 +524,22 @@ export function Metric({
         <span className="metric-icon">{icon}</span>
         <span className="metric-label">{label}</span>
       </div>
-      <div className="metric-value" data-testid={`metric-${label.toLowerCase().replaceAll(' ', '-')}`}>{value}</div>
+      <div
+        className="metric-value"
+        data-testid={`metric-${label.toLowerCase().replaceAll(" ", "-")}`}
+      >
+        {value}
+      </div>
       {note && <div className="metric-note">{note}</div>}
     </Panel>
   );
 }
 
-export function LoadingBlock({ label = 'Loading workspace data' }: { label?: string }) {
+export function LoadingBlock({
+  label = "Loading workspace data",
+}: {
+  label?: string;
+}) {
   return (
     <div className="loading-state" role="status" aria-label={label}>
       <div className="skeleton-line skeleton-wide" />
@@ -487,8 +551,8 @@ export function LoadingBlock({ label = 'Loading workspace data' }: { label?: str
 }
 
 export function ErrorState({
-  title = 'Could not load this view',
-  detail = 'The request did not complete. Check the connection and try again.',
+  title = "Could not load this view",
+  detail = "The request did not complete. Check the connection and try again.",
   retry,
 }: {
   title?: string;
@@ -496,8 +560,14 @@ export function ErrorState({
   retry?: () => void;
 }) {
   return (
-    <div className="state-box state-error" role="alert" data-testid="state-error">
-      <span className="state-icon"><Activity size={17} /></span>
+    <div
+      className="state-box state-error"
+      role="alert"
+      data-testid="state-error"
+    >
+      <span className="state-icon">
+        <Activity size={17} />
+      </span>
       <div>
         <strong>{title}</strong>
         <p>{detail}</p>
@@ -535,11 +605,19 @@ export function EmptyState({
 
 export function ModuleStatus() {
   const healthQuery = useHealthCheck();
-  const health = healthQuery.data?.status === 'ok' || healthQuery.data?.status === 'healthy';
+  const health =
+    healthQuery.data?.status === "ok" || healthQuery.data?.status === "healthy";
   return (
-    <span className={`health-badge ${health ? 'health-ok' : healthQuery.isError ? 'health-error' : 'health-wait'}`} data-testid="status-api-health">
+    <span
+      className={`health-badge ${health ? "health-ok" : healthQuery.isError ? "health-error" : "health-wait"}`}
+      data-testid="status-api-health"
+    >
       <span />
-      {health ? 'API online' : healthQuery.isError ? 'API unavailable' : 'Checking API'}
+      {health
+        ? "API online"
+        : healthQuery.isError
+          ? "API unavailable"
+          : "Checking API"}
     </span>
   );
 }
@@ -560,14 +638,24 @@ export function FormField({
   children: ReactNode;
   required?: boolean;
 }) {
-  const labelId = useId?.() ?? `field-label-${Math.random().toString(36).slice(2)}`;
-  const hintId = hint ? `field-hint-${Math.random().toString(36).slice(2)}` : undefined;
-  const describedBy = [hintId, errorId].filter(Boolean).join(' ') || undefined;
+  const labelId =
+    useId?.() ?? `field-label-${Math.random().toString(36).slice(2)}`;
+  const hintId = hint
+    ? `field-hint-${Math.random().toString(36).slice(2)}`
+    : undefined;
+  const describedBy = [hintId, errorId].filter(Boolean).join(" ") || undefined;
 
   return (
     <div className="form-field">
       <label id={labelId} htmlFor={undefined} className="field-label-wrapper">
-        <span className="field-label">{label}{required && <span className="required-marker" aria-hidden="true">*</span>}</span>
+        <span className="field-label">
+          {label}
+          {required && (
+            <span className="required-marker" aria-hidden="true">
+              *
+            </span>
+          )}
+        </span>
       </label>
       {children}
       {error && (
@@ -575,7 +663,11 @@ export function FormField({
           {error}
         </span>
       )}
-      {hint && !error && <span id={hintId} className="field-hint">{hint}</span>}
+      {hint && !error && (
+        <span id={hintId} className="field-hint">
+          {hint}
+        </span>
+      )}
     </div>
   );
 }
@@ -596,4 +688,9 @@ export function ActionLink({
 }
 
 // Re-export Tooltip components for convenience
-export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
+export {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "@/components/ui/tooltip";

@@ -4,14 +4,14 @@ This folder contains screenshots for the README and documentation.
 
 ## Required Screenshots
 
-| Filename | View | Description |
-|----------|------|-------------|
-| `overview.png` | Dashboard | Landing page after sign-in, showing next action, competition summary |
-| `competitions.png` | Competitions List | Table of competitions with deadlines, status badges |
-| `workflow.png` | Workflow / Lifecycle | All 10 stages with progress bars, locked/unlocked states |
-| `planner.png` | Planner / Task Board | Task groups by phase, status dropdowns, evidence panel |
-| `intel.png` | Intelligence | Analysis/Research/Gaps/Ideas/Briefs tabs |
-| `settings.png` | Settings & Integrations | Workspace identity, competition defaults, connected tools, danger zone |
+| Filename           | View                    | Description                                                            |
+| ------------------ | ----------------------- | ---------------------------------------------------------------------- |
+| `overview.png`     | Dashboard               | Landing page after sign-in, showing next action, competition summary   |
+| `competitions.png` | Competitions List       | Table of competitions with deadlines, status badges                    |
+| `workflow.png`     | Workflow / Lifecycle    | All 10 stages with progress bars, locked/unlocked states               |
+| `planner.png`      | Planner / Task Board    | Task groups by phase, status dropdowns, evidence panel                 |
+| `intel.png`        | Intelligence            | Analysis/Research/Gaps/Ideas/Briefs tabs                               |
+| `settings.png`     | Settings & Integrations | Workspace identity, competition defaults, connected tools, danger zone |
 
 ## Capture Instructions
 
@@ -43,13 +43,13 @@ PORT=19678 BASE_PATH=/ API_PROXY_ORIGIN=http://127.0.0.1:8080 pnpm run dev &
 
 ## Image Specifications
 
-| Property | Value |
-|----------|-------|
-| Format | PNG (lossless) |
-| Max width | 1440px |
-| Background | App dark theme (`#191d24`) |
+| Property         | Value                                       |
+| ---------------- | ------------------------------------------- |
+| Format           | PNG (lossless)                              |
+| Max width        | 1440px                                      |
+| Background       | App dark theme (`#191d24`)                  |
 | No personal data | Redact emails, keys, real competition names |
-| Naming | `kebab-case.png` |
+| Naming           | `kebab-case.png`                            |
 
 ## Placeholder Note
 

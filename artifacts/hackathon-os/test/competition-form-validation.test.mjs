@@ -38,11 +38,15 @@ test("name at exactly 160 characters is accepted", () => {
 
 test("missing or invalid deadline is rejected", () => {
   assert.ok(validateCompetitionForm(makeForm({ deadline: "" })).deadline);
-  assert.ok(validateCompetitionForm(makeForm({ deadline: "not-a-date" })).deadline);
+  assert.ok(
+    validateCompetitionForm(makeForm({ deadline: "not-a-date" })).deadline,
+  );
 });
 
 test("valid deadline is accepted", () => {
-  const errors = validateCompetitionForm(makeForm({ deadline: "2027-10-27T14:20" }));
+  const errors = validateCompetitionForm(
+    makeForm({ deadline: "2027-10-27T14:20" }),
+  );
   assert.equal(errors.deadline, undefined);
 });
 
@@ -100,7 +104,10 @@ test("team size of 1 and 100 are accepted", () => {
 
 test("problem statement longer than 5000 characters is rejected", () => {
   const errors = validateCompetitionForm(
-    makeForm({ deadline: "2027-10-27T14:20", problemStatement: "x".repeat(5001) }),
+    makeForm({
+      deadline: "2027-10-27T14:20",
+      problemStatement: "x".repeat(5001),
+    }),
   );
   assert.ok(errors.problemStatement);
 });

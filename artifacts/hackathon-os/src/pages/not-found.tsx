@@ -1,5 +1,5 @@
-import { Link } from 'wouter';
-import { ArrowLeft, Compass } from 'lucide-react';
+import { Link } from "wouter";
+import { ArrowLeft, Compass } from "lucide-react";
 
 export default function NotFound() {
   return (
@@ -15,10 +15,18 @@ export default function NotFound() {
           renamed, or the competition workspace may have been removed.
         </p>
         <div className="not-found-actions">
-          <Link href="/" className="button button-primary" data-testid="link-not-found-overview">
+          <Link
+            href="/"
+            className="button button-primary"
+            data-testid="link-not-found-overview"
+          >
             <ArrowLeft size={14} /> Back to overview
           </Link>
-          <Link href="/competitions" className="button button-secondary" data-testid="link-not-found-competitions">
+          <Link
+            href="/competitions"
+            className="button button-secondary"
+            data-testid="link-not-found-competitions"
+          >
             View competitions
           </Link>
         </div>

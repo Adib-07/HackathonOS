@@ -31,8 +31,7 @@ export const CLAIM_KIND_DESCRIPTIONS: Record<ClaimKind, string> = {
   INFERENCE:
     "Derived from the competition record or the findings. Plausible, but not stated anywhere.",
   HYPOTHESIS: "A guess that still needs to be tested.",
-  UNKNOWN:
-    "The information is missing. Nothing has been assumed in its place.",
+  UNKNOWN: "The information is missing. Nothing has been assumed in its place.",
 };
 
 export const REQUIREMENT_CATEGORIES = [
@@ -52,20 +51,21 @@ export const REQUIREMENT_CATEGORIES = [
 
 export type RequirementCategory = (typeof REQUIREMENT_CATEGORIES)[number];
 
-export const REQUIREMENT_CATEGORY_LABELS: Record<RequirementCategory, string> = {
-  CORE_PROBLEM: "Core problem",
-  TARGET_USERS: "Target users",
-  PAIN_POINTS: "Existing pain points",
-  REQUIRED_OUTCOMES: "Required outcomes",
-  JUDGING_CRITERIA: "Judging criteria",
-  MANDATORY_DELIVERABLES: "Mandatory deliverables",
-  TECHNICAL_CONSTRAINTS: "Technical constraints",
-  TIME_CONSTRAINTS: "Time constraints",
-  TEAM_SKILLS: "Team skills",
-  AVAILABLE_RESOURCES: "Available resources",
-  EXCLUSIONS: "Exclusions and prohibited approaches",
-  UNANSWERED_QUESTIONS: "Unanswered questions",
-};
+export const REQUIREMENT_CATEGORY_LABELS: Record<RequirementCategory, string> =
+  {
+    CORE_PROBLEM: "Core problem",
+    TARGET_USERS: "Target users",
+    PAIN_POINTS: "Existing pain points",
+    REQUIRED_OUTCOMES: "Required outcomes",
+    JUDGING_CRITERIA: "Judging criteria",
+    MANDATORY_DELIVERABLES: "Mandatory deliverables",
+    TECHNICAL_CONSTRAINTS: "Technical constraints",
+    TIME_CONSTRAINTS: "Time constraints",
+    TEAM_SKILLS: "Team skills",
+    AVAILABLE_RESOURCES: "Available resources",
+    EXCLUSIONS: "Exclusions and prohibited approaches",
+    UNANSWERED_QUESTIONS: "Unanswered questions",
+  };
 
 export const IDEA_DIMENSIONS = [
   "PROBLEM_RELEVANCE",
@@ -105,12 +105,13 @@ export const IDEA_DIMENSION_HINTS: Record<IdeaDimension, string> = {
     "How clearly this differs from the approaches research already found.",
   TECHNICAL_FEASIBILITY:
     "How likely the team is to build it with the skills and time available.",
-  DEMONSTRABILITY:
-    "How convincingly the result can be shown in a short demo.",
+  DEMONSTRABILITY: "How convincingly the result can be shown in a short demo.",
   IMPLEMENTATION_TIME:
     "How much of the remaining time the idea consumes. Higher is better.",
-  RELIABILITY_RISK: "How likely the idea is to break or misbehave. Higher is better.",
-  DATA_AVAILABILITY: "How easily the needed data can be obtained. Higher is better.",
+  RELIABILITY_RISK:
+    "How likely the idea is to break or misbehave. Higher is better.",
+  DATA_AVAILABILITY:
+    "How easily the needed data can be obtained. Higher is better.",
   POTENTIAL_IMPACT: "How much difference the idea could make if it worked.",
 };
 
@@ -153,7 +154,11 @@ export const BUILD_BRIEF_SECTIONS: Array<{
     label: "Feature acceptance criteria",
     kind: "list",
   },
-  { key: "architectureSuggestion", label: "Suggested architecture", kind: "text" },
+  {
+    key: "architectureSuggestion",
+    label: "Suggested architecture",
+    kind: "text",
+  },
   { key: "dataModelOutline", label: "Data model outline", kind: "text" },
   { key: "securityRequirements", label: "Security requirements", kind: "list" },
   { key: "testingPlan", label: "Testing plan", kind: "list" },

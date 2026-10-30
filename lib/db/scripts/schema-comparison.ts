@@ -30,7 +30,11 @@ export interface ActualSchema {
 }
 
 export interface SchemaDifference {
-  kind: "missing_table" | "missing_column" | "missing_index" | "missing_foreign_key";
+  kind:
+    | "missing_table"
+    | "missing_column"
+    | "missing_index"
+    | "missing_foreign_key";
   detail: string;
 }
 
@@ -82,8 +86,7 @@ export function parseMigrationStructure(sql: string): ExpectedSchema {
     indexes.get(table)!.add(index);
   }
 
-  const addConstraint =
-    /ALTER TABLE\s+"([^"]+)"\s+ADD CONSTRAINT\s+"([^"]+)"/g;
+  const addConstraint = /ALTER TABLE\s+"([^"]+)"\s+ADD CONSTRAINT\s+"([^"]+)"/g;
   for (const match of sql.matchAll(addConstraint)) {
     const table = match[1]!;
     const constraint = match[2]!;
@@ -200,7 +203,10 @@ export function compareSchemas(
     const expectedNames = expected.indexes.get(table) ?? new Set<string>();
     for (const name of names) {
       if (!expectedNames.has(name)) {
-        extra.push({ kind: "missing_index", detail: `index "${name}" on "${table}"` });
+        extra.push({
+          kind: "missing_index",
+          detail: `index "${name}" on "${table}"`,
+        });
       }
     }
   }

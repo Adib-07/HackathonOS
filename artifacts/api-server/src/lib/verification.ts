@@ -204,7 +204,8 @@ export function assessEvidence(
       supporting: false,
       superseded: true,
       stale: false,
-      reason: "A newer record of this type exists, so this one is no longer current.",
+      reason:
+        "A newer record of this type exists, so this one is no longer current.",
     };
   }
 
@@ -221,7 +222,8 @@ export function assessEvidence(
     supporting: true,
     superseded: false,
     stale: false,
-    reason: "This record satisfies one of the task's verification requirements.",
+    reason:
+      "This record satisfies one of the task's verification requirements.",
   };
 }
 
@@ -244,9 +246,7 @@ export function evaluateTaskVerification(
   evidence: VerifiableEvidence[],
 ): TaskVerification {
   const requiredTypes = requiredEvidenceTypes(task.phase);
-  const taskEvidence = evidence.filter(
-    (item) => item.taskKey === task.taskKey,
-  );
+  const taskEvidence = evidence.filter((item) => item.taskKey === task.taskKey);
 
   const assessments = new Map(
     taskEvidence.map((item) => [
@@ -263,7 +263,9 @@ export function evaluateTaskVerification(
 
   for (const type of requiredTypes) {
     const ofType = taskEvidence.filter((item) => item.type === type);
-    const usable = ofType.filter((item) => assessments.get(item.id)?.supporting);
+    const usable = ofType.filter(
+      (item) => assessments.get(item.id)?.supporting,
+    );
     const failed = ofType.filter((item) => {
       const assessment = assessments.get(item.id);
       return (
@@ -380,13 +382,14 @@ export function evaluateTaskVerification(
 }
 
 /** Human readable label for a verification state. */
-export const VERIFICATION_STATE_LABELS: Record<TaskVerificationState, string> = {
-  not_started: "Not started",
-  in_progress: "In progress",
-  blocked: "Blocked",
-  done: "Done",
-  verified: "Verified",
-};
+export const VERIFICATION_STATE_LABELS: Record<TaskVerificationState, string> =
+  {
+    not_started: "Not started",
+    in_progress: "In progress",
+    blocked: "Blocked",
+    done: "Done",
+    verified: "Verified",
+  };
 
 /** Human readable label for an evidence type. */
 export const EVIDENCE_TYPE_LABELS: Record<EvidenceType, string> = {

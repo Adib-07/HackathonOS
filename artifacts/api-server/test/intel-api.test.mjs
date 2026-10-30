@@ -170,9 +170,7 @@ test("problem analysis runs without an AI provider and uses the stored record", 
   assert.ok(res.json.note, "the user must be told the AI part did not run");
 
   const requirements = res.json.requirements;
-  const core = requirements.find(
-    (item) => item.category === "CORE_PROBLEM",
-  );
+  const core = requirements.find((item) => item.category === "CORE_PROBLEM");
   assert.ok(core, "the recorded problem statement must be extracted");
   assert.equal(
     core.text,
@@ -435,7 +433,9 @@ test("an idea can be scored by hand and the total is computed", async () => {
   assert.equal(res.status, 200);
   assert.ok(res.json.evaluation.total > 0);
   assert.equal(res.json.evaluation.scores.length, 3);
-  assert.ok(res.json.evaluation.uncertainDimensions.includes("JUDGING_ALIGNMENT"));
+  assert.ok(
+    res.json.evaluation.uncertainDimensions.includes("JUDGING_ALIGNMENT"),
+  );
 });
 
 test("an invalid score is rejected", async () => {
@@ -557,7 +557,10 @@ test("a decision needs a rationale", async () => {
     {
       method: "POST",
       userId: ownerA,
-      body: { status: "selected", rationale: "Best fit for the recorded problem." },
+      body: {
+        status: "selected",
+        rationale: "Best fit for the recorded problem.",
+      },
     },
   );
   assert.equal(res.status, 200);
@@ -640,8 +643,14 @@ test("no intel artefact leaks another competition's data", async () => {
 
   // The requirement sets must not overlap between competitions.
   const firstIds = new Set(first.json.requirements.map((item) => item.id));
-  const shared = second.json.requirements.filter((item) => firstIds.has(item.id));
-  assert.equal(shared.length, 0, "requirements must not be shared across competitions");
+  const shared = second.json.requirements.filter((item) =>
+    firstIds.has(item.id),
+  );
+  assert.equal(
+    shared.length,
+    0,
+    "requirements must not be shared across competitions",
+  );
 
   // The second competition has a smaller set, because its brief records
   // almost nothing. That difference is the point.
@@ -650,5 +659,7 @@ test("no intel artefact leaks another competition's data", async () => {
     second.json.requirements.length,
   );
 
-  await db.delete(competitionsTable).where(eq(competitionsTable.id, other.json.id));
+  await db
+    .delete(competitionsTable)
+    .where(eq(competitionsTable.id, other.json.id));
 });

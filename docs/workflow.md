@@ -53,18 +53,18 @@ stateDiagram-v2
 
 ## Stage Definitions (Source: `artifacts/hackathon-os/src/lib/workflow.ts`)
 
-| Stage ID | Label | Plan Phases | Summary | Unlock Rule |
-|----------|-------|-------------|---------|-------------|
-| `intake` | Intake & Scope | `intake`, `problem` | Confirm official rules, lock smallest credible scope | Always available |
-| `research` | Research | `research` | Gather source-backed findings, separate facts from assumptions | After Intake tasks exist |
-| `ideas` | Ideas | `track_selection`, `idea_selection` | Choose track, challenge one idea | After Research tasks exist |
-| `build` | Build Workspace | `specification`, `architecture`, `implementation` | Write spec, build smallest complete product | After Ideas tasks exist |
-| `quality` | Testing & Security | `testing`, `security` | Run real checks, review private data access | After Build tasks exist |
-| `deployment` | Deployment | `deployment` | Publish app, verify production URL | After Quality tasks exist |
-| `demo` | Demo & Pitch | `demo`, `pitch` | Rehearse demo, prepare pitch | After Deployment tasks exist |
-| `submission` | Submission | `submission` | Audit every required item | After Demo tasks exist |
-| `retrospective` | Retrospective | `retrospective_what_worked`, `retrospective_what_failed`, `retrospective_lessons_learned`, `retrospective_next_steps` | Capture lessons; unlocks when Submission complete or deadline passed | **Submission complete** OR **deadline passed** |
-| `settings` | Settings & Integrations | — | Workspace name, defaults, tools, danger zone | **Separate page** (`/settings`), always accessible |
+| Stage ID        | Label                   | Plan Phases                                                                                                           | Summary                                                              | Unlock Rule                                        |
+| --------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | -------------------------------------------------- |
+| `intake`        | Intake & Scope          | `intake`, `problem`                                                                                                   | Confirm official rules, lock smallest credible scope                 | Always available                                   |
+| `research`      | Research                | `research`                                                                                                            | Gather source-backed findings, separate facts from assumptions       | After Intake tasks exist                           |
+| `ideas`         | Ideas                   | `track_selection`, `idea_selection`                                                                                   | Choose track, challenge one idea                                     | After Research tasks exist                         |
+| `build`         | Build Workspace         | `specification`, `architecture`, `implementation`                                                                     | Write spec, build smallest complete product                          | After Ideas tasks exist                            |
+| `quality`       | Testing & Security      | `testing`, `security`                                                                                                 | Run real checks, review private data access                          | After Build tasks exist                            |
+| `deployment`    | Deployment              | `deployment`                                                                                                          | Publish app, verify production URL                                   | After Quality tasks exist                          |
+| `demo`          | Demo & Pitch            | `demo`, `pitch`                                                                                                       | Rehearse demo, prepare pitch                                         | After Deployment tasks exist                       |
+| `submission`    | Submission              | `submission`                                                                                                          | Audit every required item                                            | After Demo tasks exist                             |
+| `retrospective` | Retrospective           | `retrospective_what_worked`, `retrospective_what_failed`, `retrospective_lessons_learned`, `retrospective_next_steps` | Capture lessons; unlocks when Submission complete or deadline passed | **Submission complete** OR **deadline passed**     |
+| `settings`      | Settings & Integrations | —                                                                                                                     | Workspace name, defaults, tools, danger zone                         | **Separate page** (`/settings`), always accessible |
 
 ### Stage State Derivation (from `deriveStageState`)
 
@@ -126,17 +126,17 @@ export type PlanTaskPhase =
 
 ### Phase → Stage Mapping (from `stageIdForPhase`)
 
-| Phase | Stage |
-|-------|-------|
-| `intake`, `problem` | `intake` |
-| `research` | `research` |
-| `track_selection`, `idea_selection` | `ideas` |
-| `specification`, `architecture`, `implementation` | `build` |
-| `testing`, `security` | `quality` |
-| `deployment` | `deployment` |
-| `demo`, `pitch` | `demo` |
-| `submission` | `submission` |
-| `retrospective_*` | `retrospective` |
+| Phase                                             | Stage           |
+| ------------------------------------------------- | --------------- |
+| `intake`, `problem`                               | `intake`        |
+| `research`                                        | `research`      |
+| `track_selection`, `idea_selection`               | `ideas`         |
+| `specification`, `architecture`, `implementation` | `build`         |
+| `testing`, `security`                             | `quality`       |
+| `deployment`                                      | `deployment`    |
+| `demo`, `pitch`                                   | `demo`          |
+| `submission`                                      | `submission`    |
+| `retrospective_*`                                 | `retrospective` |
 
 ---
 
@@ -144,26 +144,26 @@ export type PlanTaskPhase =
 
 ### Task Fields (from `StageTask` / `WorkflowTaskRecord`)
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | UUID | Primary key |
-| `taskKey` | String | Stable identifier (e.g., `"build-product"`) |
-| `title` | String | Human-readable title |
-| `description` | String | Markdown description |
-| `phase` | `PlanTaskPhase` | Which lifecycle phase |
-| `priority` | `"critical" \| "high" \| "medium" \| "low"` | Priority |
-| `estimatedMinutes` | Integer | Planned effort |
-| `plannedStartAt` | Timestamp | Schedule start |
-| `plannedEndAt` | Timestamp | Schedule end |
-| `dependencies` | String[] | Task keys that must complete first |
-| `owner` | String \| null | Assignee (future) |
-| `status` | `PlanTaskStatus` | Current state |
-| `acceptanceCriteria` | String[] | Checklist for "done" |
-| `expectedArtifact` | String \| null | What this produces |
-| `verificationMethod` | String | How to verify (e.g., `"Run the app and complete the primary user journey"`) |
-| `riskIfSkipped` | String | Why this matters |
-| `mandatory` | Boolean | Cannot defer |
-| `verified` | Boolean | Evidence satisfies method |
+| Field                | Type                                        | Description                                                                 |
+| -------------------- | ------------------------------------------- | --------------------------------------------------------------------------- |
+| `id`                 | UUID                                        | Primary key                                                                 |
+| `taskKey`            | String                                      | Stable identifier (e.g., `"build-product"`)                                 |
+| `title`              | String                                      | Human-readable title                                                        |
+| `description`        | String                                      | Markdown description                                                        |
+| `phase`              | `PlanTaskPhase`                             | Which lifecycle phase                                                       |
+| `priority`           | `"critical" \| "high" \| "medium" \| "low"` | Priority                                                                    |
+| `estimatedMinutes`   | Integer                                     | Planned effort                                                              |
+| `plannedStartAt`     | Timestamp                                   | Schedule start                                                              |
+| `plannedEndAt`       | Timestamp                                   | Schedule end                                                                |
+| `dependencies`       | String[]                                    | Task keys that must complete first                                          |
+| `owner`              | String \| null                              | Assignee (future)                                                           |
+| `status`             | `PlanTaskStatus`                            | Current state                                                               |
+| `acceptanceCriteria` | String[]                                    | Checklist for "done"                                                        |
+| `expectedArtifact`   | String \| null                              | What this produces                                                          |
+| `verificationMethod` | String                                      | How to verify (e.g., `"Run the app and complete the primary user journey"`) |
+| `riskIfSkipped`      | String                                      | Why this matters                                                            |
+| `mandatory`          | Boolean                                     | Cannot defer                                                                |
+| `verified`           | Boolean                                     | Evidence satisfies method                                                   |
 
 ### Task Status Transitions
 
@@ -185,13 +185,13 @@ stateDiagram-v2
 
 ### Status Values (`PlanTaskStatus`)
 
-| Status | Meaning |
-|--------|---------|
-| `todo` | Not started, ready to work |
-| `in_progress` | Actively being worked on |
-| `blocked` | Cannot proceed (dependency, external) |
-| `done` | Owner marked complete |
-| `deferred` | Intentionally postponed |
+| Status        | Meaning                               |
+| ------------- | ------------------------------------- |
+| `todo`        | Not started, ready to work            |
+| `in_progress` | Actively being worked on              |
+| `blocked`     | Cannot proceed (dependency, external) |
+| `done`        | Owner marked complete                 |
+| `deferred`    | Intentionally postponed               |
 
 ---
 
@@ -199,33 +199,33 @@ stateDiagram-v2
 
 ### Evidence Fields (from `WorkflowEvidenceRecord`)
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | UUID | Primary key |
-| `competitionId` | UUID | Parent competition |
-| `taskId` | UUID \| null | Task at time of recording (nullable on plan recalc) |
-| `taskKey` | String | Stable task identity (survives plan recalc) |
-| `type` | `EvidenceType` | Kind of check |
-| `summary` | String | What was observed |
-| `sourceUrl` | String \| null | Link to artifact (CI log, screenshot) |
-| `commandName` | String \| null | CLI command that produced it |
-| `result` | `"passed" \| "failed"` | Outcome |
-| `observedAt` | Timestamp | When check ran |
-| `reviewerNote` | String \| null | Human context |
-| `source` | `"manual"` | Always `"manual"` today |
-| `phaseSnapshot` | String | Task phase at observation time |
-| `verificationMethodSnapshot` | String | Verification method at observation time |
+| Field                        | Type                   | Description                                         |
+| ---------------------------- | ---------------------- | --------------------------------------------------- |
+| `id`                         | UUID                   | Primary key                                         |
+| `competitionId`              | UUID                   | Parent competition                                  |
+| `taskId`                     | UUID \| null           | Task at time of recording (nullable on plan recalc) |
+| `taskKey`                    | String                 | Stable task identity (survives plan recalc)         |
+| `type`                       | `EvidenceType`         | Kind of check                                       |
+| `summary`                    | String                 | What was observed                                   |
+| `sourceUrl`                  | String \| null         | Link to artifact (CI log, screenshot)               |
+| `commandName`                | String \| null         | CLI command that produced it                        |
+| `result`                     | `"passed" \| "failed"` | Outcome                                             |
+| `observedAt`                 | Timestamp              | When check ran                                      |
+| `reviewerNote`               | String \| null         | Human context                                       |
+| `source`                     | `"manual"`             | Always `"manual"` today                             |
+| `phaseSnapshot`              | String                 | Task phase at observation time                      |
+| `verificationMethodSnapshot` | String                 | Verification method at observation time             |
 
 ### Evidence Types (`EvidenceType`)
 
-| Type | Use Case |
-|------|----------|
-| `test_run` | Automated test suite execution |
-| `build_output` | Build command success/failure |
-| `manual_check` | Human verification (UI, API) |
-| `security_review` | Security audit findings |
-| `deployment_check` | Deploy command + URL verification |
-| `demo_rehearsal` | Demo run from clean state |
+| Type               | Use Case                           |
+| ------------------ | ---------------------------------- |
+| `test_run`         | Automated test suite execution     |
+| `build_output`     | Build command success/failure      |
+| `manual_check`     | Human verification (UI, API)       |
+| `security_review`  | Security audit findings            |
+| `deployment_check` | Deploy command + URL verification  |
+| `demo_rehearsal`   | Demo run from clean state          |
 | `submission_audit` | Deliverable checklist confirmation |
 
 ### Verification Logic (from `evaluateTaskVerification`)
@@ -263,20 +263,20 @@ stateDiagram-v2
 
 ### Template Tasks (abridged)
 
-| Task Key | Phase | Priority | Weight | Mandatory |
-|----------|-------|----------|--------|-----------|
-| `confirm-rules` | `intake` | critical | 6 | No |
-| `understand-problem` | `problem` | high | 7 | No |
-| `research-solutions` | `research` | high | 10 | No |
-| `choose-track` | `track_selection` | high | 5 | No |
-| `red-team-idea` | `idea_selection` | high | 8 | No |
-| `specify-architecture` | `architecture` | high | 8 | No |
-| `build-product` | `implementation` | critical | 30 (+complexity) | No |
-| `test-product` | `testing` | critical | 8 | No |
-| `review-security` | `security` | high | 5 | No |
-| `deploy-product` | `deployment` | high | 5 | No |
-| `prepare-demo` | `demo` | high | 5 | No |
-| `submission-audit` | `submission` | critical | 5 | **Yes** |
+| Task Key               | Phase             | Priority | Weight           | Mandatory |
+| ---------------------- | ----------------- | -------- | ---------------- | --------- |
+| `confirm-rules`        | `intake`          | critical | 6                | No        |
+| `understand-problem`   | `problem`         | high     | 7                | No        |
+| `research-solutions`   | `research`        | high     | 10               | No        |
+| `choose-track`         | `track_selection` | high     | 5                | No        |
+| `red-team-idea`        | `idea_selection`  | high     | 8                | No        |
+| `specify-architecture` | `architecture`    | high     | 8                | No        |
+| `build-product`        | `implementation`  | critical | 30 (+complexity) | No        |
+| `test-product`         | `testing`         | critical | 8                | No        |
+| `review-security`      | `security`        | high     | 5                | No        |
+| `deploy-product`       | `deployment`      | high     | 5                | No        |
+| `prepare-demo`         | `demo`            | high     | 5                | No        |
+| `submission-audit`     | `submission`      | critical | 5                | **Yes**   |
 
 ### Versioning
 
@@ -386,15 +386,15 @@ jobs:
 
 ## Edge Cases & Gotchas
 
-| Scenario | Behavior |
-|----------|----------|
-| Plan regenerated after tasks marked `done` | `previousStatusByKey` preserves `done` status for matching `taskKey` |
-| Evidence submitted for task not in current plan | `taskId` = NULL, `taskKey` preserved; verification works on key |
-| Competition deadline passes, no plan | Retrospective unlocks (deadline passed) |
-| Submission tasks all `done`, then one reopened | Retrospective locks again (submission no longer complete) |
-| Evidence `verificationMethodSnapshot` ≠ current task method | Evidence ignored for verification (stale) |
-| Multiple evidence for same task, one `failed` | Task **not** verified (all must pass) |
-| Plan `infeasible` status | UI shows warnings; tasks still generated but may exceed deadline |
+| Scenario                                                    | Behavior                                                             |
+| ----------------------------------------------------------- | -------------------------------------------------------------------- |
+| Plan regenerated after tasks marked `done`                  | `previousStatusByKey` preserves `done` status for matching `taskKey` |
+| Evidence submitted for task not in current plan             | `taskId` = NULL, `taskKey` preserved; verification works on key      |
+| Competition deadline passes, no plan                        | Retrospective unlocks (deadline passed)                              |
+| Submission tasks all `done`, then one reopened              | Retrospective locks again (submission no longer complete)            |
+| Evidence `verificationMethodSnapshot` ≠ current task method | Evidence ignored for verification (stale)                            |
+| Multiple evidence for same task, one `failed`               | Task **not** verified (all must pass)                                |
+| Plan `infeasible` status                                    | UI shows warnings; tasks still generated but may exceed deadline     |
 
 ---
 
@@ -414,12 +414,12 @@ To add a stage (see [CONTRIBUTING.md](../CONTRIBUTING.md#how-to-add-a-lifecycle-
 
 ## Related Files
 
-| File | Purpose |
-|------|---------|
-| `artifacts/hackathon-os/src/lib/workflow.ts` | Core lifecycle logic (stages, phases, state derivation) |
-| `artifacts/hackathon-os/src/pages/workflow.tsx` | Workflow page UI |
-| `artifacts/hackathon-os/src/components/workspace.tsx` | Sidebar lifecycle display |
-| `artifacts/api-server/src/lib/planner.ts` | Plan generation from deadline |
-| `artifacts/api-server/src/lib/verification.ts` | Evidence evaluation logic |
-| `lib/db/src/schema/workflow-plans.ts` | Database schema for plans/tasks |
-| `lib/db/src/schema/evidence.ts` | Database schema for evidence |
+| File                                                  | Purpose                                                 |
+| ----------------------------------------------------- | ------------------------------------------------------- |
+| `artifacts/hackathon-os/src/lib/workflow.ts`          | Core lifecycle logic (stages, phases, state derivation) |
+| `artifacts/hackathon-os/src/pages/workflow.tsx`       | Workflow page UI                                        |
+| `artifacts/hackathon-os/src/components/workspace.tsx` | Sidebar lifecycle display                               |
+| `artifacts/api-server/src/lib/planner.ts`             | Plan generation from deadline                           |
+| `artifacts/api-server/src/lib/verification.ts`        | Evidence evaluation logic                               |
+| `lib/db/src/schema/workflow-plans.ts`                 | Database schema for plans/tasks                         |
+| `lib/db/src/schema/evidence.ts`                       | Database schema for evidence                            |

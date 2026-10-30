@@ -56,7 +56,9 @@ test("required evidence types are defined per phase", () => {
 });
 
 test("an unknown phase falls back to a manual review requirement", () => {
-  assert.deepEqual(requiredEvidenceTypes("not_a_real_phase"), ["MANUAL_REVIEW"]);
+  assert.deepEqual(requiredEvidenceTypes("not_a_real_phase"), [
+    "MANUAL_REVIEW",
+  ]);
 });
 
 test("a task with no evidence is never verified", () => {
@@ -83,7 +85,10 @@ test("a done task with satisfying evidence becomes verified", () => {
   const result = evaluateTaskVerification(makeTask(), evidence);
   assert.equal(result.state, "verified");
   assert.equal(result.verified, true);
-  assert.deepEqual(result.satisfiedTypes.sort(), ["BUILD_RESULT", "TEST_RESULT"]);
+  assert.deepEqual(result.satisfiedTypes.sort(), [
+    "BUILD_RESULT",
+    "TEST_RESULT",
+  ]);
   assert.equal(result.supportingEvidenceIds.length, 2);
 });
 
@@ -98,10 +103,9 @@ test("partial evidence does not verify a task that needs two types", () => {
 });
 
 test("a failed required test blocks verification", () => {
-  const result = evaluateTaskVerification(
-    makeTask({ phase: "testing" }),
-    [makeEvidence({ result: "failed" })],
-  );
+  const result = evaluateTaskVerification(makeTask({ phase: "testing" }), [
+    makeEvidence({ result: "failed" }),
+  ]);
   assert.equal(result.state, "done");
   assert.equal(result.verified, false);
   assert.equal(result.blockedByFailure, true);
@@ -111,51 +115,44 @@ test("a failed required test blocks verification", () => {
 
 test("a failure is not repaired by an older passing record of the same type", () => {
   // The failing record is newer, so it is the current truth for that type.
-  const result = evaluateTaskVerification(
-    makeTask({ phase: "testing" }),
-    [
-      makeEvidence({
-        id: "old-pass",
-        result: "passed",
-        observedAt: "2026-10-20T10:00:00.000Z",
-      }),
-      makeEvidence({
-        id: "new-fail",
-        result: "failed",
-        observedAt: "2026-10-21T10:00:00.000Z",
-      }),
-    ],
-  );
+  const result = evaluateTaskVerification(makeTask({ phase: "testing" }), [
+    makeEvidence({
+      id: "old-pass",
+      result: "passed",
+      observedAt: "2026-10-20T10:00:00.000Z",
+    }),
+    makeEvidence({
+      id: "new-fail",
+      result: "failed",
+      observedAt: "2026-10-21T10:00:00.000Z",
+    }),
+  ]);
   assert.equal(result.verified, false);
   assert.equal(result.blockedByFailure, true);
 });
 
 test("a newer passing record supersedes an older failure", () => {
-  const result = evaluateTaskVerification(
-    makeTask({ phase: "testing" }),
-    [
-      makeEvidence({
-        id: "old-fail",
-        result: "failed",
-        observedAt: "2026-10-20T10:00:00.000Z",
-      }),
-      makeEvidence({
-        id: "new-pass",
-        result: "passed",
-        observedAt: "2026-10-21T10:00:00.000Z",
-      }),
-    ],
-  );
+  const result = evaluateTaskVerification(makeTask({ phase: "testing" }), [
+    makeEvidence({
+      id: "old-fail",
+      result: "failed",
+      observedAt: "2026-10-20T10:00:00.000Z",
+    }),
+    makeEvidence({
+      id: "new-pass",
+      result: "passed",
+      observedAt: "2026-10-21T10:00:00.000Z",
+    }),
+  ]);
   assert.equal(result.state, "verified");
   assert.equal(result.verified, true);
   assert.deepEqual(result.supportingEvidenceIds, ["new-pass"]);
 });
 
 test("a deployment URL alone does not verify a deployment task", () => {
-  const result = evaluateTaskVerification(
-    makeTask({ phase: "deployment" }),
-    [makeEvidence({ type: "DEPLOYMENT_URL" })],
-  );
+  const result = evaluateTaskVerification(makeTask({ phase: "deployment" }), [
+    makeEvidence({ type: "DEPLOYMENT_URL" }),
+  ]);
   assert.equal(result.verified, false);
   assert.deepEqual(result.missingTypes, ["HTTP_CHECK"]);
   assert.ok(result.reason.includes("HTTP_CHECK"));
@@ -183,7 +180,9 @@ test("evidence recorded against a different requirement is stale and cannot veri
 });
 
 test("changing the task requirement invalidates previously recorded evidence", () => {
-  const evidence = [makeEvidence({ verificationMethodSnapshot: "Old method." })];
+  const evidence = [
+    makeEvidence({ verificationMethodSnapshot: "Old method." }),
+  ];
   const before = evaluateTaskVerification(
     makeTask({ phase: "testing", verificationMethod: "Old method." }),
     evidence,
@@ -244,8 +243,14 @@ test("evidence of a type the task does not require does not verify it", () => {
 });
 
 test("assessEvidence marks a superseded record", () => {
-  const older = makeEvidence({ id: "old", observedAt: "2026-10-20T10:00:00.000Z" });
-  const newer = makeEvidence({ id: "new", observedAt: "2026-10-21T10:00:00.000Z" });
+  const older = makeEvidence({
+    id: "old",
+    observedAt: "2026-10-20T10:00:00.000Z",
+  });
+  const newer = makeEvidence({
+    id: "new",
+    observedAt: "2026-10-21T10:00:00.000Z",
+  });
   const assessment = assessEvidence(makeTask(), older, [older, newer]);
   assert.equal(assessment.superseded, true);
   assert.equal(assessment.supporting, false);
@@ -268,10 +273,9 @@ test("assessEvidence explains a failure", () => {
 });
 
 test("a manual review satisfies a manual review requirement", () => {
-  const result = evaluateTaskVerification(
-    makeTask({ phase: "architecture" }),
-    [makeEvidence({ type: "MANUAL_REVIEW" })],
-  );
+  const result = evaluateTaskVerification(makeTask({ phase: "architecture" }), [
+    makeEvidence({ type: "MANUAL_REVIEW" }),
+  ]);
   assert.equal(result.state, "verified");
   assert.equal(result.verified, true);
 });

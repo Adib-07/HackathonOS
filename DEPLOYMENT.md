@@ -22,18 +22,18 @@ The `artifacts/mockup-sandbox` workspace is a development/design tool and is **n
 
 Configure these in Vercel Project Settings → Environment Variables:
 
-| Variable | Scope | Description |
-|----------|-------|-------------|
-| `DATABASE_URL` | Production, Preview | PostgreSQL connection string (required) |
-| `CLERK_SECRET_KEY` | Production, Preview | Clerk backend secret key |
-| `CLERK_PUBLISHABLE_KEY` | Production, Preview | Clerk backend publishable key |
-| `VITE_CLERK_PUBLISHABLE_KEY` | Production, Preview | Frontend Clerk publishable key |
-| `BASE_PATH` | Production, Preview | Base path for frontend (default: `/`) |
-| `VITE_CLERK_PROXY_URL` | Production, Preview | Optional: Clerk proxy URL (e.g., `https://your-app.vercel.app/api/__clerk`) |
-| `OPENAI_API_KEY` | Production, Preview | Optional: OpenAI API key for AI features |
-| `OPENAI_BASE_URL` | Production, Preview | Optional: Custom OpenAI-compatible endpoint |
-| `OPENAI_MODEL` | Production, Preview | Optional: Model to use (default: `gpt-4o-mini`) |
-| `LOG_LEVEL` | Production, Preview | Optional: Log level (default: `info`) |
+| Variable                     | Scope               | Description                                                                 |
+| ---------------------------- | ------------------- | --------------------------------------------------------------------------- |
+| `DATABASE_URL`               | Production, Preview | PostgreSQL connection string (required)                                     |
+| `CLERK_SECRET_KEY`           | Production, Preview | Clerk backend secret key                                                    |
+| `CLERK_PUBLISHABLE_KEY`      | Production, Preview | Clerk backend publishable key                                               |
+| `VITE_CLERK_PUBLISHABLE_KEY` | Production, Preview | Frontend Clerk publishable key                                              |
+| `BASE_PATH`                  | Production, Preview | Base path for frontend (default: `/`)                                       |
+| `VITE_CLERK_PROXY_URL`       | Production, Preview | Optional: Clerk proxy URL (e.g., `https://your-app.vercel.app/api/__clerk`) |
+| `OPENAI_API_KEY`             | Production, Preview | Optional: OpenAI API key for AI features                                    |
+| `OPENAI_BASE_URL`            | Production, Preview | Optional: Custom OpenAI-compatible endpoint                                 |
+| `OPENAI_MODEL`               | Production, Preview | Optional: Model to use (default: `gpt-4o-mini`)                             |
+| `LOG_LEVEL`                  | Production, Preview | Optional: Log level (default: `info`)                                       |
 
 ### Clerk Configuration
 
@@ -66,6 +66,7 @@ Configure these in Vercel Project Settings → Environment Variables:
 ### 2. Configure Project Settings
 
 The `vercel.json` at the repository root configures:
+
 - **Build Command**: `pnpm run build` (builds both frontend and API)
 - **Install Command**: `pnpm install --frozen-lockfile`
 - **Output Directory**: `artifacts/hackathon-os/dist/public`
@@ -157,6 +158,7 @@ pnpm run migrate
 ### Production
 
 Migrations are applied manually or via CI/CD:
+
 ```bash
 # On production database
 DATABASE_URL=... pnpm --filter @workspace/db run migrate
@@ -182,6 +184,7 @@ DATABASE_URL=... pnpm --filter @workspace/db run migrate:baseline
 ### Large Bundle Warning
 
 The frontend build may warn about chunks > 500 kB. This is acceptable for the current feature set. To optimize:
+
 - Add `manualChunks` to `vite.config.ts` for better code splitting
 - Lazy-load more routes
 

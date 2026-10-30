@@ -24,8 +24,12 @@ before(async () => {
 
 after(async () => {
   try {
-    await db.delete(competitionsTable).where(eq(competitionsTable.ownerId, testOwnerId));
-    await db.delete(competitionsTable).where(eq(competitionsTable.ownerId, otherOwnerId));
+    await db
+      .delete(competitionsTable)
+      .where(eq(competitionsTable.ownerId, testOwnerId));
+    await db
+      .delete(competitionsTable)
+      .where(eq(competitionsTable.ownerId, otherOwnerId));
   } catch (err) {
     console.warn("Cleanup warning:", err.message);
   }
@@ -49,7 +53,10 @@ test("POST /api/competitions returns 401 when request is unauthenticated", async
   const res = await fetch(`${baseUrl}/api/competitions`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name: "Unauthenticated Hackathon", deadline: new Date().toISOString() }),
+    body: JSON.stringify({
+      name: "Unauthenticated Hackathon",
+      deadline: new Date().toISOString(),
+    }),
   });
   assert.equal(res.status, 401);
 });
@@ -94,7 +101,8 @@ test("POST /api/competitions creates and persists competition in PostgreSQL", as
     teamSize: 4,
     trackMode: "choose",
     currentTrack: "Clean Energy Tech",
-    problemStatement: "Design software solutions that accelerate community solar adoption.",
+    problemStatement:
+      "Design software solutions that accelerate community solar adoption.",
     officialUrl: "https://climate.mit.edu/hackathon",
     rulesUrl: "https://climate.mit.edu/hackathon/rules",
     mandatoryDeliverables: ["Working Prototype", "Slide Deck", "Repository"],
@@ -118,7 +126,11 @@ test("POST /api/competitions creates and persists competition in PostgreSQL", as
   assert.equal(created.organizer, "MIT Energy Initiative");
   assert.equal(created.competitionType, "hybrid");
   assert.equal(created.teamSize, 4);
-  assert.deepEqual(created.mandatoryDeliverables, ["Working Prototype", "Slide Deck", "Repository"]);
+  assert.deepEqual(created.mandatoryDeliverables, [
+    "Working Prototype",
+    "Slide Deck",
+    "Repository",
+  ]);
   assert.deepEqual(created.teamSkills, ["React", "PostgreSQL", "Python"]);
 
   // Verify persistence by querying the database directly with Drizzle

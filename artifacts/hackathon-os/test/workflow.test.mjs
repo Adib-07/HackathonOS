@@ -123,7 +123,9 @@ test("a task in any planner phase is visible in some stage", () => {
 
   // For retrospective phases, we need to unlock the retrospective stage
   // by providing a completed submission task and a future deadline
-  const futureDeadline = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+  const futureDeadline = new Date(
+    Date.now() + 24 * 60 * 60 * 1000,
+  ).toISOString();
   const submissionTask = makeTask({ phase: "submission", status: "done" });
 
   for (const phase of plannerPhases) {
@@ -137,7 +139,11 @@ test("a task in any planner phase is visible in some stage", () => {
     );
     assert.ok(targetStage, `phase ${phase} has no owning stage`);
     assert.equal(targetStage.total, 1, `phase ${phase} should have 1 task`);
-    assert.equal(targetStage.state, "blocked", `phase ${phase} should surface its blocker`);
+    assert.equal(
+      targetStage.state,
+      "blocked",
+      `phase ${phase} should surface its blocker`,
+    );
   }
 });
 
@@ -166,7 +172,11 @@ test("all tasks done means the stage is complete", () => {
 });
 
 test("a blocked task makes the stage blocked and is reported as a blocker", () => {
-  const blocker = makeTask({ id: "b1", status: "blocked", title: "Blocked thing" });
+  const blocker = makeTask({
+    id: "b1",
+    status: "blocked",
+    title: "Blocked thing",
+  });
   const result = deriveStageState([makeTask({ status: "done" }), blocker]);
   assert.equal(result.state, "blocked");
   assert.equal(result.blocked, 1);
@@ -272,7 +282,9 @@ test("stage summaries group tasks by their plan phase", () => {
   const research = summaries.find((s) => s.definition.id === "research");
   const build = summaries.find((s) => s.definition.id === "build");
   const quality = summaries.find((s) => s.definition.id === "quality");
-  const retrospective = summaries.find((s) => s.definition.id === "retrospective");
+  const retrospective = summaries.find(
+    (s) => s.definition.id === "retrospective",
+  );
 
   assert.equal(research?.total, 1);
   assert.equal(research?.done, 1);

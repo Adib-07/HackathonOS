@@ -82,15 +82,12 @@ test("the API key is sent in the header and never in the body", async () => {
     async (_url, init) => {
       seenUrl = String(_url);
       seenBody = String(init?.body ?? "");
-      seenAuth = String(
-        (init?.headers ?? {})["authorization"] ?? "",
-      );
+      seenAuth = String((init?.headers ?? {})["authorization"] ?? "");
       return jsonResponse(
         JSON.stringify({ choices: [{ message: { content: "{}" } }] }),
       );
     },
-    () =>
-      provider.completeJson({ system: "s", user: "u", purpose: "test" }),
+    () => provider.completeJson({ system: "s", user: "u", purpose: "test" }),
   );
 
   assert.equal(seenAuth, "Bearer sk-test-value");
@@ -129,8 +126,7 @@ test("rate limiting is reported as rate limiting", async () => {
   await assert.rejects(
     withFetch(
       async () => jsonResponse("{}", 429),
-      () =>
-        provider.completeJson({ system: "s", user: "u", purpose: "test" }),
+      () => provider.completeJson({ system: "s", user: "u", purpose: "test" }),
     ),
     (error) => error instanceof AiError && error.kind === "RATE_LIMITED",
   );
@@ -142,8 +138,7 @@ test("a malformed response is reported as malformed output", async () => {
   await assert.rejects(
     withFetch(
       async () => jsonResponse("not json at all"),
-      () =>
-        provider.completeJson({ system: "s", user: "u", purpose: "test" }),
+      () => provider.completeJson({ system: "s", user: "u", purpose: "test" }),
     ),
     (error) => error instanceof AiError && error.kind === "MALFORMED_OUTPUT",
   );
@@ -183,8 +178,7 @@ test("a network failure is reported without leaking internals", async () => {
       async () => {
         throw new Error("ECONNREFUSED 10.0.0.1:443");
       },
-      () =>
-        provider.completeJson({ system: "s", user: "u", purpose: "test" }),
+      () => provider.completeJson({ system: "s", user: "u", purpose: "test" }),
     ),
     (error) =>
       error instanceof AiError &&

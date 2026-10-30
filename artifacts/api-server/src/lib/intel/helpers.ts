@@ -79,7 +79,8 @@ export function aiErrorResponse(error: unknown): {
   return {
     status: 500,
     body: {
-      error: "The step could not be generated. Try again, or record the result by hand.",
+      error:
+        "The step could not be generated. Try again, or record the result by hand.",
       code: "UNKNOWN",
     },
   };

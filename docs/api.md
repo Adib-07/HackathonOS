@@ -32,6 +32,7 @@ All routes require **Clerk session cookie** except `/healthz` and `/readyz`.
 Liveness probe — process is running.
 
 **Response 200**:
+
 ```json
 { "status": "ok" }
 ```
@@ -41,11 +42,13 @@ Liveness probe — process is running.
 Readiness probe — database reachable.
 
 **Response 200**:
+
 ```json
 { "status": "ready" }
 ```
 
 **Response 503**:
+
 ```json
 { "status": "not ready", "error": "db unreachable" }
 ```
@@ -55,18 +58,19 @@ Readiness probe — database reachable.
 ## Error Format
 
 All errors:
+
 ```json
 { "error": "Human-readable message" }
 ```
 
-| Status | Meaning |
-|--------|---------|
-| `400` | Validation failed (Zod `safeParse`) |
-| `401` | Missing/invalid Clerk session |
-| `404` | Resource not found or not owned |
-| `429` | Rate limited (research: 8/min, AI: 12/min) |
-| `500` | Unexpected server error |
-| `503` | `/readyz` DB unreachable |
+| Status | Meaning                                    |
+| ------ | ------------------------------------------ |
+| `400`  | Validation failed (Zod `safeParse`)        |
+| `401`  | Missing/invalid Clerk session              |
+| `404`  | Resource not found or not owned            |
+| `429`  | Rate limited (research: 8/min, AI: 12/min) |
+| `500`  | Unexpected server error                    |
+| `503`  | `/readyz` DB unreachable                   |
 
 ---
 
@@ -77,6 +81,7 @@ All errors:
 Workspace dashboard: current competition, plan, next action, counts.
 
 **Response 200** (`GetOverviewResponse`):
+
 ```typescript
 {
   currentCompetition: Competition | null,
@@ -106,6 +111,7 @@ List all competitions owned by user, ordered by deadline.
 **Response 200**: `Competition[]`
 
 **Competition** shape:
+
 ```typescript
 {
   id: string (UUID),
@@ -137,6 +143,7 @@ List all competitions owned by user, ordered by deadline.
 Create a competition.
 
 **Request** (`CreateCompetitionBody`):
+
 ```typescript
 {
   name: string (required, 1-160 chars),
@@ -192,6 +199,7 @@ Update competition (partial).
 List plan versions for a competition (newest first).
 
 **Response 200** (`PlanSummary[]`):
+
 ```typescript
 {
   id: string (UUID),
@@ -216,6 +224,7 @@ List plan versions for a competition (newest first).
 Generate a new plan version.
 
 **Request** (`GeneratePlanBody`):
+
 ```typescript
 {
   remainingHours?: number,  // Optional override for available time
@@ -224,6 +233,7 @@ Generate a new plan version.
 ```
 
 **Response 201** (`PlanWithTasks`):
+
 ```typescript
 {
   id: string,
@@ -243,6 +253,7 @@ Generate a new plan version.
 ```
 
 **TaskWithVerification**:
+
 ```typescript
 {
   id: string,
@@ -268,6 +279,7 @@ Generate a new plan version.
 ```
 
 **TaskVerification**:
+
 ```typescript
 {
   verified: boolean,
@@ -295,6 +307,7 @@ Get specific plan with tasks and verification.
 Update task status (only on latest plan version).
 
 **Request** (`UpdateTaskBody`):
+
 ```typescript
 {
   status: "todo" | "in_progress" | "blocked" | "done" | "deferred",
@@ -314,6 +327,7 @@ Update task status (only on latest plan version).
 List all evidence for a competition (newest first).
 
 **Response 200** (`EvidenceRecord[]`):
+
 ```typescript
 {
   id: string,
@@ -342,6 +356,7 @@ List all evidence for a competition (newest first).
 Record evidence for a task.
 
 **Request** (`CreateEvidenceBody`):
+
 ```typescript
 {
   type: "test_run" | "build_output" | "manual_check" | "security_review" | "deployment_check" | "demo_rehearsal" | "submission_audit",
@@ -355,6 +370,7 @@ Record evidence for a task.
 ```
 
 **Validation**:
+
 - `type` must be in `EVIDENCE_TYPES`
 - No secrets in any field (scanned via regex)
 - `observedAt` not in future (+60s tolerance)
@@ -370,6 +386,7 @@ Record evidence for a task.
 Delete evidence (owner only).
 
 **Response 200**:
+
 ```json
 { "id": "uuid", "deleted": true }
 ```
@@ -389,6 +406,7 @@ All intel routes scoped to competition owner.
 Run problem analysis (deterministic + AI).
 
 **Response 201**:
+
 ```typescript
 {
   analysis: CompetitionAnalysisRecord,
@@ -403,6 +421,7 @@ Run problem analysis (deterministic + AI).
 Get latest analysis.
 
 **Response 200**:
+
 ```typescript
 { analysis: CompetitionAnalysisRecord | null, requirements: AnalysisRequirementRecord[] }
 ```
@@ -412,6 +431,7 @@ Get latest analysis.
 Edit requirement text or mark reviewed.
 
 **Request**:
+
 ```typescript
 { text: string, reviewed: boolean }
 ```
@@ -427,6 +447,7 @@ Edit requirement text or mark reviewed.
 Search web or record manual finding.
 
 **Request (search)**:
+
 ```typescript
 {
   query: string (3-300 chars),
@@ -435,6 +456,7 @@ Search web or record manual finding.
 ```
 
 **Request (manual)**:
+
 ```typescript
 {
   manual: true,
@@ -449,6 +471,7 @@ Search web or record manual finding.
 ```
 
 **Response 201**:
+
 ```typescript
 {
   findings: ResearchFindingRecord[],
@@ -478,6 +501,7 @@ Delete finding.
 Generate gaps from findings + requirements.
 
 **Response 201**:
+
 ```typescript
 {
   gaps: ResearchGapRecord[],
@@ -505,6 +529,7 @@ List gaps.
 Generate idea candidates (requires AI provider).
 
 **Response 201**:
+
 ```typescript
 {
   ideas: IdeaCandidateRecord[],
@@ -518,6 +543,7 @@ Generate idea candidates (requires AI provider).
 List ideas with evaluations and comparison.
 
 **Response 200**:
+
 ```typescript
 {
   ideas: IdeaCandidateRecord[],
@@ -527,6 +553,7 @@ List ideas with evaluations and comparison.
 ```
 
 **ComparisonResult**:
+
 ```typescript
 {
   ranked: { ideaId: string, name: string, evaluation: IdeaEvaluation }[],
@@ -540,6 +567,7 @@ List ideas with evaluations and comparison.
 Score an idea (manual or AI).
 
 **Request**:
+
 ```typescript
 {
   scores: { dimension: string, score: number, rationale: string, evidenceRefs: string[], uncertainties: string[], confidence: "LOW" | "MEDIUM" | "HIGH" }[]
@@ -547,6 +575,7 @@ Score an idea (manual or AI).
 ```
 
 **Response 200**:
+
 ```typescript
 { evaluation: IdeaEvaluation, provider?: string, model?: string }
 ```
@@ -556,8 +585,11 @@ Score an idea (manual or AI).
 Set dimension weights (thousandths of percent).
 
 **Request**:
+
 ```typescript
-{ weights: Record<string, number> }
+{
+  weights: Record<string, number>;
+}
 ```
 
 **Response 200**: `{ rubric, weights, defaults }`
@@ -567,6 +599,7 @@ Set dimension weights (thousandths of percent).
 Select or reject an idea.
 
 **Request**:
+
 ```typescript
 { status: "selected" | "rejected", rationale: string }
 ```
@@ -582,6 +615,7 @@ Select or reject an idea.
 Generate build brief from selected idea.
 
 **Response 201**:
+
 ```typescript
 {
   brief: BuildBriefRecord,
@@ -606,11 +640,24 @@ List briefs.
 
 ```typescript
 type PlanTaskPhase =
-  | "intake" | "problem" | "research" | "track_selection" | "idea_selection"
-  | "specification" | "architecture" | "implementation"
-  | "testing" | "security" | "deployment" | "demo" | "pitch" | "submission"
-  | "retrospective_what_worked" | "retrospective_what_failed"
-  | "retrospective_lessons_learned" | "retrospective_next_steps";
+  | "intake"
+  | "problem"
+  | "research"
+  | "track_selection"
+  | "idea_selection"
+  | "specification"
+  | "architecture"
+  | "implementation"
+  | "testing"
+  | "security"
+  | "deployment"
+  | "demo"
+  | "pitch"
+  | "submission"
+  | "retrospective_what_worked"
+  | "retrospective_what_failed"
+  | "retrospective_lessons_learned"
+  | "retrospective_next_steps";
 ```
 
 ### PlanTaskStatus
@@ -623,8 +670,13 @@ type PlanTaskStatus = "todo" | "in_progress" | "blocked" | "done" | "deferred";
 
 ```typescript
 type EvidenceType =
-  | "test_run" | "build_output" | "manual_check" | "security_review"
-  | "deployment_check" | "demo_rehearsal" | "submission_audit";
+  | "test_run"
+  | "build_output"
+  | "manual_check"
+  | "security_review"
+  | "deployment_check"
+  | "demo_rehearsal"
+  | "submission_audit";
 ```
 
 ### ClaimKind
@@ -637,27 +689,38 @@ type ClaimKind = "SOURCE_SUPPORTED" | "INFERENCE" | "HYPOTHESIS";
 
 ```typescript
 type IdeaDimension =
-  | "PROBLEM_RELEVANCE" | "JUDGING_ALIGNMENT" | "USER_VALUE" | "DIFFERENTIATION"
-  | "TECHNICAL_FEASIBILITY" | "DEMONSTRABILITY" | "IMPLEMENTATION_TIME"
-  | "RELIABILITY_RISK" | "DATA_AVAILABILITY" | "POTENTIAL_IMPACT";
+  | "PROBLEM_RELEVANCE"
+  | "JUDGING_ALIGNMENT"
+  | "USER_VALUE"
+  | "DIFFERENTIATION"
+  | "TECHNICAL_FEASIBILITY"
+  | "DEMONSTRABILITY"
+  | "IMPLEMENTATION_TIME"
+  | "RELIABILITY_RISK"
+  | "DATA_AVAILABILITY"
+  | "POTENTIAL_IMPACT";
 ```
 
 ---
 
 ## Rate Limits
 
-| Endpoint | Limit | Window |
-|----------|-------|--------|
-| `/competitions/:id/research` (search) | 8 requests | 60 seconds |
-| `/competitions/:id/analysis` | 12 requests | 60 seconds |
-| `/competitions/:id/gaps` | 12 requests | 60 seconds |
-| `/competitions/:id/ideas` | 12 requests | 60 seconds |
+| Endpoint                               | Limit       | Window     |
+| -------------------------------------- | ----------- | ---------- |
+| `/competitions/:id/research` (search)  | 8 requests  | 60 seconds |
+| `/competitions/:id/analysis`           | 12 requests | 60 seconds |
+| `/competitions/:id/gaps`               | 12 requests | 60 seconds |
+| `/competitions/:id/ideas`              | 12 requests | 60 seconds |
 | `/competitions/:id/ideas/:id/evaluate` | 12 requests | 60 seconds |
-| `/competitions/:id/ideas/:id/brief` | 12 requests | 60 seconds |
+| `/competitions/:id/ideas/:id/brief`    | 12 requests | 60 seconds |
 
 **Response 429**:
+
 ```json
-{ "error": "Too many requests in a short time. Wait a minute and try again.", "code": "RATE_LIMITED" }
+{
+  "error": "Too many requests in a short time. Wait a minute and try again.",
+  "code": "RATE_LIMITED"
+}
 ```
 
 ---

@@ -16,9 +16,10 @@ import { logger } from "../lib/logger";
  */
 function getClientIp(req: Request): string {
   const xff = req.headers["x-forwarded-for"];
-  const ip = (Array.isArray(xff) ? xff[0] : xff)?.split(",")[0]?.trim()
-    ?? req.socket?.remoteAddress
-    ?? "unknown";
+  const ip =
+    (Array.isArray(xff) ? xff[0] : xff)?.split(",")[0]?.trim() ??
+    req.socket?.remoteAddress ??
+    "unknown";
   return ip;
 }
 
@@ -49,7 +50,7 @@ function createRateLimiter(options: {
     handler: (_req: Request, res: Response) => {
       logger.warn(
         { ip: getClientIp(_req), path: _req.path },
-        "Rate limit exceeded"
+        "Rate limit exceeded",
       );
       res.status(429).json({
         error: options.message,
@@ -131,7 +132,7 @@ export const writeRateLimiter = createRateLimiter({
  * Middleware to apply rate limiter conditionally based on path
  */
 export function conditionalRateLimiter(
-  limiters: Array<{ paths: string | RegExp; limiter: RateLimitRequestHandler }>
+  limiters: Array<{ paths: string | RegExp; limiter: RateLimitRequestHandler }>,
 ): (req: Request, res: Response, next: NextFunction) => void {
   return (req: Request, res: Response, next: NextFunction): void => {
     for (const { paths, limiter } of limiters) {
@@ -173,7 +174,7 @@ export const defaultConditionalRateLimiter = conditionalRateLimiter([
 export function rateLimiterWrapper(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): void {
   if (process.env.NODE_ENV === "test") {
     return next();
