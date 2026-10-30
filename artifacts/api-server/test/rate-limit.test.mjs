@@ -1,3 +1,4 @@
+import "../../../scripts/test-guard.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createWindowLimiter } from "../src/lib/intel/rate-limit.ts";
@@ -22,7 +23,11 @@ test("calls inside the window age out", () => {
   // Move past the window: the previous calls no longer count.
   clock = 2100;
   assert.equal(limiter.allow(), true, "the window must reopen");
-  assert.equal(limiter.allow(), true, "the reopened window allows the limit again");
+  assert.equal(
+    limiter.allow(),
+    true,
+    "the reopened window allows the limit again",
+  );
   assert.equal(limiter.allow(), false, "and then refuses again");
 });
 
@@ -49,7 +54,11 @@ test("the research and AI limits are the documented ones", () => {
   for (let index = 0; index < 8; index += 1) {
     assert.equal(research.allow(), true, `call ${index + 1} must be allowed`);
   }
-  assert.equal(research.allow(), false, "the ninth research call must be refused");
+  assert.equal(
+    research.allow(),
+    false,
+    "the ninth research call must be refused",
+  );
 
   const ai = createWindowLimiter(12, 60_000, () => 1000);
   for (let index = 0; index < 12; index += 1) {

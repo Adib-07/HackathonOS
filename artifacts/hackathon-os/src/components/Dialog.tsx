@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
@@ -67,7 +73,10 @@ export function Dialog({
     if (!root) return [] as HTMLElement[];
     return Array.from(
       root.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
-    ).filter((element) => element.offsetParent !== null || element === document.activeElement);
+    ).filter(
+      (element) =>
+        element.offsetParent !== null || element === document.activeElement,
+    );
   }, []);
 
   // Handle dirty confirmation
@@ -148,7 +157,10 @@ export function Dialog({
       const last = elements[elements.length - 1]!;
       const active = document.activeElement;
 
-      if (event.shiftKey && (active === first || active === dialogRef.current)) {
+      if (
+        event.shiftKey &&
+        (active === first || active === dialogRef.current)
+      ) {
         event.preventDefault();
         last.focus();
       } else if (!event.shiftKey && active === last) {
@@ -159,7 +171,13 @@ export function Dialog({
 
     document.addEventListener("keydown", onKeyDown, true);
     return () => document.removeEventListener("keydown", onKeyDown, true);
-  }, [open, focusableElements, showDirtyConfirm, handleCloseRequest, handleDirtyConfirm]);
+  }, [
+    open,
+    focusableElements,
+    showDirtyConfirm,
+    handleCloseRequest,
+    handleDirtyConfirm,
+  ]);
 
   if (!open) return null;
 
@@ -208,10 +226,18 @@ export function Dialog({
         {footer && <div className="modal-footer">{footer}</div>}
 
         {showDirtyConfirm && (
-          <div className="modal-dirty-confirm" role="alertdialog" aria-modal="true" aria-labelledby="dirty-confirm-title">
+          <div
+            className="modal-dirty-confirm"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="dirty-confirm-title"
+          >
             <div className="dirty-confirm-content">
               <h3 id="dirty-confirm-title">Unsaved changes</h3>
-              <p>You have unsaved changes. Are you sure you want to close without saving?</p>
+              <p>
+                You have unsaved changes. Are you sure you want to close without
+                saving?
+              </p>
               <div className="dirty-confirm-actions">
                 <button
                   className="button button-secondary"

@@ -52,18 +52,18 @@ Existing tools (Notion, Linear, GitHub Projects) treat these as generic tasks. T
 
 HackathonOS is a **private, single-user workspace** that models the hackathon lifecycle as first-class concepts:
 
-| Phase | What It Covers |
-|-------|----------------|
-| **Intake & Scope** | Confirm rules, lock smallest credible scope |
-| **Research** | Gather source-backed findings, separate facts from assumptions |
-| **Ideas** | Choose a track, challenge one idea before committing build time |
-| **Build Workspace** | Write specification, build smallest complete product |
-| **Testing & Security** | Run real checks, review access to private project data |
-| **Deployment** | Publish app, verify real production URL |
-| **Demo & Pitch** | Rehearse demonstration, prepare pitch narrative |
-| **Submission** | Audit every required item against official instructions |
-| **Retrospective** | Capture what worked, what failed, lessons learned, next steps — unlocks when Submission is complete or deadline passes |
-| **Settings & Integrations** | Workspace name, competition defaults, connected tools, danger zone |
+| Phase                       | What It Covers                                                                                                         |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| **Intake & Scope**          | Confirm rules, lock smallest credible scope                                                                            |
+| **Research**                | Gather source-backed findings, separate facts from assumptions                                                         |
+| **Ideas**                   | Choose a track, challenge one idea before committing build time                                                        |
+| **Build Workspace**         | Write specification, build smallest complete product                                                                   |
+| **Testing & Security**      | Run real checks, review access to private project data                                                                 |
+| **Deployment**              | Publish app, verify real production URL                                                                                |
+| **Demo & Pitch**            | Rehearse demonstration, prepare pitch narrative                                                                        |
+| **Submission**              | Audit every required item against official instructions                                                                |
+| **Retrospective**           | Capture what worked, what failed, lessons learned, next steps — unlocks when Submission is complete or deadline passes |
+| **Settings & Integrations** | Workspace name, competition defaults, connected tools, danger zone                                                     |
 
 ### Why HackathonOS
 
@@ -79,16 +79,17 @@ HackathonOS is a **private, single-user workspace** that models the hackathon li
 
 > **Note**: Screenshots are placeholders. Capture them using the steps below and place in `docs/images/`.
 
-| View | Placeholder | How to Capture |
-|------|-------------|----------------|
-| Overview Dashboard | `docs/images/overview.png` | Sign in → land on `/` |
-| Competitions List | `docs/images/competitions.png` | Click "Competitions" in sidebar |
-| Workflow / Lifecycle | `docs/images/workflow.png` | Open a competition → click "Workflow" |
-| Planner / Task Board | `docs/images/planner.png` | Open a competition → click "Planner" |
-| Intelligence (Research/Ideas) | `docs/images/intel.png` | Open a competition → click "Intel" |
-| Settings & Integrations | `docs/images/settings.png` | Click "Settings" in sidebar |
+| View                          | Placeholder                    | How to Capture                        |
+| ----------------------------- | ------------------------------ | ------------------------------------- |
+| Overview Dashboard            | `docs/images/overview.png`     | Sign in → land on `/`                 |
+| Competitions List             | `docs/images/competitions.png` | Click "Competitions" in sidebar       |
+| Workflow / Lifecycle          | `docs/images/workflow.png`     | Open a competition → click "Workflow" |
+| Planner / Task Board          | `docs/images/planner.png`      | Open a competition → click "Planner"  |
+| Intelligence (Research/Ideas) | `docs/images/intel.png`        | Open a competition → click "Intel"    |
+| Settings & Integrations       | `docs/images/settings.png`     | Click "Settings" in sidebar           |
 
 **Capture steps** (macOS):
+
 ```bash
 # Start dev server
 pnpm --filter @workspace/hackathon-os run dev
@@ -102,17 +103,21 @@ pnpm --filter @workspace/hackathon-os run dev
 ## Features
 
 ### Workspaces & Competitions
+
 - **Single-user workspace**: Private by design, no team management overhead
 - **Competition CRUD**: Name, organizer, type, dates, team size, track mode, problem statement, URLs, mandatory deliverables, team skills, idea complexity
 - **Status tracking**: `preparing` → `active` → `completed` (manual)
 
 ### Lifecycle Stages (10 stages)
+
 Each stage derives its state from persisted plan tasks:
+
 - **States**: `not_started` → `scheduled` → `active` → `complete` → `verified` (or `blocked` at any point)
 - **Retrospective** unlocks when **Submission complete** OR **deadline passed**
 - **Settings** is a separate page, not a lifecycle stage
 
 ### Workflow Planner
+
 - **Deadline-aware generation**: Calculates available minutes from deadline, applies 20% buffer
 - **Three plan tiers**: Short (<30 min), Medium (30–180 min), Full (>180 min)
 - **Versioned plans**: Each regeneration increments version; history preserved
@@ -120,12 +125,14 @@ Each stage derives its state from persisted plan tasks:
 - **Evidence integration**: Attach evidence to any task; verification recomputed on read
 
 ### Task & Evidence Ledger
+
 - **Task fields**: key, title, description, phase, priority, estimates, dependencies, acceptance criteria, expected artifact, verification method, risk if skipped, mandatory flag
 - **Evidence types**: `test_run`, `build_output`, `manual_check`, `security_review`, `deployment_check`, `demo_rehearsal`, `submission_audit`
 - **Verification states**: `DONE` (owner marked done) vs `VERIFIED` (evidence satisfies method)
 - **Quality signals**: Application build, automated tests, browser verification, security review, deployment, demo readiness, submission readiness (all `not_run` until wired)
 
 ### Intelligence Engine (AI-Assisted, Deterministic Fallback)
+
 - **Problem Analysis**: Extract requirements from competition record; AI adds missing fields and unanswered questions
 - **Research**: Search DuckDuckGo, Exa, Brave, Serper; store findings with source URLs, claim kinds (`SOURCE_SUPPORTED`, `INFERENCE`, `HYPOTHESIS`)
 - **Gap Analysis**: Deterministic gaps from findings + requirements; AI proposes additional opportunities
@@ -134,6 +141,7 @@ Each stage derives its state from persisted plan tasks:
 - **Build Brief**: Structured spec from selected idea + requirements + gaps
 
 ### Authentication & Security
+
 - **Clerk authentication**: Email/password, OAuth, MFA
 - **Session management**: HttpOnly cookies, automatic refresh
 - **Rate limiting**: Per-user/IP on API; per-process on AI/research calls
@@ -142,6 +150,7 @@ Each stage derives its state from persisted plan tasks:
 - **Secret scanning**: Blocks evidence containing API keys, tokens, private keys
 
 ### Developer Experience
+
 - **Command palette**: `⌘K` (UI only, not yet wired to actions)
 - **Lazy routes**: Competitions, Intel, Planner, Workflow, Settings loaded on demand
 - **Type-safe API client**: Generated from Zod schemas via Orval
@@ -197,18 +206,18 @@ stateDiagram-v2
 
 ### Stage Definitions (from `artifacts/hackathon-os/src/lib/workflow.ts`)
 
-| Stage ID | Label | Plan Phases | Summary | Unlock Rule |
-|----------|-------|-------------|---------|-------------|
-| `intake` | Intake & Scope | `intake`, `problem` | Confirm official rules, lock smallest credible scope | Always available |
-| `research` | Research | `research` | Gather source-backed findings, separate facts from assumptions | After Intake tasks exist |
-| `ideas` | Ideas | `track_selection`, `idea_selection` | Choose track, challenge one idea | After Research tasks exist |
-| `build` | Build Workspace | `specification`, `architecture`, `implementation` | Write spec, build smallest complete product | After Ideas tasks exist |
-| `quality` | Testing & Security | `testing`, `security` | Run real checks, review private data access | After Build tasks exist |
-| `deployment` | Deployment | `deployment` | Publish app, verify production URL | After Quality tasks exist |
-| `demo` | Demo & Pitch | `demo`, `pitch` | Rehearse demo, prepare pitch | After Deployment tasks exist |
-| `submission` | Submission | `submission` | Audit every required item | After Demo tasks exist |
-| `retrospective` | Retrospective | `retrospective_what_worked`, `retrospective_what_failed`, `retrospective_lessons_learned`, `retrospective_next_steps` | Capture lessons; unlocks when Submission complete or deadline passed | **Submission complete** OR **deadline passed** |
-| `settings` | Settings & Integrations | — | Workspace name, defaults, tools, danger zone | **Separate page** (`/settings`), always accessible |
+| Stage ID        | Label                   | Plan Phases                                                                                                           | Summary                                                              | Unlock Rule                                        |
+| --------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | -------------------------------------------------- |
+| `intake`        | Intake & Scope          | `intake`, `problem`                                                                                                   | Confirm official rules, lock smallest credible scope                 | Always available                                   |
+| `research`      | Research                | `research`                                                                                                            | Gather source-backed findings, separate facts from assumptions       | After Intake tasks exist                           |
+| `ideas`         | Ideas                   | `track_selection`, `idea_selection`                                                                                   | Choose track, challenge one idea                                     | After Research tasks exist                         |
+| `build`         | Build Workspace         | `specification`, `architecture`, `implementation`                                                                     | Write spec, build smallest complete product                          | After Ideas tasks exist                            |
+| `quality`       | Testing & Security      | `testing`, `security`                                                                                                 | Run real checks, review private data access                          | After Build tasks exist                            |
+| `deployment`    | Deployment              | `deployment`                                                                                                          | Publish app, verify production URL                                   | After Quality tasks exist                          |
+| `demo`          | Demo & Pitch            | `demo`, `pitch`                                                                                                       | Rehearse demo, prepare pitch                                         | After Deployment tasks exist                       |
+| `submission`    | Submission              | `submission`                                                                                                          | Audit every required item                                            | After Demo tasks exist                             |
+| `retrospective` | Retrospective           | `retrospective_what_worked`, `retrospective_what_failed`, `retrospective_lessons_learned`, `retrospective_next_steps` | Capture lessons; unlocks when Submission complete or deadline passed | **Submission complete** OR **deadline passed**     |
+| `settings`      | Settings & Integrations | —                                                                                                                     | Workspace name, defaults, tools, danger zone                         | **Separate page** (`/settings`), always accessible |
 
 ### Task & Evidence Status Model
 
@@ -230,15 +239,15 @@ stateDiagram-v2
 
 ### Quality Signals (from API `/overview`)
 
-| Signal | Values | Meaning |
-|--------|--------|---------|
-| `applicationBuild` | `not_run` \| `passed` \| `failed` | Build command executed |
-| `automatedTests` | `not_run` \| `passed` \| `failed` | Test suite executed |
-| `browserVerification` | `not_run` \| `passed` \| `failed` | Playwright/visual check |
-| `securityReview` | `not_run` \| `passed` \| `failed` | Manual security audit |
-| `deployment` | `not_run` \| `passed` \| `failed` | Deploy command executed |
-| `demoReadiness` | `not_run` \| `passed` \| `failed` | Demo rehearsed from clean state |
-| `submissionReadiness` | `not_run` \| `passed` \| `failed` | All deliverables confirmed |
+| Signal                | Values                            | Meaning                         |
+| --------------------- | --------------------------------- | ------------------------------- |
+| `applicationBuild`    | `not_run` \| `passed` \| `failed` | Build command executed          |
+| `automatedTests`      | `not_run` \| `passed` \| `failed` | Test suite executed             |
+| `browserVerification` | `not_run` \| `passed` \| `failed` | Playwright/visual check         |
+| `securityReview`      | `not_run` \| `passed` \| `failed` | Manual security audit           |
+| `deployment`          | `not_run` \| `passed` \| `failed` | Deploy command executed         |
+| `demoReadiness`       | `not_run` \| `passed` \| `failed` | Demo rehearsed from clean state |
+| `submissionReadiness` | `not_run` \| `passed` \| `failed` | All deliverables confirmed      |
 
 > Currently all signals are `not_run` — the API surface exists for future CI integration.
 
@@ -574,55 +583,55 @@ erDiagram
 
 ### Table Descriptions
 
-| Table | Purpose |
-|-------|---------|
-| `competitions` | Root workspace entity; one per hackathon event |
-| `workflow_plans` | Versioned plan generated from deadline + available time |
-| `workflow_tasks` | Individual tasks belonging to a plan; phased, prioritized, estimated |
-| `workflow_evidence` | Verification records; manual today, supports future automation |
-| `competition_analyses` | Problem analysis with deterministic + AI-assisted requirements |
-| `analysis_requirements` | Individual requirements extracted from competition record |
-| `research_findings` | Source-backed findings from web search or manual entry |
-| `research_gaps` | Opportunities identified from findings + requirements |
-| `idea_candidates` | Product ideas with MVP scope, risks, differentiators |
-| `idea_evaluations` | Dimension scores (1–5) per idea per rubric dimension |
-| `idea_rubrics` | Team-defined dimension weights per competition |
-| `build_briefs` | Structured build specification from selected idea |
+| Table                   | Purpose                                                              |
+| ----------------------- | -------------------------------------------------------------------- |
+| `competitions`          | Root workspace entity; one per hackathon event                       |
+| `workflow_plans`        | Versioned plan generated from deadline + available time              |
+| `workflow_tasks`        | Individual tasks belonging to a plan; phased, prioritized, estimated |
+| `workflow_evidence`     | Verification records; manual today, supports future automation       |
+| `competition_analyses`  | Problem analysis with deterministic + AI-assisted requirements       |
+| `analysis_requirements` | Individual requirements extracted from competition record            |
+| `research_findings`     | Source-backed findings from web search or manual entry               |
+| `research_gaps`         | Opportunities identified from findings + requirements                |
+| `idea_candidates`       | Product ideas with MVP scope, risks, differentiators                 |
+| `idea_evaluations`      | Dimension scores (1–5) per idea per rubric dimension                 |
+| `idea_rubrics`          | Team-defined dimension weights per competition                       |
+| `build_briefs`          | Structured build specification from selected idea                    |
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology | Version | Source |
-|-------|------------|---------|--------|
-| **Frontend** | React | 19.1.4 | `pnpm-workspace.yaml` catalog |
-| | Vite | 7.3.2 | `pnpm-workspace.yaml` catalog |
-| | Tailwind CSS | 4.1.14 | `pnpm-workspace.yaml` catalog |
-| | TanStack Query | 5.90.21 | `pnpm-workspace.yaml` catalog |
-| | Wouter (router) | 3.3.5 | `pnpm-workspace.yaml` catalog |
-| | Radix UI | 1.2.x | `artifacts/hackathon-os/package.json` |
-| | Lucide React | 0.545.0 | `pnpm-workspace.yaml` catalog |
-| | Clerk React | 6.17.8 | `artifacts/hackathon-os/package.json` |
-| **Backend** | Express | 5.2.1 | `artifacts/api-server/package.json` |
-| | Clerk Express | 2.1.78 | `artifacts/api-server/package.json` |
-| | Drizzle ORM | 0.45.2 | `pnpm-workspace.yaml` catalog |
-| | Zod | 4.6.7 | `pnpm-workspace.yaml` catalog |
-| | Helmet | 8.3.0 | `artifacts/api-server/package.json` |
-| | Pino / Pino-HTTP | 9.14.0 / 10.5.0 | `artifacts/api-server/package.json` |
-| | express-rate-limit | 8.7.1 | `artifacts/api-server/package.json` |
-| **Database** | PostgreSQL (Neon) | 16+ | `vercel.json` + `DEPLOYMENT.md` |
-| | pg (driver) | 8.23.0 | `lib/db/package.json` |
-| | Drizzle Kit | 0.31.10 | `lib/db/package.json` |
-| **Auth** | Clerk | 6.17.8 (FE) / 2.1.78 (BE) | package.json files |
-| **Tooling** | TypeScript | 5.9.3 | `package.json` |
-| | pnpm | 11.17.0 | `package.json` `packageManager` |
-| | Node.js | 24.x | `package.json` `engines` |
-| | Vite (build) | 7.3.2 | `pnpm-workspace.yaml` catalog |
-| | esbuild (API) | 0.28.2 | `artifacts/api-server/package.json` |
-| **Testing** | Vitest | 5.0.5 | `artifacts/hackathon-os/package.json` |
-| | Playwright | 1.64.1 | `package.json` |
-| | Node test runner | built-in | `package.json` scripts |
-| **Hosting** | Vercel (static + serverless) | — | `vercel.json` |
+| Layer        | Technology                   | Version                   | Source                                |
+| ------------ | ---------------------------- | ------------------------- | ------------------------------------- |
+| **Frontend** | React                        | 19.1.4                    | `pnpm-workspace.yaml` catalog         |
+|              | Vite                         | 7.3.2                     | `pnpm-workspace.yaml` catalog         |
+|              | Tailwind CSS                 | 4.1.14                    | `pnpm-workspace.yaml` catalog         |
+|              | TanStack Query               | 5.90.21                   | `pnpm-workspace.yaml` catalog         |
+|              | Wouter (router)              | 3.3.5                     | `pnpm-workspace.yaml` catalog         |
+|              | Radix UI                     | 1.2.x                     | `artifacts/hackathon-os/package.json` |
+|              | Lucide React                 | 0.545.0                   | `pnpm-workspace.yaml` catalog         |
+|              | Clerk React                  | 6.17.8                    | `artifacts/hackathon-os/package.json` |
+| **Backend**  | Express                      | 5.2.1                     | `artifacts/api-server/package.json`   |
+|              | Clerk Express                | 2.1.78                    | `artifacts/api-server/package.json`   |
+|              | Drizzle ORM                  | 0.45.2                    | `pnpm-workspace.yaml` catalog         |
+|              | Zod                          | 4.6.7                     | `pnpm-workspace.yaml` catalog         |
+|              | Helmet                       | 8.3.0                     | `artifacts/api-server/package.json`   |
+|              | Pino / Pino-HTTP             | 9.14.0 / 10.5.0           | `artifacts/api-server/package.json`   |
+|              | express-rate-limit           | 8.7.1                     | `artifacts/api-server/package.json`   |
+| **Database** | PostgreSQL (Neon)            | 16+                       | `vercel.json` + `DEPLOYMENT.md`       |
+|              | pg (driver)                  | 8.23.0                    | `lib/db/package.json`                 |
+|              | Drizzle Kit                  | 0.31.10                   | `lib/db/package.json`                 |
+| **Auth**     | Clerk                        | 6.17.8 (FE) / 2.1.78 (BE) | package.json files                    |
+| **Tooling**  | TypeScript                   | 5.9.3                     | `package.json`                        |
+|              | pnpm                         | 11.17.0                   | `package.json` `packageManager`       |
+|              | Node.js                      | 24.x                      | `package.json` `engines`              |
+|              | Vite (build)                 | 7.3.2                     | `pnpm-workspace.yaml` catalog         |
+|              | esbuild (API)                | 0.28.2                    | `artifacts/api-server/package.json`   |
+| **Testing**  | Vitest                       | 5.0.5                     | `artifacts/hackathon-os/package.json` |
+|              | Playwright                   | 1.64.1                    | `package.json`                        |
+|              | Node test runner             | built-in                  | `package.json` scripts                |
+| **Hosting**  | Vercel (static + serverless) | —                         | `vercel.json`                         |
 
 ---
 
@@ -706,6 +715,7 @@ pnpm install --frozen-lockfile
 Create `.env` files in the relevant packages:
 
 **Root** (for API server):
+
 ```bash
 # .env (root)
 DATABASE_URL=postgresql://user:pass@host:5432/dbname
@@ -716,6 +726,7 @@ NODE_ENV=development
 ```
 
 **Frontend** (`artifacts/hackathon-os/.env`):
+
 ```bash
 # artifacts/hackathon-os/.env
 VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
@@ -740,12 +751,14 @@ pnpm run push
 ### Run in Development
 
 **Terminal 1 — API Server:**
+
 ```bash
 cd artifacts/api-server
 PORT=8080 DATABASE_URL=... CLERK_SECRET_KEY=... CLERK_PUBLISHABLE_KEY=... pnpm run dev
 ```
 
 **Terminal 2 — Frontend (proxies `/api` to API server):**
+
 ```bash
 cd artifacts/hackathon-os
 PORT=19678 BASE_PATH=/ API_PROXY_ORIGIN=http://127.0.0.1:8080 pnpm run dev
@@ -788,20 +801,20 @@ pnpm run build
 
 ## Environment Variables
 
-| Name | Required | Scope | Where Used | Example Placeholder | Notes |
-|------|----------|-------|------------|---------------------|-------|
-| `DATABASE_URL` | ✅ | Runtime | API server (`artifacts/api-server`) | `postgresql://user:pass@host:5432/dbname` | Neon, Supabase, Vercel Postgres, or local |
-| `CLERK_SECRET_KEY` | ✅ | Runtime | API server | `sk_test_...` | Backend secret from Clerk dashboard |
-| `CLERK_PUBLISHABLE_KEY` | ✅ | Runtime | API server | `pk_test_...` | Backend publishable from Clerk dashboard |
-| `VITE_CLERK_PUBLISHABLE_KEY` | ✅ | **Build-time** | Frontend (`artifacts/hackathon-os`) | `pk_test_...` | **Baked into JS bundle** — must match Clerk app |
-| `BASE_PATH` | ❌ | Build-time + Runtime | Both | `/` | Subpath deployment (e.g., `/hackathonos`) |
-| `VITE_CLERK_PROXY_URL` | ❌ | Build-time | Frontend | `https://app.vercel.app/api/__clerk` | Clerk proxy for cookieless domains |
-| `OPENAI_API_KEY` | ❌ | Runtime | API server (intel) | `sk-...` | Enables AI-assisted features |
-| `OPENAI_BASE_URL` | ❌ | Runtime | API server (intel) | `https://api.openai.com/v1` | Custom OpenAI-compatible endpoint |
-| `OPENAI_MODEL` | ❌ | Runtime | API server (intel) | `gpt-4o-mini` | Model for completions |
-| `LOG_LEVEL` | ❌ | Runtime | API server | `info` | Pino log level |
-| `PORT` | ❌ | Runtime | API server | `8080` | Required by `artifacts/api-server/src/index.ts` |
-| `NODE_ENV` | ❌ | Runtime | Both | `development` | Affects Vite dev vs build behavior |
+| Name                         | Required | Scope                | Where Used                          | Example Placeholder                       | Notes                                           |
+| ---------------------------- | -------- | -------------------- | ----------------------------------- | ----------------------------------------- | ----------------------------------------------- |
+| `DATABASE_URL`               | ✅       | Runtime              | API server (`artifacts/api-server`) | `postgresql://user:pass@host:5432/dbname` | Neon, Supabase, Vercel Postgres, or local       |
+| `CLERK_SECRET_KEY`           | ✅       | Runtime              | API server                          | `sk_test_...`                             | Backend secret from Clerk dashboard             |
+| `CLERK_PUBLISHABLE_KEY`      | ✅       | Runtime              | API server                          | `pk_test_...`                             | Backend publishable from Clerk dashboard        |
+| `VITE_CLERK_PUBLISHABLE_KEY` | ✅       | **Build-time**       | Frontend (`artifacts/hackathon-os`) | `pk_test_...`                             | **Baked into JS bundle** — must match Clerk app |
+| `BASE_PATH`                  | ❌       | Build-time + Runtime | Both                                | `/`                                       | Subpath deployment (e.g., `/hackathonos`)       |
+| `VITE_CLERK_PROXY_URL`       | ❌       | Build-time           | Frontend                            | `https://app.vercel.app/api/__clerk`      | Clerk proxy for cookieless domains              |
+| `OPENAI_API_KEY`             | ❌       | Runtime              | API server (intel)                  | `sk-...`                                  | Enables AI-assisted features                    |
+| `OPENAI_BASE_URL`            | ❌       | Runtime              | API server (intel)                  | `https://api.openai.com/v1`               | Custom OpenAI-compatible endpoint               |
+| `OPENAI_MODEL`               | ❌       | Runtime              | API server (intel)                  | `gpt-4o-mini`                             | Model for completions                           |
+| `LOG_LEVEL`                  | ❌       | Runtime              | API server                          | `info`                                    | Pino log level                                  |
+| `PORT`                       | ❌       | Runtime              | API server                          | `8080`                                    | Required by `artifacts/api-server/src/index.ts` |
+| `NODE_ENV`                   | ❌       | Runtime              | Both                                | `development`                             | Affects Vite dev vs build behavior              |
 
 > **Critical**: Variables prefixed with `VITE_` are **public** and embedded in the frontend bundle at build time. Never put secrets in `VITE_*` variables.
 
@@ -813,74 +826,75 @@ All routes are under `/api`. Authentication required unless noted (Clerk session
 
 ### Health (No Auth)
 
-| Method | Path | Description | Response |
-|--------|------|-------------|----------|
-| `GET` | `/healthz` | Liveness probe | `{ "status": "ok" }` |
-| `GET` | `/readyz` | Readiness probe (DB) | `{ "status": "ready" }` or `503 { "status": "not ready", "error": "db unreachable" }` |
+| Method | Path       | Description          | Response                                                                              |
+| ------ | ---------- | -------------------- | ------------------------------------------------------------------------------------- |
+| `GET`  | `/healthz` | Liveness probe       | `{ "status": "ok" }`                                                                  |
+| `GET`  | `/readyz`  | Readiness probe (DB) | `{ "status": "ready" }` or `503 { "status": "not ready", "error": "db unreachable" }` |
 
 ### Competitions
 
-| Method | Path | Auth | Request | Response |
-|--------|------|------|---------|----------|
-| `GET` | `/overview` | ✅ | — | `GetOverviewResponse` |
-| `GET` | `/competitions` | ✅ | — | `Competition[]` |
-| `POST` | `/competitions` | ✅ | `CreateCompetitionBody` | `201 Competition` |
-| `GET` | `/competitions/:id` | ✅ | — | `Competition` |
-| `PATCH` | `/competitions/:id` | ✅ | `UpdateCompetitionBody` | `Competition` |
-| `DELETE` | `/competitions/:id` | ✅ | — | `204` (not yet implemented) |
+| Method   | Path                | Auth | Request                 | Response                    |
+| -------- | ------------------- | ---- | ----------------------- | --------------------------- |
+| `GET`    | `/overview`         | ✅   | —                       | `GetOverviewResponse`       |
+| `GET`    | `/competitions`     | ✅   | —                       | `Competition[]`             |
+| `POST`   | `/competitions`     | ✅   | `CreateCompetitionBody` | `201 Competition`           |
+| `GET`    | `/competitions/:id` | ✅   | —                       | `Competition`               |
+| `PATCH`  | `/competitions/:id` | ✅   | `UpdateCompetitionBody` | `Competition`               |
+| `DELETE` | `/competitions/:id` | ✅   | —                       | `204` (not yet implemented) |
 
 ### Plans & Tasks
 
-| Method | Path | Auth | Request | Response |
-|--------|------|------|---------|----------|
-| `GET` | `/competitions/:id/plans` | ✅ | — | `PlanSummary[]` |
-| `POST` | `/competitions/:id/plans` | ✅ | `GeneratePlanBody` | `201 PlanWithTasks` |
-| `GET` | `/competitions/:id/plans/:planId` | ✅ | — | `PlanWithTasks` |
-| `PATCH` | `/competitions/:id/tasks/:taskId` | ✅ | `UpdateTaskBody { status }` | `TaskWithVerification` |
+| Method  | Path                              | Auth | Request                     | Response               |
+| ------- | --------------------------------- | ---- | --------------------------- | ---------------------- |
+| `GET`   | `/competitions/:id/plans`         | ✅   | —                           | `PlanSummary[]`        |
+| `POST`  | `/competitions/:id/plans`         | ✅   | `GeneratePlanBody`          | `201 PlanWithTasks`    |
+| `GET`   | `/competitions/:id/plans/:planId` | ✅   | —                           | `PlanWithTasks`        |
+| `PATCH` | `/competitions/:id/tasks/:taskId` | ✅   | `UpdateTaskBody { status }` | `TaskWithVerification` |
 
 ### Evidence
 
-| Method | Path | Auth | Request | Response |
-|--------|------|------|---------|----------|
-| `GET` | `/competitions/:id/evidence` | ✅ | — | `EvidenceRecord[]` |
-| `POST` | `/competitions/:id/tasks/:taskId/evidence` | ✅ | `CreateEvidenceBody` | `201 EvidenceRecord` |
-| `DELETE` | `/competitions/:id/evidence/:evidenceId` | ✅ | — | `{ id, deleted: true }` |
+| Method   | Path                                       | Auth | Request              | Response                |
+| -------- | ------------------------------------------ | ---- | -------------------- | ----------------------- |
+| `GET`    | `/competitions/:id/evidence`               | ✅   | —                    | `EvidenceRecord[]`      |
+| `POST`   | `/competitions/:id/tasks/:taskId/evidence` | ✅   | `CreateEvidenceBody` | `201 EvidenceRecord`    |
+| `DELETE` | `/competitions/:id/evidence/:evidenceId`   | ✅   | —                    | `{ id, deleted: true }` |
 
 ### Intelligence (Intel)
 
-| Method | Path | Auth | Request | Response |
-|--------|------|------|---------|----------|
-| `POST` | `/competitions/:id/analysis` | ✅ | — | `{ analysis, requirements[], grouped, note }` |
-| `GET` | `/competitions/:id/analysis` | ✅ | — | `{ analysis, requirements[] }` |
-| `PATCH` | `/competitions/:id/analysis/requirements/:reqId` | ✅ | `{ text, reviewed }` | `{ requirement }` |
-| `POST` | `/competitions/:id/research` | ✅ | `{ query?, providers?, manual?, title?, summary?, sourceUrl?, ... }` | `{ findings[], providerOutcomes[], retrievedAt }` |
-| `GET` | `/competitions/:id/research` | ✅ | — | `{ findings[] }` |
-| `DELETE` | `/competitions/:id/research/:findingId` | ✅ | — | `{ id, deleted: true }` |
-| `POST` | `/competitions/:id/gaps` | ✅ | — | `{ gaps[], evidenceGaps[], nextInvestigations[], method, provider, model, note }` |
-| `GET` | `/competitions/:id/gaps` | ✅ | — | `{ gaps[] }` |
-| `POST` | `/competitions/:id/ideas` | ✅ | — | `{ ideas[], provider, model }` |
-| `GET` | `/competitions/:id/ideas` | ✅ | — | `{ ideas[], weights, comparison }` |
-| `POST` | `/competitions/:id/ideas/:ideaId/evaluate` | ✅ | `{ scores[] }` | `{ evaluation, provider, model }` |
-| `PUT` | `/competitions/:id/rubric` | ✅ | `{ weights }` | `{ rubric, weights, defaults }` |
-| `POST` | `/competitions/:id/ideas/:ideaId/decision` | ✅ | `{ status: "selected"|"rejected", rationale }` | `{ idea }` |
-| `POST` | `/competitions/:id/ideas/:ideaId/brief` | ✅ | — | `{ brief, missingSections, method, provider, model }` |
-| `GET` | `/competitions/:id/briefs` | ✅ | — | `{ briefs[] }` |
+| Method   | Path                                             | Auth | Request                                                              | Response                                                                          |
+| -------- | ------------------------------------------------ | ---- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `POST`   | `/competitions/:id/analysis`                     | ✅   | —                                                                    | `{ analysis, requirements[], grouped, note }`                                     |
+| `GET`    | `/competitions/:id/analysis`                     | ✅   | —                                                                    | `{ analysis, requirements[] }`                                                    |
+| `PATCH`  | `/competitions/:id/analysis/requirements/:reqId` | ✅   | `{ text, reviewed }`                                                 | `{ requirement }`                                                                 |
+| `POST`   | `/competitions/:id/research`                     | ✅   | `{ query?, providers?, manual?, title?, summary?, sourceUrl?, ... }` | `{ findings[], providerOutcomes[], retrievedAt }`                                 |
+| `GET`    | `/competitions/:id/research`                     | ✅   | —                                                                    | `{ findings[] }`                                                                  |
+| `DELETE` | `/competitions/:id/research/:findingId`          | ✅   | —                                                                    | `{ id, deleted: true }`                                                           |
+| `POST`   | `/competitions/:id/gaps`                         | ✅   | —                                                                    | `{ gaps[], evidenceGaps[], nextInvestigations[], method, provider, model, note }` |
+| `GET`    | `/competitions/:id/gaps`                         | ✅   | —                                                                    | `{ gaps[] }`                                                                      |
+| `POST`   | `/competitions/:id/ideas`                        | ✅   | —                                                                    | `{ ideas[], provider, model }`                                                    |
+| `GET`    | `/competitions/:id/ideas`                        | ✅   | —                                                                    | `{ ideas[], weights, comparison }`                                                |
+| `POST`   | `/competitions/:id/ideas/:ideaId/evaluate`       | ✅   | `{ scores[] }`                                                       | `{ evaluation, provider, model }`                                                 |
+| `PUT`    | `/competitions/:id/rubric`                       | ✅   | `{ weights }`                                                        | `{ rubric, weights, defaults }`                                                   |
+| `POST`   | `/competitions/:id/ideas/:ideaId/decision`       | ✅   | `{ status: "selected"                                                | "rejected", rationale }`                                                          | `{ idea }` |
+| `POST`   | `/competitions/:id/ideas/:ideaId/brief`          | ✅   | —                                                                    | `{ brief, missingSections, method, provider, model }`                             |
+| `GET`    | `/competitions/:id/briefs`                       | ✅   | —                                                                    | `{ briefs[] }`                                                                    |
 
 ### Error Format
 
 All errors follow this shape:
+
 ```json
 { "error": "Human-readable message" }
 ```
 
-| Status | When |
-|--------|------|
-| `400` | Validation failed (Zod) |
-| `401` | Missing/invalid Clerk session |
-| `404` | Resource not found or not owned |
-| `429` | Rate limited (research: 8/min, AI: 12/min) |
-| `500` | Unexpected server error |
-| `503` | `/readyz` DB unreachable |
+| Status | When                                       |
+| ------ | ------------------------------------------ |
+| `400`  | Validation failed (Zod)                    |
+| `401`  | Missing/invalid Clerk session              |
+| `404`  | Resource not found or not owned            |
+| `429`  | Rate limited (research: 8/min, AI: 12/min) |
+| `500`  | Unexpected server error                    |
+| `503`  | `/readyz` DB unreachable                   |
 
 ---
 
@@ -901,15 +915,15 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for the full step-by-step guide.
 
 ### Troubleshooting Checklist
 
-| Symptom | Likely Cause | Fix |
-|---------|--------------|-----|
-| `invalid_function_runtime` | Node 20 deprecated | Ensure `engines.node: "24.x"` in root `package.json` |
-| Build ignores files | `.vercelignore` or `outputDirectory` mismatch | Verify `vercel.json` outputDirectory |
-| CSP blocks assets | `Content-Security-Policy` too strict | Check `vercel.json` headers allow Clerk, Google Fonts, Cloudflare |
-| `FUNCTION_INVOCATION_FAILED` | API server crashes on start | Check `PORT` env var, `DATABASE_URL`, Clerk keys |
-| Missing `DATABASE_URL` | Not set in Vercel | Add to Project Settings → Environment Variables |
-| Misnamed env var | `VITE_` vs non-`VITE_` | `VITE_*` = build-time public; others = runtime secret |
-| Clerk domain not allowed | Preview domain not in Clerk | Add `*.vercel.app` or specific preview URL in Clerk Domains |
+| Symptom                      | Likely Cause                                  | Fix                                                               |
+| ---------------------------- | --------------------------------------------- | ----------------------------------------------------------------- |
+| `invalid_function_runtime`   | Node 20 deprecated                            | Ensure `engines.node: "24.x"` in root `package.json`              |
+| Build ignores files          | `.vercelignore` or `outputDirectory` mismatch | Verify `vercel.json` outputDirectory                              |
+| CSP blocks assets            | `Content-Security-Policy` too strict          | Check `vercel.json` headers allow Clerk, Google Fonts, Cloudflare |
+| `FUNCTION_INVOCATION_FAILED` | API server crashes on start                   | Check `PORT` env var, `DATABASE_URL`, Clerk keys                  |
+| Missing `DATABASE_URL`       | Not set in Vercel                             | Add to Project Settings → Environment Variables                   |
+| Misnamed env var             | `VITE_` vs non-`VITE_`                        | `VITE_*` = build-time public; others = runtime secret             |
+| Clerk domain not allowed     | Preview domain not in Clerk                   | Add `*.vercel.app` or specific preview URL in Clerk Domains       |
 
 ---
 
@@ -917,13 +931,13 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for the full step-by-step guide.
 
 ### Test Types & Commands
 
-| Suite | Location | Command | Coverage |
-|-------|----------|---------|----------|
-| Workflow logic (pure) | `artifacts/hackathon-os/test/workflow.test.mjs` | `pnpm test` | 40 tests: stages, state derivation, summaries, durations |
-| Component imports | `artifacts/hackathon-os/test/components.test.tsx` | `pnpm vitest run` | 27 tests: shell, pages, modals |
-| Competition validation | `artifacts/hackathon-os/test/competition-form-validation.test.mjs` | `pnpm test` | 12 tests: required fields, limits, URLs |
-| API integration | `artifacts/api-server/test/*.test.mjs` | `pnpm --filter @workspace/api-server test` | 13 files: competitions, evidence, intel, planner, verification, security, rate-limit |
-| Smoke (E2E) | `scripts/smoke/auth-smoke.test.ts` | `pnpm smoke` | Authenticated navigation, CSP, console errors, failed requests |
+| Suite                  | Location                                                           | Command                                    | Coverage                                                                             |
+| ---------------------- | ------------------------------------------------------------------ | ------------------------------------------ | ------------------------------------------------------------------------------------ |
+| Workflow logic (pure)  | `artifacts/hackathon-os/test/workflow.test.mjs`                    | `pnpm test`                                | 40 tests: stages, state derivation, summaries, durations                             |
+| Component imports      | `artifacts/hackathon-os/test/components.test.tsx`                  | `pnpm vitest run`                          | 27 tests: shell, pages, modals                                                       |
+| Competition validation | `artifacts/hackathon-os/test/competition-form-validation.test.mjs` | `pnpm test`                                | 12 tests: required fields, limits, URLs                                              |
+| API integration        | `artifacts/api-server/test/*.test.mjs`                             | `pnpm --filter @workspace/api-server test` | 13 files: competitions, evidence, intel, planner, verification, security, rate-limit |
+| Smoke (E2E)            | `scripts/smoke/auth-smoke.test.ts`                                 | `pnpm smoke`                               | Authenticated navigation, CSP, console errors, failed requests                       |
 
 ### Coverage
 
@@ -966,18 +980,18 @@ See [SECURITY.md](./SECURITY.md) for responsible disclosure process.
 
 ### Bundle Sizes (Production Build)
 
-| Chunk | Size | Gzipped |
-|-------|------|---------|
-| `index-*.js` (main) | 77.57 kB | 21.80 kB |
-| `clerk-*.js` | 313.57 kB | 91.83 kB |
-| `radix-ui-*.js` | 67.27 kB | 23.25 kB |
-| `utils-*.js` | 33.50 kB | 11.43 kB |
-| `planner-*.js` | 19.63 kB | 5.90 kB |
-| `workflow-*.js` | 10.36 kB | 2.84 kB |
-| `settings-*.js` | 7.57 kB | 2.42 kB |
-| `intel-*.js` | 27.34 kB | 7.81 kB |
-| `lucide-*.js` | 12.36 kB | 4.50 kB |
-| `tanstack-query-*.js` | 2.34 kB | 1.12 kB |
+| Chunk                 | Size      | Gzipped  |
+| --------------------- | --------- | -------- |
+| `index-*.js` (main)   | 77.57 kB  | 21.80 kB |
+| `clerk-*.js`          | 313.57 kB | 91.83 kB |
+| `radix-ui-*.js`       | 67.27 kB  | 23.25 kB |
+| `utils-*.js`          | 33.50 kB  | 11.43 kB |
+| `planner-*.js`        | 19.63 kB  | 5.90 kB  |
+| `workflow-*.js`       | 10.36 kB  | 2.84 kB  |
+| `settings-*.js`       | 7.57 kB   | 2.42 kB  |
+| `intel-*.js`          | 27.34 kB  | 7.81 kB  |
+| `lucide-*.js`         | 12.36 kB  | 4.50 kB  |
+| `tanstack-query-*.js` | 2.34 kB   | 1.12 kB  |
 
 ### Optimizations In Place
 

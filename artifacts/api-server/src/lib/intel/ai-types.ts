@@ -74,9 +74,7 @@ export interface AiProvider {
 }
 
 /** Configuration problems, surfaced with a clear message rather than a crash. */
-export function aiConfigurationError(
-  missing: string[],
-): AiError {
+export function aiConfigurationError(missing: string[]): AiError {
   return new AiError(
     "NOT_CONFIGURED",
     `The AI provider is not configured. Missing: ${missing.join(", ")}.`,

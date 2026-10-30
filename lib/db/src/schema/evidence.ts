@@ -1,12 +1,6 @@
 import { sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
-import {
-  index,
-  pgTable,
-  text,
-  timestamp,
-  uuid,
-} from "drizzle-orm/pg-core";
+import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { z } from "zod/v4";
 import { competitionsTable } from "./competitions";
 import { workflowTasksTable } from "./workflow-plans";
@@ -86,5 +80,7 @@ export const insertWorkflowEvidenceSchema = createInsertSchema(
   updatedAt: true,
 });
 
-export type InsertWorkflowEvidence = z.infer<typeof insertWorkflowEvidenceSchema>;
+export type InsertWorkflowEvidence = z.infer<
+  typeof insertWorkflowEvidenceSchema
+>;
 export type WorkflowEvidenceRecord = typeof workflowEvidenceTable.$inferSelect;

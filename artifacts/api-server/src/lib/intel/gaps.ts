@@ -8,7 +8,10 @@
  * open questions rather than pretending they are settled.
  */
 import { normaliseClaimKind, type ClaimKind } from "./claims.ts";
-import type { ExtractedRequirement, CompetitionBrief } from "./problem-analysis.ts";
+import type {
+  ExtractedRequirement,
+  CompetitionBrief,
+} from "./problem-analysis.ts";
 import type { IdeaCandidate } from "./ideas.ts";
 
 export interface GapInput {
@@ -139,10 +142,7 @@ export function buildDeterministicGaps(input: GapInput): GapAnalysis {
  * without any supporting finding is downgraded to a hypothesis, because an
  * unsupported gap is exactly the kind of claim this product refuses to make.
  */
-export function mergeAiGaps(
-  deterministic: Gap[],
-  modelGaps: unknown,
-): Gap[] {
+export function mergeAiGaps(deterministic: Gap[], modelGaps: unknown): Gap[] {
   if (!Array.isArray(modelGaps)) return deterministic;
 
   const merged = [...deterministic];
@@ -187,7 +187,9 @@ export function mergeAiGaps(
       opportunity:
         typeof record.opportunity === "string" ? record.opportunity.trim() : "",
       risks: Array.isArray(record.risks)
-        ? record.risks.filter((item): item is string => typeof item === "string")
+        ? record.risks.filter(
+            (item): item is string => typeof item === "string",
+          )
         : [],
       claimKind: safeKind,
     });
@@ -222,7 +224,10 @@ export interface BuildBrief {
 
 const stringList = (value: unknown): string[] =>
   Array.isArray(value)
-    ? value.filter((item): item is string => typeof item === "string" && item.trim() !== "")
+    ? value.filter(
+        (item): item is string =>
+          typeof item === "string" && item.trim() !== "",
+      )
     : [];
 
 /**
@@ -244,7 +249,9 @@ export function parseModelBuildBrief(
         ? record.problemStatement.trim()
         : idea.problemSolved,
     targetUsers:
-      typeof record.targetUsers === "string" ? record.targetUsers.trim() : idea.targetUser,
+      typeof record.targetUsers === "string"
+        ? record.targetUsers.trim()
+        : idea.targetUser,
     valueProposition:
       typeof record.valueProposition === "string"
         ? record.valueProposition.trim()
@@ -253,12 +260,14 @@ export function parseModelBuildBrief(
       typeof record.judgingCriteriaAlignment === "string"
         ? record.judgingCriteriaAlignment.trim()
         : "",
-    mvpScope: stringList(record.mvpScope).length > 0
-      ? stringList(record.mvpScope)
-      : idea.mvpFeatures,
-    nonGoals: stringList(record.nonGoals).length > 0
-      ? stringList(record.nonGoals)
-      : idea.excludedFeatures,
+    mvpScope:
+      stringList(record.mvpScope).length > 0
+        ? stringList(record.mvpScope)
+        : idea.mvpFeatures,
+    nonGoals:
+      stringList(record.nonGoals).length > 0
+        ? stringList(record.nonGoals)
+        : idea.excludedFeatures,
     primaryUserJourney:
       typeof record.primaryUserJourney === "string"
         ? record.primaryUserJourney.trim()
@@ -275,25 +284,34 @@ export function parseModelBuildBrief(
     securityRequirements: stringList(record.securityRequirements),
     testingPlan: stringList(record.testingPlan),
     deploymentPlan:
-      typeof record.deploymentPlan === "string" ? record.deploymentPlan.trim() : "",
-    demoScriptOutline: stringList(record.demoScriptOutline).length > 0
-      ? stringList(record.demoScriptOutline)
-      : idea.demoStrategy
-        ? [idea.demoStrategy]
-        : [],
-    keyRisks: stringList(record.keyRisks).length > 0 ? stringList(record.keyRisks) : idea.risks,
-    openQuestions: stringList(record.openQuestions).length > 0
-      ? stringList(record.openQuestions)
-      : idea.unverifiedAssumptions,
+      typeof record.deploymentPlan === "string"
+        ? record.deploymentPlan.trim()
+        : "",
+    demoScriptOutline:
+      stringList(record.demoScriptOutline).length > 0
+        ? stringList(record.demoScriptOutline)
+        : idea.demoStrategy
+          ? [idea.demoStrategy]
+          : [],
+    keyRisks:
+      stringList(record.keyRisks).length > 0
+        ? stringList(record.keyRisks)
+        : idea.risks,
+    openQuestions:
+      stringList(record.openQuestions).length > 0
+        ? stringList(record.openQuestions)
+        : idea.unverifiedAssumptions,
     milestones: stringList(record.milestones),
     ideaName: idea.name,
     claimKind: idea.claimKind,
   };
 
   const missingSections: string[] = [];
-  if (!brief.judgingCriteriaAlignment) missingSections.push("Judging-criteria alignment");
+  if (!brief.judgingCriteriaAlignment)
+    missingSections.push("Judging-criteria alignment");
   if (!brief.dataModelOutline) missingSections.push("Data model outline");
-  if (brief.securityRequirements.length === 0) missingSections.push("Security requirements");
+  if (brief.securityRequirements.length === 0)
+    missingSections.push("Security requirements");
   if (brief.testingPlan.length === 0) missingSections.push("Testing plan");
   if (!brief.deploymentPlan) missingSections.push("Deployment plan");
   if (brief.milestones.length === 0) missingSections.push("Milestones");

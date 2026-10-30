@@ -4,7 +4,9 @@ const serverEnvSchema = z.object({
   DATABASE_URL: z.string().url(),
   CLERK_SECRET_KEY: z.string().min(1),
   CLERK_PUBLISHABLE_KEY: z.string().min(1),
-  LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace"]).optional(),
+  LOG_LEVEL: z
+    .enum(["fatal", "error", "warn", "info", "debug", "trace"])
+    .optional(),
   OPENAI_API_KEY: z.string().optional(),
   OPENAI_BASE_URL: z.string().url().optional(),
   OPENAI_MODEL: z.string().optional(),
@@ -32,7 +34,11 @@ export function validateServerEnv(): string[] {
  */
 import type { Request, Response, NextFunction } from "express";
 
-export function requireServerEnv(): (req: Request, res: Response, next: NextFunction) => void {
+export function requireServerEnv(): (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => void {
   return (req: Request, res: Response, next: NextFunction): void => {
     // Skip env validation for healthz - it must always work
     if (req.path === "/api/healthz" || req.path === "/healthz") {

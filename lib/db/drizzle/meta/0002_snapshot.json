@@ -311,12 +311,8 @@
           "name": "workflow_evidence_competition_id_competitions_id_fk",
           "tableFrom": "workflow_evidence",
           "tableTo": "competitions",
-          "columnsFrom": [
-            "competition_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["competition_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -324,12 +320,8 @@
           "name": "workflow_evidence_task_id_workflow_tasks_id_fk",
           "tableFrom": "workflow_evidence",
           "tableTo": "workflow_tasks",
-          "columnsFrom": [
-            "task_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["task_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -433,12 +425,8 @@
           "name": "analysis_requirements_analysis_id_competition_analyses_id_fk",
           "tableFrom": "analysis_requirements",
           "tableTo": "competition_analyses",
-          "columnsFrom": [
-            "analysis_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["analysis_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -569,12 +557,8 @@
           "name": "build_briefs_competition_id_competitions_id_fk",
           "tableFrom": "build_briefs",
           "tableTo": "competitions",
-          "columnsFrom": [
-            "competition_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["competition_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -582,12 +566,8 @@
           "name": "build_briefs_idea_id_idea_candidates_id_fk",
           "tableFrom": "build_briefs",
           "tableTo": "idea_candidates",
-          "columnsFrom": [
-            "idea_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["idea_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -719,12 +699,8 @@
           "name": "competition_analyses_competition_id_competitions_id_fk",
           "tableFrom": "competition_analyses",
           "tableTo": "competitions",
-          "columnsFrom": [
-            "competition_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["competition_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -931,12 +907,8 @@
           "name": "idea_candidates_competition_id_competitions_id_fk",
           "tableFrom": "idea_candidates",
           "tableTo": "competitions",
-          "columnsFrom": [
-            "competition_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["competition_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1068,12 +1040,8 @@
           "name": "idea_evaluations_idea_id_idea_candidates_id_fk",
           "tableFrom": "idea_evaluations",
           "tableTo": "idea_candidates",
-          "columnsFrom": [
-            "idea_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["idea_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1144,12 +1112,8 @@
           "name": "idea_rubrics_competition_id_competitions_id_fk",
           "tableFrom": "idea_rubrics",
           "tableTo": "competitions",
-          "columnsFrom": [
-            "competition_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["competition_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1311,12 +1275,8 @@
           "name": "research_findings_competition_id_competitions_id_fk",
           "tableFrom": "research_findings",
           "tableTo": "competitions",
-          "columnsFrom": [
-            "competition_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["competition_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1446,12 +1406,8 @@
           "name": "research_gaps_competition_id_competitions_id_fk",
           "tableFrom": "research_gaps",
           "tableTo": "competitions",
-          "columnsFrom": [
-            "competition_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["competition_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1579,12 +1535,8 @@
           "name": "workflow_plans_competition_id_competitions_id_fk",
           "tableFrom": "workflow_plans",
           "tableTo": "competitions",
-          "columnsFrom": [
-            "competition_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["competition_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1762,12 +1714,8 @@
           "name": "workflow_tasks_competition_id_competitions_id_fk",
           "tableFrom": "workflow_tasks",
           "tableTo": "competitions",
-          "columnsFrom": [
-            "competition_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["competition_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1775,12 +1723,8 @@
           "name": "workflow_tasks_plan_id_workflow_plans_id_fk",
           "tableFrom": "workflow_tasks",
           "tableTo": "workflow_plans",
-          "columnsFrom": [
-            "plan_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["plan_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }

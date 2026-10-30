@@ -31,11 +31,7 @@ export type PlanTaskPhase =
   | "retrospective_next_steps";
 
 export type PlanTaskStatus =
-  | "todo"
-  | "in_progress"
-  | "blocked"
-  | "done"
-  | "deferred";
+  "todo" | "in_progress" | "blocked" | "done" | "deferred";
 
 export type PlanTaskPriority = "critical" | "high" | "medium" | "low";
 
@@ -109,14 +105,16 @@ export const LIFECYCLE_STAGES: StageDefinition[] = [
     id: "research",
     label: "Research",
     phases: ["research"],
-    summary: "Gather source-backed findings and separate facts from assumptions.",
+    summary:
+      "Gather source-backed findings and separate facts from assumptions.",
     planned: false,
   },
   {
     id: "ideas",
     label: "Ideas",
     phases: ["track_selection", "idea_selection"],
-    summary: "Choose a track and challenge one idea before committing build time.",
+    summary:
+      "Choose a track and challenge one idea before committing build time.",
     planned: false,
   },
   {
@@ -241,7 +239,9 @@ export function deriveStageState(tasks: StageTask[]): {
   completion: number;
 } {
   const done = tasks.filter((task) => task.status === "done").length;
-  const inProgress = tasks.filter((task) => ACTIVE_STATUSES.includes(task.status)).length;
+  const inProgress = tasks.filter((task) =>
+    ACTIVE_STATUSES.includes(task.status),
+  ).length;
   const blocked = tasks.filter((task) => task.status === "blocked").length;
   const todo = tasks.filter((task) => task.status === "todo").length;
   const deferred = tasks.filter((task) => task.status === "deferred").length;
@@ -286,7 +286,8 @@ export function deriveStageState(tasks: StageTask[]): {
     estimatedMinutes,
     blockers,
     nextTask,
-    completion: tasks.length === 0 ? 0 : Math.round((done / tasks.length) * 100),
+    completion:
+      tasks.length === 0 ? 0 : Math.round((done / tasks.length) * 100),
   };
 }
 
@@ -372,7 +373,9 @@ export function buildStageSummaries(
       };
     }
 
-    const stageTasks = tasks.filter((task) => phaseMatches(task, definition.phases));
+    const stageTasks = tasks.filter((task) =>
+      phaseMatches(task, definition.phases),
+    );
     const derived = deriveStageState(stageTasks);
 
     return {
@@ -409,7 +412,9 @@ export interface PlanProgress {
 export function summarisePlan(tasks: StageTask[]): PlanProgress {
   const total = tasks.length;
   const done = tasks.filter((task) => task.status === "done").length;
-  const inProgress = tasks.filter((task) => task.status === "in_progress").length;
+  const inProgress = tasks.filter(
+    (task) => task.status === "in_progress",
+  ).length;
   const blocked = tasks.filter((task) => task.status === "blocked").length;
   const todo = tasks.filter((task) => task.status === "todo").length;
   const deferred = tasks.filter((task) => task.status === "deferred").length;
@@ -451,39 +456,40 @@ export function formatDuration(minutes: number): string {
  */
 export const WORKSPACE_GATES = {
   workflow: {
-    id: 'workflow',
-    label: 'Workflow',
-    unlockReason: 'Create a competition workspace to unlock Workflow',
-    unlockAction: 'Create workspace',
+    id: "workflow",
+    label: "Workflow",
+    unlockReason: "Create a competition workspace to unlock Workflow",
+    unlockAction: "Create workspace",
   },
   planner: {
-    id: 'planner',
-    label: 'Planner',
-    unlockReason: 'Create a competition workspace to unlock Planner',
-    unlockAction: 'Create workspace',
+    id: "planner",
+    label: "Planner",
+    unlockReason: "Create a competition workspace to unlock Planner",
+    unlockAction: "Create workspace",
   },
   intel: {
-    id: 'intel',
-    label: 'Intelligence',
-    unlockReason: 'Create a competition workspace to unlock Intelligence',
-    unlockAction: 'Create workspace',
+    id: "intel",
+    label: "Intelligence",
+    unlockReason: "Create a competition workspace to unlock Intelligence",
+    unlockAction: "Create workspace",
   },
   competitions: {
-    id: 'competitions',
-    label: 'Competitions',
+    id: "competitions",
+    label: "Competitions",
     unlockReason: null, // Always accessible
     unlockAction: null,
   },
   settings: {
-    id: 'settings',
-    label: 'Settings & Integrations',
+    id: "settings",
+    label: "Settings & Integrations",
     unlockReason: null, // Always accessible
     unlockAction: null,
   },
   retrospective: {
-    id: 'retrospective',
-    label: 'Retrospective',
-    unlockReason: 'Unlocks when Submission is complete or the competition deadline has passed',
+    id: "retrospective",
+    label: "Retrospective",
+    unlockReason:
+      "Unlocks when Submission is complete or the competition deadline has passed",
     unlockAction: null,
   },
 } as const;

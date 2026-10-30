@@ -163,7 +163,10 @@ export const researchGapsTable = pgTable(
     existingApproaches: text("existing_approaches").notNull(),
     insufficiency: text("insufficiency").notNull(),
     opportunity: text("opportunity").notNull(),
-    risks: text("risks").array().notNull().default(sql`ARRAY[]::text[]`),
+    risks: text("risks")
+      .array()
+      .notNull()
+      .default(sql`ARRAY[]::text[]`),
     /** How well supported the gap is. */
     claimKind: text("claim_kind").notNull().default("HYPOTHESIS"),
     /** Where the evidence runs out. */
@@ -213,7 +216,10 @@ export const ideaCandidatesTable = pgTable(
     architectureSuggestion: text("architecture_suggestion").notNull(),
     dataAndIntegrations: text("data_and_integrations").notNull(),
     feasibilityNote: text("feasibility_note").notNull(),
-    risks: text("risks").array().notNull().default(sql`ARRAY[]::text[]`),
+    risks: text("risks")
+      .array()
+      .notNull()
+      .default(sql`ARRAY[]::text[]`),
     demoStrategy: text("demo_strategy").notNull(),
     supportingEvidence: text("supporting_evidence")
       .array()
@@ -370,16 +376,19 @@ export const insertIdeaEvaluationSchema = createInsertSchema(
   ideaEvaluationsTable,
 ).omit({ id: true, createdAt: true, updatedAt: true });
 
-export const insertBuildBriefSchema = createInsertSchema(buildBriefsTable).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+export const insertBuildBriefSchema = createInsertSchema(buildBriefsTable).omit(
+  {
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+  },
+);
 
 export type InsertCompetitionAnalysis = z.infer<
   typeof insertCompetitionAnalysisSchema
 >;
-export type CompetitionAnalysisRecord = typeof competitionAnalysesTable.$inferSelect;
+export type CompetitionAnalysisRecord =
+  typeof competitionAnalysesTable.$inferSelect;
 export type AnalysisRequirementRecord =
   typeof analysisRequirementsTable.$inferSelect;
 export type ResearchFindingRecord = typeof researchFindingsTable.$inferSelect;

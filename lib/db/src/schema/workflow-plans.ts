@@ -62,7 +62,9 @@ export const workflowTasksTable = pgTable(
     phase: text("phase").notNull(),
     priority: text("priority").notNull(),
     estimatedMinutes: integer("estimated_minutes").notNull(),
-    plannedStartAt: timestamp("planned_start_at", { withTimezone: true }).notNull(),
+    plannedStartAt: timestamp("planned_start_at", {
+      withTimezone: true,
+    }).notNull(),
     plannedEndAt: timestamp("planned_end_at", { withTimezone: true }).notNull(),
     dependencies: text("dependencies")
       .array()

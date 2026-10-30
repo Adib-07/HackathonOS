@@ -15,13 +15,13 @@ HackathonOS is a private, reusable workspace for organizing competition requirem
 
 The engine runs the full arc: **Competition → Problem analysis → Research → Opportunities → Ideas → Scoring → Build brief**. Every artefact it produces carries a claim kind, so a reader can always tell a fact from an inference:
 
-| Claim kind | Meaning |
-| --- | --- |
-| `VERIFIED_FACT` | Read directly out of the stored competition record. True as long as that record is. |
+| Claim kind         | Meaning                                                                                       |
+| ------------------ | --------------------------------------------------------------------------------------------- |
+| `VERIFIED_FACT`    | Read directly out of the stored competition record. True as long as that record is.           |
 | `SOURCE_SUPPORTED` | Backed by a source that was actually retrieved, with the URL and the retrieval time recorded. |
-| `INFERENCE` | Derived from the record or the findings. Plausible, but stated nowhere. |
-| `HYPOTHESIS` | A guess the team still has to test. |
-| `UNKNOWN` | Missing information. Nothing has been assumed in its place. |
+| `INFERENCE`        | Derived from the record or the findings. Plausible, but stated nowhere.                       |
+| `HYPOTHESIS`       | A guess the team still has to test.                                                           |
+| `UNKNOWN`          | Missing information. Nothing has been assumed in its place.                                   |
 
 The deterministic parts work with no provider at all: the analysis, the rubric arithmetic, the gap reporting, and the build brief all run from stored data. The AI portions are additive and clearly labelled, and the API refuses to let a model promote its own output to a verified fact.
 
@@ -29,29 +29,29 @@ This is still not a claim that every planned module is complete. Research automa
 
 ## Repository audit
 
-| Area | Status | Evidence / limitation |
-| --- | --- | --- |
-| Git remote and branch | VERIFIED | `origin` = `https://github.com/Adib-07/HackathonOS.git`, branch `main`, `origin/main` up to date at `1306a74`. Two clones share this remote; the workspace-root clone holds the uncommitted Phase 5 + Phase 6 work and is the one that was changed. The second clone at `~/CSE-AI & ML/HackathonOS` was inspected and left untouched. |
-| Secret hygiene | VERIFIED | `.env`, `.env.*` are git-ignored (`.gitignore:52-54`, `!.env.example` retained). No `.env`, credential, or dump file exists in any commit in the full history (`git log --all --full-history` over `**/.env*`, `**/secrets*`, `**/credentials*` returned nothing). No `pk_`/`sk_` key material is tracked. |
-| Competition workspaces | VERIFIED_WORKING | Create, list, read, update, and delete-by-owner scoping exercised over HTTP and through the real browser UI. 19/19 API checks and 12/12 browser-flow checks passed. |
-| Deadline planner | VERIFIED_WORKING | Plan generation returns versioned plans with tasks; 12 tasks generated; plans and task counts survive a server restart. Planner logic has 4 unit tests. |
-| Lifecycle / workflow view | VERIFIED_WORKING | **New in Phase 6.** `/competitions/:id/workflow` derives 8 stages from saved `workflow_tasks.phase` + `status`. All 12 tasks of a generated plan are accounted for across stages (2+1+2+2+2+1+1+1 = 12), verified by query and by DOM inspection. |
-| Stage honesty | VERIFIED_WORKING | A stage with no saved tasks reads *Not started*; one with only `todo` tasks reads *Scheduled*; only a stage whose tasks are all `done` reads *Complete*; a blocked task always wins over completion. Enforced by unit tests. |
-| Verification evidence | VERIFIED_WORKING | **New in Phase 7.** Evidence is persisted in `workflow_evidence`, ownership is enforced on every read and write, cross-owner access returns `404`, and a task reports *Verified* only when its phase's required evidence types all have passing, current, non-stale records. Proven by 24 unit tests, 17 API integration tests, and browser verification of the full Done → Verified → Done → Verified lifecycle. |
-| Evidence provenance | VERIFIED_WORKING | Every record is stored with `source: "manual"`. A client-supplied `source` is rejected or coerced to manual. Credential-shaped content is rejected with `400`. Verified in the browser and the test suite. |
-| Database migrations | VERIFIED_WORKING | **New in Phase 7.** Two reviewed, purely additive migration files with a generated journal. Applied to a disposable database with seeded records; all records survived. Applied to the development database; re-running is a no-op. |
-| Authentication | VERIFIED_WORKING | Clerk session is the only production identity source. Unauthenticated list/create/overview requests return `401`. Cross-owner read and write return `404`. |
-| Database | VERIFIED_WORKING | PostgreSQL via Drizzle. Rows confirmed by direct `psql` query after browser creation. Data survives a full API server restart. |
-| Frontend ↔ API wiring | FIXED | `vite dev` had no `/api` proxy, so the documented local dev flow could not reach the API outside Replit. A dev-only proxy was added. |
-| Production DB configuration | FIXED | `lib/db` silently fell back to `localhost` when `DATABASE_URL` was unset. Production now fails fast. |
-| Dialog accessibility | FIXED | The create-competition modal had no focus management, no Escape handling, and no focus trap. It now uses a dedicated accessible `Dialog` component. |
-| Form error accessibility | FIXED | Field errors are now linked to their control with `aria-describedby` and `aria-invalid`, and focus moves to the first invalid field. |
-| Responsive layout | VERIFIED | No horizontal overflow at 1440px, 768px, or 390px on any page. |
-| Text contrast | VERIFIED | 0 WCAG AA failures across 27–28 sampled text styles on all five pages (worst measured 4.5:1). 8 genuine failures were found and fixed. |
-| Research, AI, uploads, idea evaluation, deployment, pitch/submission, retrospective | MISSING | No live integrations or complete workflows. Must not be presented as connected or working. The retrospective and settings stages are shown as *planned*. |
-| Verification ledger | PARTIALLY_IMPLEMENTED | The overview still shows checks as `not_run` by design. This document is the evidence record, not the in-app ledger. |
-| Lint, E2E, CI | MISSING | No lint command, no browser E2E suite in CI, and no CI workflow file. |
-| Production deployment | BLOCKED | A live deployment exists but serves a build that predates the competition feature. Details in "Deployment readiness". |
+| Area                                                                                | Status                | Evidence / limitation                                                                                                                                                                                                                                                                                                                                                                                             |
+| ----------------------------------------------------------------------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Git remote and branch                                                               | VERIFIED              | `origin` = `https://github.com/Adib-07/HackathonOS.git`, branch `main`, `origin/main` up to date at `1306a74`. Two clones share this remote; the workspace-root clone holds the uncommitted Phase 5 + Phase 6 work and is the one that was changed. The second clone at `~/CSE-AI & ML/HackathonOS` was inspected and left untouched.                                                                             |
+| Secret hygiene                                                                      | VERIFIED              | `.env`, `.env.*` are git-ignored (`.gitignore:52-54`, `!.env.example` retained). No `.env`, credential, or dump file exists in any commit in the full history (`git log --all --full-history` over `**/.env*`, `**/secrets*`, `**/credentials*` returned nothing). No `pk_`/`sk_` key material is tracked.                                                                                                        |
+| Competition workspaces                                                              | VERIFIED_WORKING      | Create, list, read, update, and delete-by-owner scoping exercised over HTTP and through the real browser UI. 19/19 API checks and 12/12 browser-flow checks passed.                                                                                                                                                                                                                                               |
+| Deadline planner                                                                    | VERIFIED_WORKING      | Plan generation returns versioned plans with tasks; 12 tasks generated; plans and task counts survive a server restart. Planner logic has 4 unit tests.                                                                                                                                                                                                                                                           |
+| Lifecycle / workflow view                                                           | VERIFIED_WORKING      | **New in Phase 6.** `/competitions/:id/workflow` derives 8 stages from saved `workflow_tasks.phase` + `status`. All 12 tasks of a generated plan are accounted for across stages (2+1+2+2+2+1+1+1 = 12), verified by query and by DOM inspection.                                                                                                                                                                 |
+| Stage honesty                                                                       | VERIFIED_WORKING      | A stage with no saved tasks reads _Not started_; one with only `todo` tasks reads _Scheduled_; only a stage whose tasks are all `done` reads _Complete_; a blocked task always wins over completion. Enforced by unit tests.                                                                                                                                                                                      |
+| Verification evidence                                                               | VERIFIED_WORKING      | **New in Phase 7.** Evidence is persisted in `workflow_evidence`, ownership is enforced on every read and write, cross-owner access returns `404`, and a task reports _Verified_ only when its phase's required evidence types all have passing, current, non-stale records. Proven by 24 unit tests, 17 API integration tests, and browser verification of the full Done → Verified → Done → Verified lifecycle. |
+| Evidence provenance                                                                 | VERIFIED_WORKING      | Every record is stored with `source: "manual"`. A client-supplied `source` is rejected or coerced to manual. Credential-shaped content is rejected with `400`. Verified in the browser and the test suite.                                                                                                                                                                                                        |
+| Database migrations                                                                 | VERIFIED_WORKING      | **New in Phase 7.** Two reviewed, purely additive migration files with a generated journal. Applied to a disposable database with seeded records; all records survived. Applied to the development database; re-running is a no-op.                                                                                                                                                                               |
+| Authentication                                                                      | VERIFIED_WORKING      | Clerk session is the only production identity source. Unauthenticated list/create/overview requests return `401`. Cross-owner read and write return `404`.                                                                                                                                                                                                                                                        |
+| Database                                                                            | VERIFIED_WORKING      | PostgreSQL via Drizzle. Rows confirmed by direct `psql` query after browser creation. Data survives a full API server restart.                                                                                                                                                                                                                                                                                    |
+| Frontend ↔ API wiring                                                               | FIXED                 | `vite dev` had no `/api` proxy, so the documented local dev flow could not reach the API outside Replit. A dev-only proxy was added.                                                                                                                                                                                                                                                                              |
+| Production DB configuration                                                         | FIXED                 | `lib/db` silently fell back to `localhost` when `DATABASE_URL` was unset. Production now fails fast.                                                                                                                                                                                                                                                                                                              |
+| Dialog accessibility                                                                | FIXED                 | The create-competition modal had no focus management, no Escape handling, and no focus trap. It now uses a dedicated accessible `Dialog` component.                                                                                                                                                                                                                                                               |
+| Form error accessibility                                                            | FIXED                 | Field errors are now linked to their control with `aria-describedby` and `aria-invalid`, and focus moves to the first invalid field.                                                                                                                                                                                                                                                                              |
+| Responsive layout                                                                   | VERIFIED              | No horizontal overflow at 1440px, 768px, or 390px on any page.                                                                                                                                                                                                                                                                                                                                                    |
+| Text contrast                                                                       | VERIFIED              | 0 WCAG AA failures across 27–28 sampled text styles on all five pages (worst measured 4.5:1). 8 genuine failures were found and fixed.                                                                                                                                                                                                                                                                            |
+| Research, AI, uploads, idea evaluation, deployment, pitch/submission, retrospective | MISSING               | No live integrations or complete workflows. Must not be presented as connected or working. The retrospective and settings stages are shown as _planned_.                                                                                                                                                                                                                                                          |
+| Verification ledger                                                                 | PARTIALLY_IMPLEMENTED | The overview still shows checks as `not_run` by design. This document is the evidence record, not the in-app ledger.                                                                                                                                                                                                                                                                                              |
+| Lint, E2E, CI                                                                       | MISSING               | No lint command, no browser E2E suite in CI, and no CI workflow file.                                                                                                                                                                                                                                                                                                                                             |
+| Production deployment                                                               | BLOCKED               | A live deployment exists but serves a build that predates the competition feature. Details in "Deployment readiness".                                                                                                                                                                                                                                                                                             |
 
 ## Security review findings
 
@@ -85,28 +85,28 @@ This is still not a claim that every planned module is complete. Research automa
 
 ## Database configuration findings
 
-| Item | Finding |
-| --- | --- |
-| Local development | Uses a local PostgreSQL 16 instance at `postgresql://localhost:5432/hackathon_os`. Confirmed reachable; the `competitions`, `workflow_plans`, and `workflow_tasks` tables exist. |
-| Production | `DATABASE_URL` is now **required**; the API and the Drizzle config both throw when it is missing under `NODE_ENV=production`. |
-| Fallback behaviour | Outside production a missing `DATABASE_URL` logs a warning and falls back to localhost. It is never silent, and it never happens in production. |
-| Connection strings | Never logged. The only server log lines are the level, timestamp, pid, hostname, request method, path, status, and response time. |
-| Migrations | **Phase 7 added a real migration history.** `lib/db/drizzle/` now holds two reviewed, purely additive SQL files plus `meta/_journal.json`. `drizzle-kit generate` writes them; `drizzle-kit migrate` applies them in order and records each in `drizzle.__drizzle_migrations`. `drizzle-kit push` is no longer the production mechanism. |
-| `push` in automation | `drizzle-kit push` was previously the only mechanism and it is authoritative — it **removed** an extra column that was not in the schema, so it can drop data on drift. It remains available for local exploration only. **Production must use `migrate`.** Phase 9 changed `scripts/post-merge.sh` to run `migrate:baseline` then `migrate`; a regression test now fails if any deployment path runs `drizzle-kit push` again. |
-| Monorepo compatibility | Preserved. `lib/db` keeps its existing `exports` map, its `drizzle.config.ts` location, and its `push`/`push-force` scripts. `drizzle-kit generate`, `migrate`, and `push` all still resolve the config. |
-| Verified schema | `competitions` (17 columns, `owner_id` indexed with `deadline`), `workflow_plans` (FK to `competitions` with `ON DELETE CASCADE`, unique index on `(competition_id, version)`), `workflow_tasks` (FK to both parents, `ON DELETE CASCADE`), and `workflow_evidence` (16 columns, FK to `competitions` with `ON DELETE CASCADE`, FK to `workflow_tasks` with `ON DELETE SET NULL`). |
+| Item                   | Finding                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Local development      | Uses a local PostgreSQL 16 instance at `postgresql://localhost:5432/hackathon_os`. Confirmed reachable; the `competitions`, `workflow_plans`, and `workflow_tasks` tables exist.                                                                                                                                                                                                                                                |
+| Production             | `DATABASE_URL` is now **required**; the API and the Drizzle config both throw when it is missing under `NODE_ENV=production`.                                                                                                                                                                                                                                                                                                   |
+| Fallback behaviour     | Outside production a missing `DATABASE_URL` logs a warning and falls back to localhost. It is never silent, and it never happens in production.                                                                                                                                                                                                                                                                                 |
+| Connection strings     | Never logged. The only server log lines are the level, timestamp, pid, hostname, request method, path, status, and response time.                                                                                                                                                                                                                                                                                               |
+| Migrations             | **Phase 7 added a real migration history.** `lib/db/drizzle/` now holds two reviewed, purely additive SQL files plus `meta/_journal.json`. `drizzle-kit generate` writes them; `drizzle-kit migrate` applies them in order and records each in `drizzle.__drizzle_migrations`. `drizzle-kit push` is no longer the production mechanism.                                                                                        |
+| `push` in automation   | `drizzle-kit push` was previously the only mechanism and it is authoritative — it **removed** an extra column that was not in the schema, so it can drop data on drift. It remains available for local exploration only. **Production must use `migrate`.** Phase 9 changed `scripts/post-merge.sh` to run `migrate:baseline` then `migrate`; a regression test now fails if any deployment path runs `drizzle-kit push` again. |
+| Monorepo compatibility | Preserved. `lib/db` keeps its existing `exports` map, its `drizzle.config.ts` location, and its `push`/`push-force` scripts. `drizzle-kit generate`, `migrate`, and `push` all still resolve the config.                                                                                                                                                                                                                        |
+| Verified schema        | `competitions` (17 columns, `owner_id` indexed with `deadline`), `workflow_plans` (FK to `competitions` with `ON DELETE CASCADE`, unique index on `(competition_id, version)`), `workflow_tasks` (FK to both parents, `ON DELETE CASCADE`), and `workflow_evidence` (16 columns, FK to `competitions` with `ON DELETE CASCADE`, FK to `workflow_tasks` with `ON DELETE SET NULL`).                                              |
 
 ## Evidence model and API behaviour
 
 ### The five task states
 
-| State | Meaning |
-| --- | --- |
-| `not_started` | The work has not begun. |
-| `in_progress` | The work is under way but not finished. |
-| `blocked` | The work cannot continue until a blocker is resolved. |
-| `done` | The owner says the work is finished. **No proof.** |
-| `verified` | The work is finished **and** evidence satisfies the task's own verification requirement. |
+| State         | Meaning                                                                                  |
+| ------------- | ---------------------------------------------------------------------------------------- |
+| `not_started` | The work has not begun.                                                                  |
+| `in_progress` | The work is under way but not finished.                                                  |
+| `blocked`     | The work cannot continue until a blocker is resolved.                                    |
+| `done`        | The owner says the work is finished. **No proof.**                                       |
+| `verified`    | The work is finished **and** evidence satisfies the task's own verification requirement. |
 
 `DONE` is never treated as `VERIFIED`. A task only becomes verified when explicit evidence exists, that evidence matches the requirement recorded for the task, and nothing contradicts it.
 
@@ -114,23 +114,23 @@ This is still not a claim that every planned module is complete. Research automa
 
 New table `workflow_evidence` (`lib/db/src/schema/evidence.ts`):
 
-| Column | Purpose |
-| --- | --- |
-| `id` | Primary key. |
-| `competition_id` | Owning competition. `ON DELETE CASCADE`. |
-| `task_id` | The task row the evidence was recorded against. `ON DELETE SET NULL` — the record survives plan recalculation and becomes orphaned rather than being destroyed. |
-| `task_key` | Stable task identity (e.g. `build-product`). Verification groups by this, so evidence survives a new plan version. |
-| `type` | One of `TEST_RESULT`, `BUILD_RESULT`, `DEPLOYMENT_URL`, `HTTP_CHECK`, `MANUAL_REVIEW`, `SUBMISSION_CONFIRMATION`. |
-| `summary` | What was observed. |
-| `source_url` | Where it came from, when applicable. |
-| `command_name` | The check or command name, when applicable. |
-| `result` | `passed` or `failed`. |
-| `observed_at` | When the check was actually observed. |
-| `reviewer_note` | Optional reviewer context. |
-| `source` | Provenance. **Always `manual`** today. |
-| `phase_snapshot` | The task's phase when the evidence was recorded. |
-| `verification_method_snapshot` | The task's stated verification method when the evidence was recorded. |
-| `created_at` / `updated_at` | Audit timestamps. |
+| Column                         | Purpose                                                                                                                                                         |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`                           | Primary key.                                                                                                                                                    |
+| `competition_id`               | Owning competition. `ON DELETE CASCADE`.                                                                                                                        |
+| `task_id`                      | The task row the evidence was recorded against. `ON DELETE SET NULL` — the record survives plan recalculation and becomes orphaned rather than being destroyed. |
+| `task_key`                     | Stable task identity (e.g. `build-product`). Verification groups by this, so evidence survives a new plan version.                                              |
+| `type`                         | One of `TEST_RESULT`, `BUILD_RESULT`, `DEPLOYMENT_URL`, `HTTP_CHECK`, `MANUAL_REVIEW`, `SUBMISSION_CONFIRMATION`.                                               |
+| `summary`                      | What was observed.                                                                                                                                              |
+| `source_url`                   | Where it came from, when applicable.                                                                                                                            |
+| `command_name`                 | The check or command name, when applicable.                                                                                                                     |
+| `result`                       | `passed` or `failed`.                                                                                                                                           |
+| `observed_at`                  | When the check was actually observed.                                                                                                                           |
+| `reviewer_note`                | Optional reviewer context.                                                                                                                                      |
+| `source`                       | Provenance. **Always `manual`** today.                                                                                                                          |
+| `phase_snapshot`               | The task's phase when the evidence was recorded.                                                                                                                |
+| `verification_method_snapshot` | The task's stated verification method when the evidence was recorded.                                                                                           |
+| `created_at` / `updated_at`    | Audit timestamps.                                                                                                                                               |
 
 The two snapshot columns are what make staleness detectable: if the task's requirement later changes, older evidence no longer answers the right question and is reported as **stale**.
 
@@ -157,28 +157,28 @@ Implemented in `artifacts/api-server/src/lib/verification.ts` as pure functions,
 
 Required evidence by phase:
 
-| Phase | Required evidence |
-| --- | --- |
-| `intake`, `problem`, `research`, `track_selection`, `idea_selection`, `specification`, `architecture`, `security`, `demo`, `pitch` | `MANUAL_REVIEW` |
-| `implementation` | `BUILD_RESULT` **and** `TEST_RESULT` |
-| `testing` | `TEST_RESULT` |
-| `deployment` | `DEPLOYMENT_URL` **and** `HTTP_CHECK` — a deployment URL alone never proves the application works |
-| `submission` | `SUBMISSION_CONFIRMATION` |
-| any unknown phase | `MANUAL_REVIEW` (never verifiable by default) |
+| Phase                                                                                                                              | Required evidence                                                                                 |
+| ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `intake`, `problem`, `research`, `track_selection`, `idea_selection`, `specification`, `architecture`, `security`, `demo`, `pitch` | `MANUAL_REVIEW`                                                                                   |
+| `implementation`                                                                                                                   | `BUILD_RESULT` **and** `TEST_RESULT`                                                              |
+| `testing`                                                                                                                          | `TEST_RESULT`                                                                                     |
+| `deployment`                                                                                                                       | `DEPLOYMENT_URL` **and** `HTTP_CHECK` — a deployment URL alone never proves the application works |
+| `submission`                                                                                                                       | `SUBMISSION_CONFIRMATION`                                                                         |
+| any unknown phase                                                                                                                  | `MANUAL_REVIEW` (never verifiable by default)                                                     |
 
 ### API behaviour
 
-| Route | Behaviour |
-| --- | --- |
-| `GET /api/competitions/:competitionId/evidence` | Lists the caller's evidence for a competition. `404` for another owner's competition (not `403`, so ids are not discoverable). `401` without a session. |
+| Route                                                          | Behaviour                                                                                                                                                                                                             |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/competitions/:competitionId/evidence`                | Lists the caller's evidence for a competition. `404` for another owner's competition (not `403`, so ids are not discoverable). `401` without a session.                                                               |
 | `POST /api/competitions/:competitionId/tasks/:taskId/evidence` | Records evidence against a task. `404` if the task is not the caller's. `400` for a missing field, an unsupported type, an invalid result, a future observation time, or credential-shaped content. `201` on success. |
-| `DELETE /api/competitions/:competitionId/evidence/:evidenceId` | Removes a record so the owner can re-verify after fixing a failure. Ownership is checked **before** the delete. `404` for another owner's record. |
+| `DELETE /api/competitions/:competitionId/evidence/:evidenceId` | Removes a record so the owner can re-verify after fixing a failure. Ownership is checked **before** the delete. `404` for another owner's record.                                                                     |
 
 Every task response (`GET /api/overview`, `GET /api/competitions/:id/plans/:planId`, `PATCH .../tasks/:taskId`, and plan generation) now carries a `verification` object with the derived state, the required/satisfied/missing/failed types, the supporting evidence ids, and a human-readable reason.
 
 ### Evidence limitations
 
-- **Every record is a human assertion.** There is no automated runner, no CI integration, and no deployment probe. A passing `TEST_RESULT` means *the owner said the tests passed*. The UI says "Manually supplied" on every record for exactly this reason.
+- **Every record is a human assertion.** There is no automated runner, no CI integration, and no deployment probe. A passing `TEST_RESULT` means _the owner said the tests passed_. The UI says "Manually supplied" on every record for exactly this reason.
 - **Verification is recomputed on every read** from the evidence rows, so a stale `verified` flag can never survive a change to the task or its requirement.
 - **The evidence itself is not a trust anchor.** It is an auditable record of what the owner observed, with timestamps and provenance. It does not cryptographically prove the observation.
 - **A deployment URL is necessary but never sufficient** for a deployment task; an `HTTP_CHECK` against it is also required.
@@ -189,10 +189,10 @@ Every task response (`GET /api/overview`, `GET /api/competitions/:id/plans/:plan
 
 ### The migration files
 
-| File | Content | Destructive? |
-| --- | --- | --- |
+| File                                               | Content                                                                                       | Destructive?                                                   |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
 | `lib/db/drizzle/0000_baseline_existing_schema.sql` | Creates `competitions`, `workflow_plans`, and `workflow_tasks` exactly as they already exist. | **No.** Only `CREATE TABLE`, `ADD CONSTRAINT`, `CREATE INDEX`. |
-| `lib/db/drizzle/0001_add_workflow_evidence.sql` | Creates `workflow_evidence` and its two indexes. | **No.** Only `CREATE TABLE`, `ADD CONSTRAINT`, `CREATE INDEX`. |
+| `lib/db/drizzle/0001_add_workflow_evidence.sql`    | Creates `workflow_evidence` and its two indexes.                                              | **No.** Only `CREATE TABLE`, `ADD CONSTRAINT`, `CREATE INDEX`. |
 
 A scan of every migration for `DROP`, `TRUNCATE`, `ALTER COLUMN … TYPE/DROP NOT NULL`, `DELETE FROM`, and `RENAME` returns **nothing**. Every migration is purely additive.
 
@@ -200,12 +200,12 @@ The baseline was verified against the live development database with `pg_dump --
 
 ### Commands
 
-| Command | Purpose |
-| --- | --- |
-| `pnpm --filter @workspace/db run generate` | Writes a new migration from the schema diff. Review the SQL before applying it. |
-| `pnpm --filter @workspace/db run migrate` | Applies pending migrations in order. Idempotent. |
+| Command                                            | Purpose                                                                                                                              |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `pnpm --filter @workspace/db run generate`         | Writes a new migration from the schema diff. Review the SQL before applying it.                                                      |
+| `pnpm --filter @workspace/db run migrate`          | Applies pending migrations in order. Idempotent.                                                                                     |
 | `pnpm --filter @workspace/db run migrate:baseline` | Records the baseline as applied **without executing its SQL**. Required once on a database that was created with `drizzle-kit push`. |
-| `pnpm --filter @workspace/db run test:migrations` | Applies the migrations to a throwaway database and asserts records survive. |
+| `pnpm --filter @workspace/db run test:migrations`  | Applies the migrations to a throwaway database and asserts records survive.                                                          |
 
 ### Local development procedure
 
@@ -264,14 +264,14 @@ The disposable database is dropped at the end. The development database was migr
 
 ### What was actually built
 
-| Module | Where | Works without an AI provider? |
-| --- | --- | --- |
-| **A. Problem analysis** | `lib/intel/problem-analysis.ts` | **Yes.** Reads the stored record and produces verified facts, missing fields, and unanswered questions. The model may only *add* inferences. |
-| **B. Research engine** | `lib/intel/research.ts` | **Yes.** Queries three live, keyless, documented public APIs. |
-| **C. Gap analysis** | `lib/intel/gaps.ts` | **Yes.** Builds conservative opportunities from the findings and states where the evidence runs out. |
-| **D. Idea generation** | `lib/intel/ideas.ts` | **No.** Requires a provider; the API returns a clear configuration error otherwise. |
-| **E. Idea scoring** | `lib/intel/ideas.ts` | **Yes.** The rubric arithmetic, weights, totals, and sensitivity are pure and deterministic. The model may only propose scores. |
-| **F. Build brief** | `lib/intel/gaps.ts` | **Yes.** Built from the selected idea, reporting the sections it could not fill. |
+| Module                  | Where                           | Works without an AI provider?                                                                                                                |
+| ----------------------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| **A. Problem analysis** | `lib/intel/problem-analysis.ts` | **Yes.** Reads the stored record and produces verified facts, missing fields, and unanswered questions. The model may only _add_ inferences. |
+| **B. Research engine**  | `lib/intel/research.ts`         | **Yes.** Queries three live, keyless, documented public APIs.                                                                                |
+| **C. Gap analysis**     | `lib/intel/gaps.ts`             | **Yes.** Builds conservative opportunities from the findings and states where the evidence runs out.                                         |
+| **D. Idea generation**  | `lib/intel/ideas.ts`            | **No.** Requires a provider; the API returns a clear configuration error otherwise.                                                          |
+| **E. Idea scoring**     | `lib/intel/ideas.ts`            | **Yes.** The rubric arithmetic, weights, totals, and sensitivity are pure and deterministic. The model may only propose scores.              |
+| **F. Build brief**      | `lib/intel/gaps.ts`             | **Yes.** Built from the selected idea, reporting the sections it could not fill.                                                             |
 
 The interface is `/competitions/:id/intel`, a five-step flow: **Problem → Research → Opportunities → Ideas → Build brief**. It is linked from the competition detail page.
 
@@ -279,11 +279,11 @@ The interface is `/competitions/:id/intel`, a five-step flow: **Problem → Rese
 
 No research provider was configured, so three **keyless, documented, public** APIs were integrated. All three were confirmed reachable and returning genuine results before any code was written:
 
-| Provider | Endpoint | What it finds |
-| --- | --- | --- |
-| **Wikipedia** | MediaWiki `api.php` search | Encyclopaedia articles: existing products, background |
-| **arXiv** | `export.arxiv.org/api/query` | Published research |
-| **GitHub** | `api.github.com/search/repositories` | Open-source repositories |
+| Provider      | Endpoint                             | What it finds                                         |
+| ------------- | ------------------------------------ | ----------------------------------------------------- |
+| **Wikipedia** | MediaWiki `api.php` search           | Encyclopaedia articles: existing products, background |
+| **arXiv**     | `export.arxiv.org/api/query`         | Published research                                    |
+| **GitHub**    | `api.github.com/search/repositories` | Open-source repositories                              |
 
 **Verified live through the API and through the browser UI:** a search for "solar installer delivery quality" returned **15 findings across all three providers** with real URLs, titles, and excerpts. The URLs were fetched back and returned `200`. No citation, repository, benchmark, or paper is ever invented: a provider that fails is reported as failed in the UI, with the reason, rather than being papered over.
 
@@ -319,16 +319,16 @@ The UI shows, per finding: the provider, the source type, the claim kind, the re
 
 Eight new tables, all additive and all scoped to a competition:
 
-| Table | Purpose |
-| --- | --- |
-| `competition_analyses` | One analysis per competition, versioned. |
-| `analysis_requirements` | The extracted requirements, individually editable and reviewable. |
-| `research_findings` | Retrieved and manual findings, with source, time, and claim kind. |
-| `research_gaps` | The identified opportunities and where the evidence runs out. |
-| `idea_candidates` | The idea candidates and the team's decision. |
-| `idea_evaluations` | One dimension score per idea, with rationale, evidence, and uncertainties. |
-| `idea_rubrics` | The weights the team uses, per competition. |
-| `build_briefs` | The saved build brief, as a structured document. |
+| Table                   | Purpose                                                                    |
+| ----------------------- | -------------------------------------------------------------------------- |
+| `competition_analyses`  | One analysis per competition, versioned.                                   |
+| `analysis_requirements` | The extracted requirements, individually editable and reviewable.          |
+| `research_findings`     | Retrieved and manual findings, with source, time, and claim kind.          |
+| `research_gaps`         | The identified opportunities and where the evidence runs out.              |
+| `idea_candidates`       | The idea candidates and the team's decision.                               |
+| `idea_evaluations`      | One dimension score per idea, with rationale, evidence, and uncertainties. |
+| `idea_rubrics`          | The weights the team uses, per competition.                                |
+| `build_briefs`          | The saved build brief, as a structured document.                           |
 
 Migration `lib/db/drizzle/0002_add_intel_engine_tables.sql` is reviewed and **purely additive**: only `CREATE TABLE`, `ADD CONSTRAINT`, and `CREATE INDEX`. A scan of all three migration files for `DROP`, `TRUNCATE`, `ALTER COLUMN`, `RENAME`, and `DELETE FROM` returns nothing.
 
@@ -364,8 +364,8 @@ fails if the hook regresses. It asserts that the hook does not run
 keeps its install step and its fail-fast behaviour, that it is executable,
 and — by scanning **every** script, config, and package file in the repository
 — that no other deployment path runs `drizzle-kit push`. The scan strips
-comments first, so prose that *mentions* the command is not mistaken for a
-command that *runs* it.
+comments first, so prose that _mentions_ the command is not mistaken for a
+command that _runs_ it.
 
 A second test asserts the documented deployment commands use `migrate`, and
 that every mention of `push` in the documentation is a warning rather than an
@@ -376,13 +376,13 @@ root `pnpm test` and cannot be skipped silently.
 
 ### Development schema synchronisation vs production migration
 
-| | `drizzle-kit push` | `drizzle-kit migrate` |
-| --- | --- | --- |
-| What it does | Diffs the live database against the TypeScript schema and applies the difference | Applies reviewed SQL files in order, and records each one |
-| Can it drop data? | **Yes.** It is authoritative over the schema. | **No.** Every migration in `lib/db/drizzle/` is additive. |
-| Reviewable before it runs? | No. The diff is computed at run time. | Yes. The SQL is a committed file. |
-| Repeatable? | Yes, but destructive if the schema and database disagree. | Yes. It records what it applied. |
-| Use for | Local development only | The deployment |
+|                            | `drizzle-kit push`                                                               | `drizzle-kit migrate`                                     |
+| -------------------------- | -------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| What it does               | Diffs the live database against the TypeScript schema and applies the difference | Applies reviewed SQL files in order, and records each one |
+| Can it drop data?          | **Yes.** It is authoritative over the schema.                                    | **No.** Every migration in `lib/db/drizzle/` is additive. |
+| Reviewable before it runs? | No. The diff is computed at run time.                                            | Yes. The SQL is a committed file.                         |
+| Repeatable?                | Yes, but destructive if the schema and database disagree.                        | Yes. It records what it applied.                          |
+| Use for                    | Local development only                                                           | The deployment                                            |
 
 `push` and `push-force` remain in `lib/db/package.json` for local
 development. Nothing in a release path invokes them.
@@ -393,7 +393,7 @@ The production database has no migration history, because it was created with
 `drizzle-kit push`. Recording the baseline is safe **only if** the live
 schema already contains what the baseline creates.
 
-The previous implementation checked only that the baseline *tables* existed.
+The previous implementation checked only that the baseline _tables_ existed.
 That was not enough: a database missing a single column would have been
 recorded as baselined, and the missing column would never have been applied.
 Phase 9 closes that gap.
@@ -407,10 +407,10 @@ Phase 9 closes that gap.
    baseline counts as applied when every table, column, index, and foreign key
    it creates is already present.
 4. **Decides one of three ways:**
-   - *Empty database* (no application tables) → nothing to record. `migrate`
+   - _Empty database_ (no application tables) → nothing to record. `migrate`
      creates the schema from the migrations. Exits 0.
-   - *Matches* → the baseline is recorded. Exits 0.
-   - *Diverged* → **refused**, with the exact missing objects listed, and
+   - _Matches_ → the baseline is recorded. Exits 0.
+   - _Diverged_ → **refused**, with the exact missing objects listed, and
      nothing written. Exits 1.
 5. **Writes exactly one row** to `drizzle.__drizzle_migrations`. It never
    reads, writes, or alters an application table.
@@ -421,7 +421,7 @@ It also has a read-only `--check` mode (`migrate:baseline:check`) for a
 preflight that writes nothing.
 
 **The live schema is never assumed to match the development schema.** The
-comparison is made against the *migration file*, not against the local
+comparison is made against the _migration file_, not against the local
 database, and the live database's extra objects are reported as drift rather
 than being treated as an error — because migrations never drop, so an extra
 column simply stays.
@@ -431,15 +431,15 @@ column simply stays.
 All of this was exercised against **disposable local databases**; the
 production database was not touched.
 
-| Scenario | Result |
-| --- | --- |
-| Empty database | "The database has no application tables. The baseline does not need to be recorded." Exit 0. |
-| Schema matching the baseline | "The live schema matches the baseline exactly." Check mode wrote nothing (no `drizzle` schema created). |
-| Schema matching, apply mode | Exactly **one** ledger row written. The pre-existing application row was untouched. |
-| Migrations applied afterwards | Migrations `0001` and `0002` applied. The pre-existing application row survived. All 12 tables present. Three ledger rows. |
-| Schema with a **dropped column** | **Refused**, exit 1: `column "competitions"."current_track"` is missing. No ledger row written. |
-| Schema with an **extra column** | Baseline recorded; the extra object reported as drift and left in place. |
-| Run twice | "already recorded. Nothing to do." No change. |
+| Scenario                         | Result                                                                                                                     |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Empty database                   | "The database has no application tables. The baseline does not need to be recorded." Exit 0.                               |
+| Schema matching the baseline     | "The live schema matches the baseline exactly." Check mode wrote nothing (no `drizzle` schema created).                    |
+| Schema matching, apply mode      | Exactly **one** ledger row written. The pre-existing application row was untouched.                                        |
+| Migrations applied afterwards    | Migrations `0001` and `0002` applied. The pre-existing application row survived. All 12 tables present. Three ledger rows. |
+| Schema with a **dropped column** | **Refused**, exit 1: `column "competitions"."current_track"` is missing. No ledger row written.                            |
+| Schema with an **extra column**  | Baseline recorded; the extra object reported as drift and left in place.                                                   |
+| Run twice                        | "already recorded. Nothing to do." No change.                                                                              |
 
 **Still required before production** — none of this can be done from here:
 
@@ -465,15 +465,15 @@ run against it, because doing so would mean connecting to production.
 **Confirmed observations** (read-only probes on
 `https://hackathonos.replit.app`):
 
-| Probe | Result |
-| --- | --- |
-| `GET /` | `200` |
-| `GET /api/healthz` | `200` |
-| `GET /api/competitions` | `404` |
-| `GET /api/overview` | `404` |
-| `GET /api/__clerk/v1/environment` | `404` |
-| Deployed web bundle | `assets/index-wB5QVmxO.js` — unchanged since Phase 6 |
-| `x-powered-by` on `/api/healthz` | `Express` |
+| Probe                             | Result                                               |
+| --------------------------------- | ---------------------------------------------------- |
+| `GET /`                           | `200`                                                |
+| `GET /api/healthz`                | `200`                                                |
+| `GET /api/competitions`           | `404`                                                |
+| `GET /api/overview`               | `404`                                                |
+| `GET /api/__clerk/v1/environment` | `404`                                                |
+| Deployed web bundle               | `assets/index-wB5QVmxO.js` — unchanged since Phase 6 |
+| `x-powered-by` on `/api/healthz`  | `Express`                                            |
 
 The `404` bodies are Express's own `Cannot GET /api/competitions` page with
 `content-type: text/html`. **That is a route miss inside a working Express
@@ -508,34 +508,34 @@ from.
 1. **Back up production**: `pg_dump --format=custom --file=backup-$(date +%Y%m%d-%H%M%S).dump "$DATABASE_URL"`. Verify the dump restores into a scratch database before continuing.
 2. **Preflight the schema**: `pnpm --filter @workspace/db run migrate:baseline:check`. It writes nothing. If it reports a divergence, stop and write a reviewed migration for the difference.
 3. **Configure the Replit secrets**: `DATABASE_URL`, `CLERK_SECRET_KEY`, `CLERK_PUBLISHABLE_KEY`, `VITE_CLERK_PUBLISHABLE_KEY`, and `OPENAI_API_KEY` for the generative features. The API refuses to start without the first three, which is the intended fail-closed behaviour.
-4. **Sync the Replit project with the intended commit.** The repository is mirrored *from* Replit; a GitHub push does not rebuild it. Pull the work into the Replit project and run a deployment from there.
+4. **Sync the Replit project with the intended commit.** The repository is mirrored _from_ Replit; a GitHub push does not rebuild it. Pull the work into the Replit project and run a deployment from there.
 5. **Let the post-merge hook apply the migrations.** It runs `migrate:baseline` (idempotent, refuses on divergence) and then `migrate` (additive only).
 6. **Health check**: `GET /api/healthz` must return `200`. Then `GET /api/competitions` must return `401` (not `404`) — a `404` means the stale build is still serving.
-7. **Smoke test with a real session**: sign in, create a competition, generate a plan, record evidence, and confirm the task reports *Verified*.
+7. **Smoke test with a real session**: sign in, create a competition, generate a plan, record evidence, and confirm the task reports _Verified_.
 8. **Rollback** is by restore: there are no down migrations, so reverting a release means restoring the backup taken in step 1. A rollback that also needs the schema reverted must restore both the data and the schema from the same dump.
 
 **Known risk in the hook:** `.replit` sets `[postMerge] timeoutMs = 20000`. The hook now runs `pnpm install --frozen-lockfile`, the baseline check, and the migrations. On a warm cache the last two took 0.3 s and 0.5 s respectively in this environment, so the added work is small — but `pnpm install` on a cold container could dominate. The pre-existing hook already had this exposure; Phase 9 did not make it materially worse, but it should be watched on the first real deploy.
 
 ### AI provider verification level
 
-| Level | What it covers | Status |
-| --- | --- | --- |
-| **1. Verified by automated tests** | The key is read on the server and never enters the request body; the endpoint is the chat-completions path; timeouts and cancellation abort the request; upstream errors are credential-redacted; malformed structured output is rejected rather than fabricated; the rate limiter allows exactly 8 research and 12 AI calls per minute; model output cannot be promoted to `VERIFIED_FACT`; malformed scores are dropped rather than defaulted; the manual fallback works with no provider configured. | **11 + 5 + 43 + 29 tests pass.** |
-| **2. Verified with a local stand-in** | The full arc — AI-assisted analysis, idea generation, scoring, and build brief — driven through the real provider client against a local stand-in for the chat-completions endpoint. | **Done.** The analysis produced 4 verified facts, 1 inference, and 1 hypothesis, correctly separated. |
-| **3. Verified with a real provider** | The real OpenAI service, with a real credential, producing real model output. | **NOT VERIFIED.** No provider credential exists in this environment. |
-| **4. Not yet verified** | Model output *quality* — whether the prompts produce good requirements, ideas, and briefs, and whether the scoring is a useful judgement. This can only be judged against a real model. | **Open.** |
+| Level                                 | What it covers                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Status                                                                                                |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| **1. Verified by automated tests**    | The key is read on the server and never enters the request body; the endpoint is the chat-completions path; timeouts and cancellation abort the request; upstream errors are credential-redacted; malformed structured output is rejected rather than fabricated; the rate limiter allows exactly 8 research and 12 AI calls per minute; model output cannot be promoted to `VERIFIED_FACT`; malformed scores are dropped rather than defaulted; the manual fallback works with no provider configured. | **11 + 5 + 43 + 29 tests pass.**                                                                      |
+| **2. Verified with a local stand-in** | The full arc — AI-assisted analysis, idea generation, scoring, and build brief — driven through the real provider client against a local stand-in for the chat-completions endpoint.                                                                                                                                                                                                                                                                                                                    | **Done.** The analysis produced 4 verified facts, 1 inference, and 1 hypothesis, correctly separated. |
+| **3. Verified with a real provider**  | The real OpenAI service, with a real credential, producing real model output.                                                                                                                                                                                                                                                                                                                                                                                                                           | **NOT VERIFIED.** No provider credential exists in this environment.                                  |
+| **4. Not yet verified**               | Model output _quality_ — whether the prompts produce good requirements, ideas, and briefs, and whether the scoring is a useful judgement. This can only be judged against a real model.                                                                                                                                                                                                                                                                                                                 | **Open.**                                                                                             |
 
 Levels 1 and 2 are not level 3, and are not described as such anywhere.
 
 ### Dependency advisory reassessment
 
-| | |
-| --- | --- |
-| Package | `braces` 3.0.3 |
-| Advisory | GHSA-vfj7-8cjw-p6xm / CVE-2026-93687 (high) |
-| Dependency paths | `artifacts/api-server` → `http-proxy-middleware` → `micromatch` → `braces`; `artifacts/mockup-sandbox` → `fast-glob` → `micromatch` → `braces` |
-| Patched release available? | **No.** The npm registry's `latest` tag is still `3.0.3`; `braces@3.0.4` returns `404`. The GitHub advisory lists "Patched versions: None". |
-| Can it be overridden away? | No. `micromatch` has no release without `braces`, and `http-proxy-middleware` 4.2.0 is the newest. |
+|                            |                                                                                                                                                |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Package                    | `braces` 3.0.3                                                                                                                                 |
+| Advisory                   | GHSA-vfj7-8cjw-p6xm / CVE-2026-93687 (high)                                                                                                    |
+| Dependency paths           | `artifacts/api-server` → `http-proxy-middleware` → `micromatch` → `braces`; `artifacts/mockup-sandbox` → `fast-glob` → `micromatch` → `braces` |
+| Patched release available? | **No.** The npm registry's `latest` tag is still `3.0.3`; `braces@3.0.4` returns `404`. The GitHub advisory lists "Patched versions: None".    |
+| Can it be overridden away? | No. `micromatch` has no release without `braces`, and `http-proxy-middleware` 4.2.0 is the newest.                                             |
 
 **Exposure.** The vulnerable recursive walkers are reached only through
 `micromatch`, which `http-proxy-middleware` calls **only when its configured
@@ -556,7 +556,7 @@ mounted path is not a glob, that the middleware configures **no** `pathFilter`
 at all, and that a request path with 4000 nested braces leaves the server
 serving. If someone later configures a glob path filter, the test fails.
 
-**Residual risk.** The mitigation is a property of *this* configuration, not
+**Residual risk.** The mitigation is a property of _this_ configuration, not
 of the dependency. A future change that introduces a glob path filter, or
 another use of `micromatch` on user input, would make the advisory
 reachable. The `mockup-sandbox` path is a build-time dependency and is not
@@ -567,20 +567,20 @@ application is **not** claimed to be free of this advisory.
 
 ### Environment configuration audit
 
-| Check | Result |
-| --- | --- |
-| `DATABASE_URL` required in production | **Yes.** `lib/db/src/index.ts` and `lib/db/drizzle.config.ts` both throw under `NODE_ENV=production`. Verified: production start exits with `DATABASE_URL environment variable is required in production`. |
-| Clerk required in production | **Yes.** `artifacts/api-server/src/app.ts` throws when neither `CLERK_SECRET_KEY` nor `CLERK_PUBLISHABLE_KEY` is set. Verified: production start exits with the explicit error. |
-| Clerk client key | `VITE_CLERK_PUBLISHABLE_KEY` is read at build time by the web app. Missing → the app throws `Missing VITE_CLERK_PUBLISHABLE_KEY in .env file`. |
-| `OPENAI_API_KEY` server-side only | **Yes.** It is read only in `artifacts/api-server/src/lib/intel/openai-provider.ts`. `grep` finds no reference to it in `artifacts/hackathon-os/src/`. It travels in the `Authorization` header, never the body (asserted by a test). |
-| Missing AI configuration | **Yes.** A clear `503` with `code: "AI_NOT_CONFIGURED"` and the missing variable *names*. The UI shows "No AI provider is configured, so ideas cannot be generated for you." |
-| Secrets in logs | **No.** The API logs method, path, status, and duration only. `pino` redacts `authorization`, `cookie`, and `set-cookie`. The intel library contains no logging at all. |
-| Secrets in error responses | **No.** Upstream error bodies are credential-redacted before they reach a response (asserted by a test). |
-| Secrets committed | **No.** A scan of every tracked file for live-key patterns returns nothing. |
-| Secrets in `.env.example` | **No.** Every value is empty or a documented local placeholder. |
-| Deployment start command | `node --enable-source-maps artifacts/api-server/dist/index.mjs` with `PORT=8080`, `NODE_ENV=production`. **Verified booting**, serving `/api/healthz` `200` and rejecting unauthenticated routes with `401`. |
-| Deployment build command | `pnpm --filter @workspace/api-server run build` → the esbuild bundle the start command consumes. **Verified.** |
-| Deployment migration command | `migrate:baseline` then `migrate`, in `scripts/post-merge.sh`. **Verified** against disposable databases. |
+| Check                                 | Result                                                                                                                                                                                                                                |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL` required in production | **Yes.** `lib/db/src/index.ts` and `lib/db/drizzle.config.ts` both throw under `NODE_ENV=production`. Verified: production start exits with `DATABASE_URL environment variable is required in production`.                            |
+| Clerk required in production          | **Yes.** `artifacts/api-server/src/app.ts` throws when neither `CLERK_SECRET_KEY` nor `CLERK_PUBLISHABLE_KEY` is set. Verified: production start exits with the explicit error.                                                       |
+| Clerk client key                      | `VITE_CLERK_PUBLISHABLE_KEY` is read at build time by the web app. Missing → the app throws `Missing VITE_CLERK_PUBLISHABLE_KEY in .env file`.                                                                                        |
+| `OPENAI_API_KEY` server-side only     | **Yes.** It is read only in `artifacts/api-server/src/lib/intel/openai-provider.ts`. `grep` finds no reference to it in `artifacts/hackathon-os/src/`. It travels in the `Authorization` header, never the body (asserted by a test). |
+| Missing AI configuration              | **Yes.** A clear `503` with `code: "AI_NOT_CONFIGURED"` and the missing variable _names_. The UI shows "No AI provider is configured, so ideas cannot be generated for you."                                                          |
+| Secrets in logs                       | **No.** The API logs method, path, status, and duration only. `pino` redacts `authorization`, `cookie`, and `set-cookie`. The intel library contains no logging at all.                                                               |
+| Secrets in error responses            | **No.** Upstream error bodies are credential-redacted before they reach a response (asserted by a test).                                                                                                                              |
+| Secrets committed                     | **No.** A scan of every tracked file for live-key patterns returns nothing.                                                                                                                                                           |
+| Secrets in `.env.example`             | **No.** Every value is empty or a documented local placeholder.                                                                                                                                                                       |
+| Deployment start command              | `node --enable-source-maps artifacts/api-server/dist/index.mjs` with `PORT=8080`, `NODE_ENV=production`. **Verified booting**, serving `/api/healthz` `200` and rejecting unauthenticated routes with `401`.                          |
+| Deployment build command              | `pnpm --filter @workspace/api-server run build` → the esbuild bundle the start command consumes. **Verified.**                                                                                                                        |
+| Deployment migration command          | `migrate:baseline` then `migrate`, in `scripts/post-merge.sh`. **Verified** against disposable databases.                                                                                                                             |
 
 No secret value was printed, requested, or written during this phase.
 
@@ -588,25 +588,25 @@ No secret value was printed, requested, or written during this phase.
 
 All commands were executed in this session. No test was modified to make it pass.
 
-| Command | Result |
-| --- | --- |
-| `pnpm install --frozen-lockfile` | PASS — lockfile resolved, 493 packages, no changes needed |
-| `pnpm --filter @workspace/api-server run test` | PASS — 156 tests, 156 pass, 0 fail |
-| `pnpm --filter @workspace/hackathon-os run test` | PASS — 40 tests, 40 pass, 0 fail (Phase 5: 12. Phase 6: 24. Phase 7: 4) |
-| `pnpm --filter @workspace/db run test` | PASS — 17 tests, 17 pass, 0 fail (**new in Phase 9**: 8 migration-script tests, 9 schema-comparison tests) |
-| `pnpm test` | PASS — 213 tests across three packages, 0 fail (baseline was 103) |
-| `pnpm run typecheck` | PASS — libs, api-server, hackathon-os, mockup-sandbox, scripts all clean |
-| `pnpm --filter @workspace/api-server run build` | PASS — esbuild bundle produced |
-| `PORT=19678 BASE_PATH=/ pnpm --filter @workspace/hackathon-os run build` | PASS — 1836 modules, `dist/public` emitted |
-| `PORT=19678 BASE_PATH=/ pnpm run build` | PASS — typecheck + api-server + web + mockup-sandbox builds |
-| `pnpm --filter @workspace/db run test:migrations` | PASS — all three migrations applied to a disposable database; seeded rows survived; the intel tables and their cascades were asserted; the database was dropped afterwards |
-| `pnpm --filter @workspace/db run migrate` | PASS — applied to the development database; re-running is a no-op |
-| `pnpm --filter @workspace/db run migrate:baseline` | PASS — idempotent; a second run reported "already recorded" and changed nothing |
-| `pnpm --filter @workspace/db run migrate:baseline:check` | PASS — read-only preflight; reported "The live schema matches the baseline exactly" and created no `drizzle` schema |
-| `pnpm --filter @workspace/api-spec run codegen` | PASS — Orval regenerated the client and Zod schemas; a second run produced byte-identical output |
-| `git diff --check` | PASS — clean (Phase 9 fixed the trailing blank lines in the generated client by adding a prettier pass to the codegen pipeline) |
-| `pnpm audit` | PARTIAL — 1 high, 0 moderate, 0 low remaining. The remaining finding is `braces`; see "Dependency advisory reassessment". |
-| Lint | NOT_CONFIGURED — no lint script exists in the workspace |
+| Command                                                                  | Result                                                                                                                                                                     |
+| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm install --frozen-lockfile`                                         | PASS — lockfile resolved, 493 packages, no changes needed                                                                                                                  |
+| `pnpm --filter @workspace/api-server run test`                           | PASS — 156 tests, 156 pass, 0 fail                                                                                                                                         |
+| `pnpm --filter @workspace/hackathon-os run test`                         | PASS — 40 tests, 40 pass, 0 fail (Phase 5: 12. Phase 6: 24. Phase 7: 4)                                                                                                    |
+| `pnpm --filter @workspace/db run test`                                   | PASS — 17 tests, 17 pass, 0 fail (**new in Phase 9**: 8 migration-script tests, 9 schema-comparison tests)                                                                 |
+| `pnpm test`                                                              | PASS — 213 tests across three packages, 0 fail (baseline was 103)                                                                                                          |
+| `pnpm run typecheck`                                                     | PASS — libs, api-server, hackathon-os, mockup-sandbox, scripts all clean                                                                                                   |
+| `pnpm --filter @workspace/api-server run build`                          | PASS — esbuild bundle produced                                                                                                                                             |
+| `PORT=19678 BASE_PATH=/ pnpm --filter @workspace/hackathon-os run build` | PASS — 1836 modules, `dist/public` emitted                                                                                                                                 |
+| `PORT=19678 BASE_PATH=/ pnpm run build`                                  | PASS — typecheck + api-server + web + mockup-sandbox builds                                                                                                                |
+| `pnpm --filter @workspace/db run test:migrations`                        | PASS — all three migrations applied to a disposable database; seeded rows survived; the intel tables and their cascades were asserted; the database was dropped afterwards |
+| `pnpm --filter @workspace/db run migrate`                                | PASS — applied to the development database; re-running is a no-op                                                                                                          |
+| `pnpm --filter @workspace/db run migrate:baseline`                       | PASS — idempotent; a second run reported "already recorded" and changed nothing                                                                                            |
+| `pnpm --filter @workspace/db run migrate:baseline:check`                 | PASS — read-only preflight; reported "The live schema matches the baseline exactly" and created no `drizzle` schema                                                        |
+| `pnpm --filter @workspace/api-spec run codegen`                          | PASS — Orval regenerated the client and Zod schemas; a second run produced byte-identical output                                                                           |
+| `git diff --check`                                                       | PASS — clean (Phase 9 fixed the trailing blank lines in the generated client by adding a prettier pass to the codegen pipeline)                                            |
+| `pnpm audit`                                                             | PARTIAL — 1 high, 0 moderate, 0 low remaining. The remaining finding is `braces`; see "Dependency advisory reassessment".                                                  |
+| Lint                                                                     | NOT_CONFIGURED — no lint script exists in the workspace                                                                                                                    |
 
 ### Functional verification (executed, not asserted)
 
@@ -688,13 +688,13 @@ Screenshots: `01-dashboard-with-competition.jpg`, `02-create-modal.jpg`, `03-val
 
 ### Target: Replit (evidence-based)
 
-| Evidence | Detail |
-| --- | --- |
-| `.replit` | `modules = ["nodejs-24"]`, `[deployment] router = "application"`, `deploymentTarget = "autoscale"`, `[postMerge] path = "scripts/post-merge.sh"` |
+| Evidence                                     | Detail                                                                                                                                                                 |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.replit`                                    | `modules = ["nodejs-24"]`, `[deployment] router = "application"`, `deploymentTarget = "autoscale"`, `[postMerge] path = "scripts/post-merge.sh"`                       |
 | `artifacts/*/.replit-artifact/artifact.toml` | Three artifacts: `web` (static, `publicDir = artifacts/hackathon-os/dist/public`), `api` (Node service on port 8080), `design` (mockup sandbox, no production service) |
-| GitHub repository description | "Repository for https://replit.com/@aiflowadib/HackathonOS" |
-| Commit history | `62b6142 Published your App` is authored by `Replit Agent` with a `Replit-Commit-Deployment-Build-Id` header — the repo is a Replit-managed project mirrored to GitHub |
-| `replit.md` | Documents the Replit run commands, the Auth pane for Clerk, and the post-merge script |
+| GitHub repository description                | "Repository for https://replit.com/@aiflowadib/HackathonOS"                                                                                                            |
+| Commit history                               | `62b6142 Published your App` is authored by `Replit Agent` with a `Replit-Commit-Deployment-Build-Id` header — the repo is a Replit-managed project mirrored to GitHub |
+| `replit.md`                                  | Documents the Replit run commands, the Auth pane for Clerk, and the post-merge script                                                                                  |
 
 ### Single deploy, two processes
 
@@ -746,29 +746,29 @@ The local blocker is **Clerk credentials**: no `pk_`/`sk_` key exists in this en
 
 ## Known issues and blockers
 
-| Issue | Impact | Status |
-| --- | --- | --- |
-| Production deployment serves a stale placeholder build | The competition feature is not live | **Blocker** — needs a Replit-side sync and deploy; the stale build is confirmed, the exact cause is not |
-| `scripts/post-merge.sh` still runs `drizzle-kit push` | The post-merge hook would apply schema changes destructively instead of through reviewed migrations | **FIXED in Phase 9** — the hook now runs `migrate:baseline` then `migrate`, with a regression test that fails if `push` returns |
-| No migration history on the production database | `drizzle-kit migrate` would try to recreate existing tables and fail | **Blocker** — one `migrate:baseline` run after a verified backup; the read-only preflight is `migrate:baseline:check` |
-| `DATABASE_URL` and the Clerk keys are not configured in the Replit deployment | The API will not start; every authenticated route is unusable | **Blocker** |
-| Clerk credentials absent from this environment | Authenticated browser sign-in unverified | **Blocker for production**, not for the code |
-| `OPENAI_API_KEY` is not configured | The generative steps of the intelligence engine stay disabled; everything else works | Open — the AI features are optional by design |
-| `braces` 3.0.3 (CVE-2026-93687) | Stack exhaustion via nested brace patterns | **Explicit release risk.** No patched release exists. The exposure is pinned by tests and is not reachable in this configuration. |
-| The post-merge hook has a 20 second timeout | A slow `pnpm install` on a cold container could abort the hook | Open — pre-existing; the added migration steps measured 0.3 s and 0.5 s on a warm cache |
-| No rate limiting or security headers on the API | Abuse surface on the private API | Open — revisit before public exposure. The outbound research and AI calls are rate limited. |
-| No CSP; third-party font and Clerk script origins | Wider XSS impact if a sink appears | Open |
-| No lint script | Style regressions are not caught | Open |
-| No CI workflow | Nothing runs automatically on push | Open — a GitHub push is not wired to a build |
-| Web bundle is 559 kB (165 kB gzipped) | Slower first load | Open — the workflow route is code-split; the rest is not |
-| `vite build` warns on `src/components/ui/tooltip.tsx` sourcemap resolution | Non-fatal build warning | Open |
-| Orval regeneration adds an extra `export * from './generated/types'` to `lib/api-zod/src/index.ts` | Cosmetic drift after `codegen` | Open — decide whether to keep it |
-| All evidence is manually supplied or retrieved from a public source | A passing `TEST_RESULT` is the owner's assertion, not machine proof | Accepted by design — the UI labels every record |
-| No machine evidence collector | A task cannot be verified without a human recording evidence | Open — a CI or deployment collector is the natural next build |
-| Evidence has no expiry policy | A very old passing result can still verify the task | Open — `observedAt` is stored, so a staleness window can be added |
-| Research providers are unauthenticated public APIs | GitHub search allows 60 requests per hour per IP | Accepted — capped at 8 per minute, failures are reported |
-| The AI rate limit is per process | It does not protect a multi-instance deployment | Open — a shared limiter is needed at scale |
-| Scoring weights are a default, not a truth | The default rubric encodes one opinion about what matters | Open by design — the team can change the weights, and the UI shows them |
+| Issue                                                                                              | Impact                                                                                              | Status                                                                                                                            |
+| -------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Production deployment serves a stale placeholder build                                             | The competition feature is not live                                                                 | **Blocker** — needs a Replit-side sync and deploy; the stale build is confirmed, the exact cause is not                           |
+| `scripts/post-merge.sh` still runs `drizzle-kit push`                                              | The post-merge hook would apply schema changes destructively instead of through reviewed migrations | **FIXED in Phase 9** — the hook now runs `migrate:baseline` then `migrate`, with a regression test that fails if `push` returns   |
+| No migration history on the production database                                                    | `drizzle-kit migrate` would try to recreate existing tables and fail                                | **Blocker** — one `migrate:baseline` run after a verified backup; the read-only preflight is `migrate:baseline:check`             |
+| `DATABASE_URL` and the Clerk keys are not configured in the Replit deployment                      | The API will not start; every authenticated route is unusable                                       | **Blocker**                                                                                                                       |
+| Clerk credentials absent from this environment                                                     | Authenticated browser sign-in unverified                                                            | **Blocker for production**, not for the code                                                                                      |
+| `OPENAI_API_KEY` is not configured                                                                 | The generative steps of the intelligence engine stay disabled; everything else works                | Open — the AI features are optional by design                                                                                     |
+| `braces` 3.0.3 (CVE-2026-93687)                                                                    | Stack exhaustion via nested brace patterns                                                          | **Explicit release risk.** No patched release exists. The exposure is pinned by tests and is not reachable in this configuration. |
+| The post-merge hook has a 20 second timeout                                                        | A slow `pnpm install` on a cold container could abort the hook                                      | Open — pre-existing; the added migration steps measured 0.3 s and 0.5 s on a warm cache                                           |
+| No rate limiting or security headers on the API                                                    | Abuse surface on the private API                                                                    | Open — revisit before public exposure. The outbound research and AI calls are rate limited.                                       |
+| No CSP; third-party font and Clerk script origins                                                  | Wider XSS impact if a sink appears                                                                  | Open                                                                                                                              |
+| No lint script                                                                                     | Style regressions are not caught                                                                    | Open                                                                                                                              |
+| No CI workflow                                                                                     | Nothing runs automatically on push                                                                  | Open — a GitHub push is not wired to a build                                                                                      |
+| Web bundle is 559 kB (165 kB gzipped)                                                              | Slower first load                                                                                   | Open — the workflow route is code-split; the rest is not                                                                          |
+| `vite build` warns on `src/components/ui/tooltip.tsx` sourcemap resolution                         | Non-fatal build warning                                                                             | Open                                                                                                                              |
+| Orval regeneration adds an extra `export * from './generated/types'` to `lib/api-zod/src/index.ts` | Cosmetic drift after `codegen`                                                                      | Open — decide whether to keep it                                                                                                  |
+| All evidence is manually supplied or retrieved from a public source                                | A passing `TEST_RESULT` is the owner's assertion, not machine proof                                 | Accepted by design — the UI labels every record                                                                                   |
+| No machine evidence collector                                                                      | A task cannot be verified without a human recording evidence                                        | Open — a CI or deployment collector is the natural next build                                                                     |
+| Evidence has no expiry policy                                                                      | A very old passing result can still verify the task                                                 | Open — `observedAt` is stored, so a staleness window can be added                                                                 |
+| Research providers are unauthenticated public APIs                                                 | GitHub search allows 60 requests per hour per IP                                                    | Accepted — capped at 8 per minute, failures are reported                                                                          |
+| The AI rate limit is per process                                                                   | It does not protect a multi-instance deployment                                                     | Open — a shared limiter is needed at scale                                                                                        |
+| Scoring weights are a default, not a truth                                                         | The default rubric encodes one opinion about what matters                                           | Open by design — the team can change the weights, and the UI shows them                                                           |
 
 ## Release decision
 
@@ -798,7 +798,7 @@ attempted. The full sequence is in "The exact safe deployment sequence".
 These are known and deliberate. None is presented as a working feature.
 
 - **Research, Ideas, Build Workspace, Testing & Security, Deployment, Demo & Pitch, and Submission are stage views over saved plan tasks, not dedicated screens.** They are reachable from the Workflow page and from the planner, but each has no purpose-built interface yet (for example, a research-notes editor or a deployment checklist).
-- **Retrospective and Settings & Integrations have no persisted source.** They appear in the sidebar and the Workflow page as *planned* and carry no counts, no progress, and no completion state.
+- **Retrospective and Settings & Integrations have no persisted source.** They appear in the sidebar and the Workflow page as _planned_ and carry no counts, no progress, and no completion state.
 - **Requirements cannot be marked satisfied.** The Overview lists the recorded mandatory deliverables with a "Not verified" state, but there is no record to attach a verification to, so nothing can honestly move off that state yet.
 - **No stage-level evidence.** "Complete" means every task in the stage is `done`. "Verified" now means every task in it also has satisfying evidence. Neither means an independent build, test, security review, deployment, or submission was machine-verified — because nothing in this codebase runs checks on the user's behalf. The Workflow page states this explicitly under the stage list.
 - **The quality ledger is still `not_run` for every check.** The Phase 6 and Phase 7 work did not connect the in-app ledger to real command output, so it deliberately stays empty rather than being populated with claims.
@@ -816,103 +816,103 @@ These are known and deliberate. None is presented as a working feature.
 
 ## Files changed in this stage
 
-| File | Why |
-| --- | --- |
-| **Phase 5** | |
-| `artifacts/api-server/src/middlewares/auth.ts` | Removed the `TEST_AUTH_HEADER` escape hatch; the test identity bypass now requires `NODE_ENV === "test"`. Closes a production impersonation path. |
-| `artifacts/api-server/src/app.ts` | Throw at startup in production when Clerk keys are missing, instead of silently serving `401` to every user. |
-| `lib/db/src/index.ts` | Require `DATABASE_URL` in production; warn instead of silently falling back to localhost. |
-| `lib/db/drizzle.config.ts` | Same production requirement for the Drizzle CLI, so `push`/`generate` cannot target localhost in production. |
-| `artifacts/hackathon-os/src/lib/competition-form-validation.ts` | **New.** The form's validation logic extracted verbatim into a React-free module so it can be unit tested. No behaviour change. |
-| `artifacts/hackathon-os/src/components/CompetitionModal.tsx` | Imports the extracted validation module and re-exports the same names, so existing importers are unaffected. |
-| `artifacts/hackathon-os/test/competition-form-validation.test.mjs` | **New.** 12 unit tests covering required fields, name length, deadline, URL scheme, team size bounds, and problem-statement length. |
-| `artifacts/hackathon-os/package.json` | Added a `test` script so the web package's tests run under `pnpm test`. |
-| `artifacts/hackathon-os/vite.config.ts` | Added a dev-only `/api` proxy to `http://127.0.0.1:8080` (overridable via `API_PROXY_ORIGIN`) so the documented local dev flow can reach the API outside Replit. |
-| `pnpm-workspace.yaml` | Added `vite: 7.3.7` (fixes three vite advisories) and `markdown-it: 14.3.3` (fixes three markdown-it advisories) as overrides. |
-| `pnpm-lock.yaml` | Regenerated by `pnpm install` for the two overrides. |
-| `.env.example` | Documented every required environment variable **name** with no values. |
-| `replit.md` | Added the environment variable table, the `pnpm test` command, the dev-proxy gotcha, and the `PORT`/`BASE_PATH` build requirement. |
-| **Phase 6** | |
-| `artifacts/hackathon-os/src/lib/workflow.ts` | **New.** The lifecycle stage model: the 9 stage definitions mapped to the planner's 14 persisted phases, the state machine (`complete` / `active` / `blocked` / `scheduled` / `not_started` / `planned`), plan-progress aggregation, duration formatting, and deadline countdown. Pure, React-free, and unit tested. |
-| `artifacts/hackathon-os/test/workflow.test.mjs` | **New.** 24 unit tests, including a guard that every planner phase is owned by exactly one stage and that a task in any phase is visible in some stage (this caught the `intake`/`problem` gap where two tasks were invisible). |
-| `artifacts/hackathon-os/src/pages/workflow.tsx` | **New page.** `/competitions/:id/workflow`. Shows time remaining, plan progress, effort remaining, and blocked-stage count, then groups every stage by its real state with the next task, its phase, its dependencies, and any blockers. |
-| `artifacts/hackathon-os/src/components/Dialog.tsx` | **New.** Accessible modal: `aria-modal`, `aria-labelledby`/`aria-describedby`, focus moved in on open, focus trapped, Escape to close, focus restored to the trigger, and background scroll locked. |
-| `artifacts/hackathon-os/src/components/CompetitionModal.tsx` | Rebuilt on `Dialog`; added a re-entrancy guard so a second submit cannot fire while one is in flight, focus moves to the first invalid field on failed validation, and error text is linked to its control with `aria-describedby`/`aria-invalid`. |
-| `artifacts/hackathon-os/src/components/workspace.tsx` | Sidebar rebuilt around the real IA (Overview / Competitions / Workflow + a LIFECYCLE group derived from the stage model); real breadcrumbs replacing the hard-coded label; `aria-current` on active links; mobile drawer closes on Escape and on route change; `FormField` gained an `errorId`; removed the dead `plannedModules` list and the unused `dashboardIcons` export. |
-| `artifacts/hackathon-os/src/pages/overview.tsx` | Rebuilt to answer the product questions from real data: time remaining, blocked count, required deliverables, the active stage, and the next action's acceptance criteria. Added a link into the workflow view. |
-| `artifacts/hackathon-os/src/pages/competitions.tsx` | Added the track to each row, a relative-time deadline indicator that flags urgent and overdue entries, and corrected copy about planned modules. |
-| `artifacts/hackathon-os/src/pages/competition-detail.tsx` | Added time remaining and a missing-source warning to the context panel, and a second route into the workflow view. |
-| `artifacts/hackathon-os/src/pages/planner.tsx` | Uses the shared `phaseLabel` helper instead of a local copy, and links to the lifecycle view. |
-| `artifacts/hackathon-os/src/pages/not-found.tsx` | Replaced the light-mode template (which broke the dark design system) with a themed 404 that offers real routes. |
-| `artifacts/hackathon-os/src/App.tsx` | Registered the workflow route and code-split it with `React.lazy` (9.26 kB separate chunk). |
-| `artifacts/hackathon-os/src/index.css` | Added the Phase 6 component styles, a visible focus ring for keyboard users, a `prefers-reduced-motion` block, and responsive rules for the new components. Raised 8 text colours to meet WCAG AA. |
-| **Phase 7** | |
-| `lib/db/src/schema/evidence.ts` | **New.** The `workflow_evidence` table. Additive only: a new table with two indexes, a cascading FK to `competitions`, and a `SET NULL` FK to `workflow_tasks` so evidence survives plan recalculation. |
-| `lib/db/src/schema/index.ts` | Exports the new schema module. |
-| `lib/db/drizzle.config.ts` | Added `out: "drizzle"` and an explicit migration table/schema so `drizzle-kit migrate` has a defined target. |
-| `lib/db/drizzle/0000_baseline_existing_schema.sql` | **New.** The reviewed baseline migration. Purely additive, and verified to match the live schema exactly. |
-| `lib/db/drizzle/0001_add_workflow_evidence.sql` | **New.** The reviewed evidence migration. Purely additive. |
-| `lib/db/drizzle/meta/_journal.json` | **New.** Generated migration journal. |
-| `lib/db/scripts/mark-baseline-applied.mjs` | **New.** Records the baseline as applied on a database that was created with `drizzle-kit push`, without executing its SQL. Idempotent, and it refuses to run when the baseline tables are absent. Never prints the connection string. |
-| `lib/db/scripts/test-migrations.sh` | **New.** Applies the migrations to a throwaway database with seeded records and asserts nothing is lost. |
-| `lib/db/package.json` | Added `generate`, `migrate`, `migrate:status`, `migrate:baseline`, and `test:migrations` scripts. |
-| `artifacts/api-server/src/lib/verification.ts` | **New.** The verification rules as pure, unit-tested functions: the five states, the phase→required-evidence mapping, staleness and supersession, and the plan-progress aggregation. |
-| `artifacts/api-server/test/verification.test.mjs` | **New.** 24 unit tests covering every transition rule, including that DONE is not VERIFIED, that a deployment URL alone does not verify, and that changing a requirement invalidates prior evidence. |
-| `artifacts/api-server/src/routes/evidence.ts` | **New.** The evidence routes, with owner scoping on every read and write, credential-shaped content rejection, and a future-timestamp guard. |
-| `artifacts/api-server/test/evidence-api.test.mjs` | **New.** 17 integration tests over the real API and database: valid and invalid evidence, task linkage, missing evidence, failed evidence, manual labelling, unauthorized access, cross-owner access, verification transitions, and persistence. |
-| `artifacts/api-server/src/routes/competitions.ts` | Task serialization now carries the derived `verification` object, recomputed from evidence on every read, so a status change can never leave a stale verified flag. |
-| `artifacts/api-server/src/routes/index.ts` | Mounts the evidence router behind the same auth guard. |
-| `artifacts/api-server/src/app.ts` | Re-exports `workflowEvidenceTable` for the test harness. |
-| `artifacts/api-server/src/lib/planner.ts` | `serializeTask` now requires the verification state instead of defaulting it, so a task can never be serialised without one. |
-| `lib/api-spec/openapi.yaml` | Added the three evidence endpoints, the `Evidence`/`EvidenceInput`/`EvidenceDeletion`/`TaskVerification` schemas, and the `verification` field on `PlanTask`. |
-| `artifacts/hackathon-os/src/lib/evidence-model.ts` | **New.** Client-side evidence labels, rules, and state explanations. Display only — the server remains the authority on whether a task is verified. |
-| `artifacts/hackathon-os/src/components/EvidencePanel.tsx` | **New.** The accessible evidence panel: existing evidence with source and timestamp, failed and stale badges, why verification is blocked, an add-evidence form with per-type field requirements, and delete for re-verification. |
-| `artifacts/hackathon-os/src/pages/planner.tsx` | Task cards now show the evidence panel, and the plan/overview caches are invalidated when evidence changes. |
-| `artifacts/hackathon-os/src/lib/workflow.ts` | Added the `verified` stage state and per-stage verified counts. |
-| `artifacts/hackathon-os/src/pages/workflow.tsx` | Groups verified stages separately and shows a per-stage verified count. |
-| `artifacts/hackathon-os/src/index.css` | Evidence panel styles, plus a fix for the 768px horizontal overflow the planner toolbar introduced. |
-| `artifacts/hackathon-os/test/workflow.test.mjs` | Added 4 tests for the `verified` stage state. |
-| **Phase 8** | |
-| `artifacts/api-server/src/lib/intel/claims.ts` | **New.** The claim kinds, requirement categories, research source types, and the normalisers that downgrade anything unrecognised to an inference. |
-| `artifacts/api-server/src/lib/intel/ai-types.ts` | **New.** The provider-independent `AiProvider` interface, the `AiError` type, and the shared configuration error. |
-| `artifacts/api-server/src/lib/intel/openai-provider.ts` | **New.** The single AI provider integration: server-side key handling, timeouts, JSON-mode parsing with recovery, and credential redaction in upstream errors. |
-| `artifacts/api-server/src/lib/intel/research.ts` | **New.** The three live keyless research providers and the parallel search runner. |
-| `artifacts/api-server/src/lib/intel/problem-analysis.ts` | **New.** The deterministic requirement extraction from the stored record, the merge that refuses to let a model promote its own output, and the analysis prompt. |
-| `artifacts/api-server/src/lib/intel/ideas.ts` | **New.** The rubric, weight normalisation, weighted totals, sensitivity analysis, model-output parsing, and idea de-duplication. |
-| `artifacts/api-server/src/lib/intel/gaps.ts` | **New.** The conservative gap analysis, the merge that forces unsupported gaps to hypotheses, and the build brief parsing. |
-| `artifacts/api-server/src/lib/intel/helpers.ts` | **New.** The shared ownership lookup, the provider factory, and the error-to-response mapping. |
-| `artifacts/api-server/src/routes/intel.ts` | **New.** The fifteen intel endpoints, all scoped to an owned competition. |
-| `artifacts/api-server/src/routes/index.ts` | Mounts the intel router behind the same auth guard. |
-| `artifacts/api-server/src/app.ts` | Re-exports the new tables for the test harness. |
-| `artifacts/api-server/tsconfig.json` | Enables `allowImportingTsExtensions` so the intel modules can be unit tested directly from source. |
-| `artifacts/api-server/test/intel.test.mjs` | **New.** 43 unit tests over the deterministic engines and the rules that stop the engine overclaiming. |
-| `artifacts/api-server/test/intel-api.test.mjs` | **New.** 29 integration tests over the real API and database, including authentication, cross-owner isolation, and competition scoping. |
-| `artifacts/api-server/test/intel-provider.test.mjs` | **New.** 11 tests over the provider: key handling, timeouts, rate limiting, malformed output, and credential redaction. |
-| `lib/db/src/schema/intel.ts` | **New.** The eight intel tables, all additive and all scoped to a competition. |
-| `lib/db/src/schema/index.ts` | Exports the new schema module. |
-| `lib/db/drizzle/0002_add_intel_engine_tables.sql` | **New.** The reviewed, purely additive intel migration. |
-| `lib/db/scripts/test-migrations.sh` | Extended to assert the intel tables, their scoping, and their cascades. |
-| `lib/api-spec/openapi.yaml` | Added the intel endpoints and schemas, and made `ErrorResponse` carry a machine-readable `code`. |
-| `artifacts/hackathon-os/src/lib/intel-model.ts` | **New.** Client-side labels for claim kinds, categories, dimensions, and brief sections. Display only — the server decides what is true. |
-| `artifacts/hackathon-os/src/pages/intel.tsx` | **New page.** The five-step intelligence interface. |
-| `artifacts/hackathon-os/src/App.tsx` | Registered the intel route. |
-| `artifacts/hackathon-os/src/index.css` | The intel interface styles, in the existing dark developer-tool system. |
-| `artifacts/hackathon-os/src/pages/competition-detail.tsx` | Added the intel route to the "next" panel. |
-| `PROJECT_STATUS.md` | This document. |
-| **Phase 9** | |
-| `scripts/post-merge.sh` | **Replaced `drizzle-kit push` with the reviewed migration system** (`migrate:baseline` then `migrate`). The install step, fail-fast behaviour, and executable bit are preserved, and the script now pins its own working directory. This is the removal of the single destructive path in the release pipeline. |
-| `lib/db/scripts/schema-comparison.ts` | **New.** Parses a Drizzle migration into the structure it creates and compares it against a live schema. Superset semantics: the baseline counts as applied when everything it creates is already present; extra live objects are reported as drift. |
-| `lib/db/scripts/mark-baseline-applied.mjs` | **Rewritten.** Now verifies the live schema structurally before recording the baseline, refuses on divergence, reports an empty database as "nothing to record", adds a read-only `--check` mode, and still writes exactly one ledger row and never touches an application table. |
-| `lib/db/test/migration-scripts.test.mjs` | **New.** 8 regression tests: the hook must not run `drizzle-kit push`, must run the migration commands, must keep its other behaviour, must be executable, and **no deployment path anywhere in the repository may run `drizzle-kit push`**. |
-| `lib/db/test/schema-comparison.test.mjs` | **New.** 9 unit tests for the schema comparison, including the drift cases and the guarantee that a destructive statement elsewhere in the file cannot affect the baseline parse. |
-| `lib/db/package.json` | Added a `test` script so the new tests run under the root `pnpm test`, plus `migrate:baseline:check`. The `push` scripts are kept, local-development only. |
-| `artifacts/api-server/src/lib/intel/rate-limit.ts` | **New.** The fixed-window limiter, extracted from the route module so its behaviour is unit tested rather than implicit. |
-| `artifacts/api-server/src/routes/intel.ts` | Uses the extracted limiter. The limits are unchanged (8 research and 12 AI calls per minute). |
-| `artifacts/api-server/test/rate-limit.test.mjs` | **New.** 5 unit tests, including the exact documented limits. |
-| `artifacts/api-server/test/dependency-braces.test.mjs` | **New.** 5 regression tests pinning the `braces` mitigation: the proxy path is not a glob, no `pathFilter` is configured, and a path with 4000 nested braces leaves the server serving. |
-| `lib/api-spec/package.json` | The codegen pipeline now runs prettier over the generated output, so the committed files stay formatted and `git diff --check` stays clean. Codegen was verified to be deterministic. |
-| `replit.md` | Updated: the migration commands, the push/migrate difference, the baseline procedure, and the new post-merge behaviour. |
-| `PROJECT_STATUS.md` | This document. |
+| File                                                               | Why                                                                                                                                                                                                                                                                                                                                                                            |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Phase 5**                                                        |                                                                                                                                                                                                                                                                                                                                                                                |
+| `artifacts/api-server/src/middlewares/auth.ts`                     | Removed the `TEST_AUTH_HEADER` escape hatch; the test identity bypass now requires `NODE_ENV === "test"`. Closes a production impersonation path.                                                                                                                                                                                                                              |
+| `artifacts/api-server/src/app.ts`                                  | Throw at startup in production when Clerk keys are missing, instead of silently serving `401` to every user.                                                                                                                                                                                                                                                                   |
+| `lib/db/src/index.ts`                                              | Require `DATABASE_URL` in production; warn instead of silently falling back to localhost.                                                                                                                                                                                                                                                                                      |
+| `lib/db/drizzle.config.ts`                                         | Same production requirement for the Drizzle CLI, so `push`/`generate` cannot target localhost in production.                                                                                                                                                                                                                                                                   |
+| `artifacts/hackathon-os/src/lib/competition-form-validation.ts`    | **New.** The form's validation logic extracted verbatim into a React-free module so it can be unit tested. No behaviour change.                                                                                                                                                                                                                                                |
+| `artifacts/hackathon-os/src/components/CompetitionModal.tsx`       | Imports the extracted validation module and re-exports the same names, so existing importers are unaffected.                                                                                                                                                                                                                                                                   |
+| `artifacts/hackathon-os/test/competition-form-validation.test.mjs` | **New.** 12 unit tests covering required fields, name length, deadline, URL scheme, team size bounds, and problem-statement length.                                                                                                                                                                                                                                            |
+| `artifacts/hackathon-os/package.json`                              | Added a `test` script so the web package's tests run under `pnpm test`.                                                                                                                                                                                                                                                                                                        |
+| `artifacts/hackathon-os/vite.config.ts`                            | Added a dev-only `/api` proxy to `http://127.0.0.1:8080` (overridable via `API_PROXY_ORIGIN`) so the documented local dev flow can reach the API outside Replit.                                                                                                                                                                                                               |
+| `pnpm-workspace.yaml`                                              | Added `vite: 7.3.7` (fixes three vite advisories) and `markdown-it: 14.3.3` (fixes three markdown-it advisories) as overrides.                                                                                                                                                                                                                                                 |
+| `pnpm-lock.yaml`                                                   | Regenerated by `pnpm install` for the two overrides.                                                                                                                                                                                                                                                                                                                           |
+| `.env.example`                                                     | Documented every required environment variable **name** with no values.                                                                                                                                                                                                                                                                                                        |
+| `replit.md`                                                        | Added the environment variable table, the `pnpm test` command, the dev-proxy gotcha, and the `PORT`/`BASE_PATH` build requirement.                                                                                                                                                                                                                                             |
+| **Phase 6**                                                        |                                                                                                                                                                                                                                                                                                                                                                                |
+| `artifacts/hackathon-os/src/lib/workflow.ts`                       | **New.** The lifecycle stage model: the 9 stage definitions mapped to the planner's 14 persisted phases, the state machine (`complete` / `active` / `blocked` / `scheduled` / `not_started` / `planned`), plan-progress aggregation, duration formatting, and deadline countdown. Pure, React-free, and unit tested.                                                           |
+| `artifacts/hackathon-os/test/workflow.test.mjs`                    | **New.** 24 unit tests, including a guard that every planner phase is owned by exactly one stage and that a task in any phase is visible in some stage (this caught the `intake`/`problem` gap where two tasks were invisible).                                                                                                                                                |
+| `artifacts/hackathon-os/src/pages/workflow.tsx`                    | **New page.** `/competitions/:id/workflow`. Shows time remaining, plan progress, effort remaining, and blocked-stage count, then groups every stage by its real state with the next task, its phase, its dependencies, and any blockers.                                                                                                                                       |
+| `artifacts/hackathon-os/src/components/Dialog.tsx`                 | **New.** Accessible modal: `aria-modal`, `aria-labelledby`/`aria-describedby`, focus moved in on open, focus trapped, Escape to close, focus restored to the trigger, and background scroll locked.                                                                                                                                                                            |
+| `artifacts/hackathon-os/src/components/CompetitionModal.tsx`       | Rebuilt on `Dialog`; added a re-entrancy guard so a second submit cannot fire while one is in flight, focus moves to the first invalid field on failed validation, and error text is linked to its control with `aria-describedby`/`aria-invalid`.                                                                                                                             |
+| `artifacts/hackathon-os/src/components/workspace.tsx`              | Sidebar rebuilt around the real IA (Overview / Competitions / Workflow + a LIFECYCLE group derived from the stage model); real breadcrumbs replacing the hard-coded label; `aria-current` on active links; mobile drawer closes on Escape and on route change; `FormField` gained an `errorId`; removed the dead `plannedModules` list and the unused `dashboardIcons` export. |
+| `artifacts/hackathon-os/src/pages/overview.tsx`                    | Rebuilt to answer the product questions from real data: time remaining, blocked count, required deliverables, the active stage, and the next action's acceptance criteria. Added a link into the workflow view.                                                                                                                                                                |
+| `artifacts/hackathon-os/src/pages/competitions.tsx`                | Added the track to each row, a relative-time deadline indicator that flags urgent and overdue entries, and corrected copy about planned modules.                                                                                                                                                                                                                               |
+| `artifacts/hackathon-os/src/pages/competition-detail.tsx`          | Added time remaining and a missing-source warning to the context panel, and a second route into the workflow view.                                                                                                                                                                                                                                                             |
+| `artifacts/hackathon-os/src/pages/planner.tsx`                     | Uses the shared `phaseLabel` helper instead of a local copy, and links to the lifecycle view.                                                                                                                                                                                                                                                                                  |
+| `artifacts/hackathon-os/src/pages/not-found.tsx`                   | Replaced the light-mode template (which broke the dark design system) with a themed 404 that offers real routes.                                                                                                                                                                                                                                                               |
+| `artifacts/hackathon-os/src/App.tsx`                               | Registered the workflow route and code-split it with `React.lazy` (9.26 kB separate chunk).                                                                                                                                                                                                                                                                                    |
+| `artifacts/hackathon-os/src/index.css`                             | Added the Phase 6 component styles, a visible focus ring for keyboard users, a `prefers-reduced-motion` block, and responsive rules for the new components. Raised 8 text colours to meet WCAG AA.                                                                                                                                                                             |
+| **Phase 7**                                                        |                                                                                                                                                                                                                                                                                                                                                                                |
+| `lib/db/src/schema/evidence.ts`                                    | **New.** The `workflow_evidence` table. Additive only: a new table with two indexes, a cascading FK to `competitions`, and a `SET NULL` FK to `workflow_tasks` so evidence survives plan recalculation.                                                                                                                                                                        |
+| `lib/db/src/schema/index.ts`                                       | Exports the new schema module.                                                                                                                                                                                                                                                                                                                                                 |
+| `lib/db/drizzle.config.ts`                                         | Added `out: "drizzle"` and an explicit migration table/schema so `drizzle-kit migrate` has a defined target.                                                                                                                                                                                                                                                                   |
+| `lib/db/drizzle/0000_baseline_existing_schema.sql`                 | **New.** The reviewed baseline migration. Purely additive, and verified to match the live schema exactly.                                                                                                                                                                                                                                                                      |
+| `lib/db/drizzle/0001_add_workflow_evidence.sql`                    | **New.** The reviewed evidence migration. Purely additive.                                                                                                                                                                                                                                                                                                                     |
+| `lib/db/drizzle/meta/_journal.json`                                | **New.** Generated migration journal.                                                                                                                                                                                                                                                                                                                                          |
+| `lib/db/scripts/mark-baseline-applied.mjs`                         | **New.** Records the baseline as applied on a database that was created with `drizzle-kit push`, without executing its SQL. Idempotent, and it refuses to run when the baseline tables are absent. Never prints the connection string.                                                                                                                                         |
+| `lib/db/scripts/test-migrations.sh`                                | **New.** Applies the migrations to a throwaway database with seeded records and asserts nothing is lost.                                                                                                                                                                                                                                                                       |
+| `lib/db/package.json`                                              | Added `generate`, `migrate`, `migrate:status`, `migrate:baseline`, and `test:migrations` scripts.                                                                                                                                                                                                                                                                              |
+| `artifacts/api-server/src/lib/verification.ts`                     | **New.** The verification rules as pure, unit-tested functions: the five states, the phase→required-evidence mapping, staleness and supersession, and the plan-progress aggregation.                                                                                                                                                                                           |
+| `artifacts/api-server/test/verification.test.mjs`                  | **New.** 24 unit tests covering every transition rule, including that DONE is not VERIFIED, that a deployment URL alone does not verify, and that changing a requirement invalidates prior evidence.                                                                                                                                                                           |
+| `artifacts/api-server/src/routes/evidence.ts`                      | **New.** The evidence routes, with owner scoping on every read and write, credential-shaped content rejection, and a future-timestamp guard.                                                                                                                                                                                                                                   |
+| `artifacts/api-server/test/evidence-api.test.mjs`                  | **New.** 17 integration tests over the real API and database: valid and invalid evidence, task linkage, missing evidence, failed evidence, manual labelling, unauthorized access, cross-owner access, verification transitions, and persistence.                                                                                                                               |
+| `artifacts/api-server/src/routes/competitions.ts`                  | Task serialization now carries the derived `verification` object, recomputed from evidence on every read, so a status change can never leave a stale verified flag.                                                                                                                                                                                                            |
+| `artifacts/api-server/src/routes/index.ts`                         | Mounts the evidence router behind the same auth guard.                                                                                                                                                                                                                                                                                                                         |
+| `artifacts/api-server/src/app.ts`                                  | Re-exports `workflowEvidenceTable` for the test harness.                                                                                                                                                                                                                                                                                                                       |
+| `artifacts/api-server/src/lib/planner.ts`                          | `serializeTask` now requires the verification state instead of defaulting it, so a task can never be serialised without one.                                                                                                                                                                                                                                                   |
+| `lib/api-spec/openapi.yaml`                                        | Added the three evidence endpoints, the `Evidence`/`EvidenceInput`/`EvidenceDeletion`/`TaskVerification` schemas, and the `verification` field on `PlanTask`.                                                                                                                                                                                                                  |
+| `artifacts/hackathon-os/src/lib/evidence-model.ts`                 | **New.** Client-side evidence labels, rules, and state explanations. Display only — the server remains the authority on whether a task is verified.                                                                                                                                                                                                                            |
+| `artifacts/hackathon-os/src/components/EvidencePanel.tsx`          | **New.** The accessible evidence panel: existing evidence with source and timestamp, failed and stale badges, why verification is blocked, an add-evidence form with per-type field requirements, and delete for re-verification.                                                                                                                                              |
+| `artifacts/hackathon-os/src/pages/planner.tsx`                     | Task cards now show the evidence panel, and the plan/overview caches are invalidated when evidence changes.                                                                                                                                                                                                                                                                    |
+| `artifacts/hackathon-os/src/lib/workflow.ts`                       | Added the `verified` stage state and per-stage verified counts.                                                                                                                                                                                                                                                                                                                |
+| `artifacts/hackathon-os/src/pages/workflow.tsx`                    | Groups verified stages separately and shows a per-stage verified count.                                                                                                                                                                                                                                                                                                        |
+| `artifacts/hackathon-os/src/index.css`                             | Evidence panel styles, plus a fix for the 768px horizontal overflow the planner toolbar introduced.                                                                                                                                                                                                                                                                            |
+| `artifacts/hackathon-os/test/workflow.test.mjs`                    | Added 4 tests for the `verified` stage state.                                                                                                                                                                                                                                                                                                                                  |
+| **Phase 8**                                                        |                                                                                                                                                                                                                                                                                                                                                                                |
+| `artifacts/api-server/src/lib/intel/claims.ts`                     | **New.** The claim kinds, requirement categories, research source types, and the normalisers that downgrade anything unrecognised to an inference.                                                                                                                                                                                                                             |
+| `artifacts/api-server/src/lib/intel/ai-types.ts`                   | **New.** The provider-independent `AiProvider` interface, the `AiError` type, and the shared configuration error.                                                                                                                                                                                                                                                              |
+| `artifacts/api-server/src/lib/intel/openai-provider.ts`            | **New.** The single AI provider integration: server-side key handling, timeouts, JSON-mode parsing with recovery, and credential redaction in upstream errors.                                                                                                                                                                                                                 |
+| `artifacts/api-server/src/lib/intel/research.ts`                   | **New.** The three live keyless research providers and the parallel search runner.                                                                                                                                                                                                                                                                                             |
+| `artifacts/api-server/src/lib/intel/problem-analysis.ts`           | **New.** The deterministic requirement extraction from the stored record, the merge that refuses to let a model promote its own output, and the analysis prompt.                                                                                                                                                                                                               |
+| `artifacts/api-server/src/lib/intel/ideas.ts`                      | **New.** The rubric, weight normalisation, weighted totals, sensitivity analysis, model-output parsing, and idea de-duplication.                                                                                                                                                                                                                                               |
+| `artifacts/api-server/src/lib/intel/gaps.ts`                       | **New.** The conservative gap analysis, the merge that forces unsupported gaps to hypotheses, and the build brief parsing.                                                                                                                                                                                                                                                     |
+| `artifacts/api-server/src/lib/intel/helpers.ts`                    | **New.** The shared ownership lookup, the provider factory, and the error-to-response mapping.                                                                                                                                                                                                                                                                                 |
+| `artifacts/api-server/src/routes/intel.ts`                         | **New.** The fifteen intel endpoints, all scoped to an owned competition.                                                                                                                                                                                                                                                                                                      |
+| `artifacts/api-server/src/routes/index.ts`                         | Mounts the intel router behind the same auth guard.                                                                                                                                                                                                                                                                                                                            |
+| `artifacts/api-server/src/app.ts`                                  | Re-exports the new tables for the test harness.                                                                                                                                                                                                                                                                                                                                |
+| `artifacts/api-server/tsconfig.json`                               | Enables `allowImportingTsExtensions` so the intel modules can be unit tested directly from source.                                                                                                                                                                                                                                                                             |
+| `artifacts/api-server/test/intel.test.mjs`                         | **New.** 43 unit tests over the deterministic engines and the rules that stop the engine overclaiming.                                                                                                                                                                                                                                                                         |
+| `artifacts/api-server/test/intel-api.test.mjs`                     | **New.** 29 integration tests over the real API and database, including authentication, cross-owner isolation, and competition scoping.                                                                                                                                                                                                                                        |
+| `artifacts/api-server/test/intel-provider.test.mjs`                | **New.** 11 tests over the provider: key handling, timeouts, rate limiting, malformed output, and credential redaction.                                                                                                                                                                                                                                                        |
+| `lib/db/src/schema/intel.ts`                                       | **New.** The eight intel tables, all additive and all scoped to a competition.                                                                                                                                                                                                                                                                                                 |
+| `lib/db/src/schema/index.ts`                                       | Exports the new schema module.                                                                                                                                                                                                                                                                                                                                                 |
+| `lib/db/drizzle/0002_add_intel_engine_tables.sql`                  | **New.** The reviewed, purely additive intel migration.                                                                                                                                                                                                                                                                                                                        |
+| `lib/db/scripts/test-migrations.sh`                                | Extended to assert the intel tables, their scoping, and their cascades.                                                                                                                                                                                                                                                                                                        |
+| `lib/api-spec/openapi.yaml`                                        | Added the intel endpoints and schemas, and made `ErrorResponse` carry a machine-readable `code`.                                                                                                                                                                                                                                                                               |
+| `artifacts/hackathon-os/src/lib/intel-model.ts`                    | **New.** Client-side labels for claim kinds, categories, dimensions, and brief sections. Display only — the server decides what is true.                                                                                                                                                                                                                                       |
+| `artifacts/hackathon-os/src/pages/intel.tsx`                       | **New page.** The five-step intelligence interface.                                                                                                                                                                                                                                                                                                                            |
+| `artifacts/hackathon-os/src/App.tsx`                               | Registered the intel route.                                                                                                                                                                                                                                                                                                                                                    |
+| `artifacts/hackathon-os/src/index.css`                             | The intel interface styles, in the existing dark developer-tool system.                                                                                                                                                                                                                                                                                                        |
+| `artifacts/hackathon-os/src/pages/competition-detail.tsx`          | Added the intel route to the "next" panel.                                                                                                                                                                                                                                                                                                                                     |
+| `PROJECT_STATUS.md`                                                | This document.                                                                                                                                                                                                                                                                                                                                                                 |
+| **Phase 9**                                                        |                                                                                                                                                                                                                                                                                                                                                                                |
+| `scripts/post-merge.sh`                                            | **Replaced `drizzle-kit push` with the reviewed migration system** (`migrate:baseline` then `migrate`). The install step, fail-fast behaviour, and executable bit are preserved, and the script now pins its own working directory. This is the removal of the single destructive path in the release pipeline.                                                                |
+| `lib/db/scripts/schema-comparison.ts`                              | **New.** Parses a Drizzle migration into the structure it creates and compares it against a live schema. Superset semantics: the baseline counts as applied when everything it creates is already present; extra live objects are reported as drift.                                                                                                                           |
+| `lib/db/scripts/mark-baseline-applied.mjs`                         | **Rewritten.** Now verifies the live schema structurally before recording the baseline, refuses on divergence, reports an empty database as "nothing to record", adds a read-only `--check` mode, and still writes exactly one ledger row and never touches an application table.                                                                                              |
+| `lib/db/test/migration-scripts.test.mjs`                           | **New.** 8 regression tests: the hook must not run `drizzle-kit push`, must run the migration commands, must keep its other behaviour, must be executable, and **no deployment path anywhere in the repository may run `drizzle-kit push`**.                                                                                                                                   |
+| `lib/db/test/schema-comparison.test.mjs`                           | **New.** 9 unit tests for the schema comparison, including the drift cases and the guarantee that a destructive statement elsewhere in the file cannot affect the baseline parse.                                                                                                                                                                                              |
+| `lib/db/package.json`                                              | Added a `test` script so the new tests run under the root `pnpm test`, plus `migrate:baseline:check`. The `push` scripts are kept, local-development only.                                                                                                                                                                                                                     |
+| `artifacts/api-server/src/lib/intel/rate-limit.ts`                 | **New.** The fixed-window limiter, extracted from the route module so its behaviour is unit tested rather than implicit.                                                                                                                                                                                                                                                       |
+| `artifacts/api-server/src/routes/intel.ts`                         | Uses the extracted limiter. The limits are unchanged (8 research and 12 AI calls per minute).                                                                                                                                                                                                                                                                                  |
+| `artifacts/api-server/test/rate-limit.test.mjs`                    | **New.** 5 unit tests, including the exact documented limits.                                                                                                                                                                                                                                                                                                                  |
+| `artifacts/api-server/test/dependency-braces.test.mjs`             | **New.** 5 regression tests pinning the `braces` mitigation: the proxy path is not a glob, no `pathFilter` is configured, and a path with 4000 nested braces leaves the server serving.                                                                                                                                                                                        |
+| `lib/api-spec/package.json`                                        | The codegen pipeline now runs prettier over the generated output, so the committed files stay formatted and `git diff --check` stays clean. Codegen was verified to be deterministic.                                                                                                                                                                                          |
+| `replit.md`                                                        | Updated: the migration commands, the push/migrate difference, the baseline procedure, and the new post-merge behaviour.                                                                                                                                                                                                                                                        |
+| `PROJECT_STATUS.md`                                                | This document.                                                                                                                                                                                                                                                                                                                                                                 |
 
 Not changed in either phase: no database schema, no saved project data, no API route contract, no API request or response shape, and no production configuration. The Orval-generated `lib/api-zod/src/index.ts` drift was reverted rather than committed. No commit and no push was performed.
 
@@ -928,7 +928,7 @@ Not changed in either phase: no database schema, no saved project data, no API r
 2. **Change `scripts/post-merge.sh` to use `migrate`**, and have it run `migrate:baseline` only when the baseline has not been recorded.
 3. **Back up the production database, then run `migrate:baseline` and `migrate` against it** as a rehearsal, before the Replit deploy.
 4. **Deploy from the Replit side.** Pushing to GitHub does not rebuild Replit. Pull the current work into the Replit project and run a deployment, then verify `GET /api/competitions` returns `401` (not `404`) — that `404` is the signature of the stale build.
-5. **Verify the production deployment with a real Clerk session**: sign in, run a research search, generate a plan, record evidence, and confirm the task reports *Verified*.
+5. **Verify the production deployment with a real Clerk session**: sign in, run a research search, generate a plan, record evidence, and confirm the task reports _Verified_.
 6. **Add CI** running `pnpm install --frozen-lockfile && pnpm run typecheck && pnpm test && pnpm --filter @workspace/db run test:migrations && PORT=19678 BASE_PATH=/ pnpm run build` on every push, so a regression cannot reach the deployment again.
 7. **Add a minimal lint** (prettier is already a dev dependency) once the intended formatting baseline is decided.
 8. **Re-check `braces` when `braces` 3.0.4 is published** and add the override then; the current exposure is not reachable in this app.

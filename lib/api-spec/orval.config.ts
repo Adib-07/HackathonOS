@@ -60,10 +60,10 @@ export default defineConfig({
           // Updated to zod v4 (security fix for CVE-2023-54404)
           version: 4,
           coerce: {
-            query: ['boolean', 'number', 'string'],
-            param: ['boolean', 'number', 'string'],
-            body: ['bigint', 'date'],
-            response: ['bigint', 'date'],
+            query: ["boolean", "number", "string"],
+            param: ["boolean", "number", "string"],
+            body: ["bigint", "date"],
+            response: ["bigint", "date"],
           },
         },
         useDates: true,

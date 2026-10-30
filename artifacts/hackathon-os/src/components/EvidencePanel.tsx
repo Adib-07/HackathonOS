@@ -86,9 +86,7 @@ export function EvidencePanel({
   const [formError, setFormError] = useState("");
 
   const allEvidence = listEvidence.data ?? [];
-  const taskEvidence = allEvidence.filter(
-    (item) => item.taskKey === taskKey,
-  );
+  const taskEvidence = allEvidence.filter((item) => item.taskKey === taskKey);
 
   const rule = EVIDENCE_TYPE_RULES[type];
   const needsSourceUrl = rule.requires === "sourceUrl";
@@ -226,9 +224,8 @@ export function EvidencePanel({
             <p className="evidence-requirement-method">{verificationMethod}</p>
             <ul className="evidence-requirements">
               {requiredTypes.map((requiredType) => {
-                const satisfied = verification.satisfiedTypes.includes(
-                  requiredType,
-                );
+                const satisfied =
+                  verification.satisfiedTypes.includes(requiredType);
                 const failed = verification.failedTypes.includes(requiredType);
                 return (
                   <li
@@ -261,11 +258,16 @@ export function EvidencePanel({
           </div>
 
           {taskEvidence.length > 0 && (
-            <ul className="evidence-list" data-testid={`evidence-list-${taskId}`}>
+            <ul
+              className="evidence-list"
+              data-testid={`evidence-list-${taskId}`}
+            >
               {taskEvidence.map((item) => {
-                const usable =
-                  verification.supportingEvidenceIds.includes(item.id);
-                const stale = verification.hasStaleEvidence &&
+                const usable = verification.supportingEvidenceIds.includes(
+                  item.id,
+                );
+                const stale =
+                  verification.hasStaleEvidence &&
                   verification.unusableEvidenceIds.includes(item.id);
                 return (
                   <li className="evidence-item" key={item.id}>
@@ -328,7 +330,9 @@ export function EvidencePanel({
                         )}
                       </div>
                       {item.reviewerNote && (
-                        <p className="evidence-item-note">{item.reviewerNote}</p>
+                        <p className="evidence-item-note">
+                          {item.reviewerNote}
+                        </p>
                       )}
                     </div>
                     <button
@@ -478,9 +482,7 @@ export function EvidencePanel({
                   disabled={createEvidence.isPending}
                   data-testid={`button-save-evidence-${taskId}`}
                 >
-                  {createEvidence.isPending
-                    ? "Saving…"
-                    : "Save evidence"}
+                  {createEvidence.isPending ? "Saving…" : "Save evidence"}
                 </Button>
               </div>
             </form>

@@ -1032,7 +1032,14 @@ components:
         type:
           type: string
           enum:
-            [TEST_RESULT, BUILD_RESULT, DEPLOYMENT_URL, HTTP_CHECK, MANUAL_REVIEW, SUBMISSION_CONFIRMATION]
+            [
+              TEST_RESULT,
+              BUILD_RESULT,
+              DEPLOYMENT_URL,
+              HTTP_CHECK,
+              MANUAL_REVIEW,
+              SUBMISSION_CONFIRMATION,
+            ]
         summary:
           type: string
           minLength: 1
@@ -1071,7 +1078,14 @@ components:
         type:
           type: string
           enum:
-            [TEST_RESULT, BUILD_RESULT, DEPLOYMENT_URL, HTTP_CHECK, MANUAL_REVIEW, SUBMISSION_CONFIRMATION]
+            [
+              TEST_RESULT,
+              BUILD_RESULT,
+              DEPLOYMENT_URL,
+              HTTP_CHECK,
+              MANUAL_REVIEW,
+              SUBMISSION_CONFIRMATION,
+            ]
         summary:
           type: string
         sourceUrl:
@@ -1201,7 +1215,8 @@ components:
           type: string
         claimKind:
           type: string
-          enum: [VERIFIED_FACT, SOURCE_SUPPORTED, INFERENCE, HYPOTHESIS, UNKNOWN]
+          enum:
+            [VERIFIED_FACT, SOURCE_SUPPORTED, INFERENCE, HYPOTHESIS, UNKNOWN]
         source:
           type: string
         origin:
@@ -1331,7 +1346,8 @@ components:
           type: ["string", "null"]
         claimKind:
           type: string
-          enum: [VERIFIED_FACT, SOURCE_SUPPORTED, INFERENCE, HYPOTHESIS, UNKNOWN]
+          enum:
+            [VERIFIED_FACT, SOURCE_SUPPORTED, INFERENCE, HYPOTHESIS, UNKNOWN]
         query:
           type: ["string", "null"]
         manual:
@@ -1414,7 +1430,8 @@ components:
             type: string
         claimKind:
           type: string
-          enum: [VERIFIED_FACT, SOURCE_SUPPORTED, INFERENCE, HYPOTHESIS, UNKNOWN]
+          enum:
+            [VERIFIED_FACT, SOURCE_SUPPORTED, INFERENCE, HYPOTHESIS, UNKNOWN]
         evidenceGaps:
           type: array
           items:
@@ -1498,7 +1515,8 @@ components:
             type: string
         claimKind:
           type: string
-          enum: [VERIFIED_FACT, SOURCE_SUPPORTED, INFERENCE, HYPOTHESIS, UNKNOWN]
+          enum:
+            [VERIFIED_FACT, SOURCE_SUPPORTED, INFERENCE, HYPOTHESIS, UNKNOWN]
         status:
           type: string
         decisionRationale:
@@ -1586,7 +1604,18 @@ components:
         dimension:
           type: string
           enum:
-            [PROBLEM_RELEVANCE, JUDGING_ALIGNMENT, USER_VALUE, DIFFERENTIATION, TECHNICAL_FEASIBILITY, DEMONSTRABILITY, IMPLEMENTATION_TIME, RELIABILITY_RISK, DATA_AVAILABILITY, POTENTIAL_IMPACT]
+            [
+              PROBLEM_RELEVANCE,
+              JUDGING_ALIGNMENT,
+              USER_VALUE,
+              DIFFERENTIATION,
+              TECHNICAL_FEASIBILITY,
+              DEMONSTRABILITY,
+              IMPLEMENTATION_TIME,
+              RELIABILITY_RISK,
+              DATA_AVAILABILITY,
+              POTENTIAL_IMPACT,
+            ]
         score:
           type: integer
           minimum: 1
@@ -1658,7 +1687,8 @@ components:
             type: string
         claimKind:
           type: string
-          enum: [VERIFIED_FACT, SOURCE_SUPPORTED, INFERENCE, HYPOTHESIS, UNKNOWN]
+          enum:
+            [VERIFIED_FACT, SOURCE_SUPPORTED, INFERENCE, HYPOTHESIS, UNKNOWN]
         method:
           type: string
         provider:
@@ -1723,7 +1753,22 @@ components:
         phase:
           type: string
           enum:
-            [intake, problem, research, track_selection, idea_selection, specification, architecture, implementation, testing, security, deployment, demo, pitch, submission]
+            [
+              intake,
+              problem,
+              research,
+              track_selection,
+              idea_selection,
+              specification,
+              architecture,
+              implementation,
+              testing,
+              security,
+              deployment,
+              demo,
+              pitch,
+              submission,
+            ]
         priority:
           type: string
           enum: [critical, high, medium, low]
@@ -2002,4 +2047,3 @@ components:
         - completedTaskCount
         - nextAction
         - quality
-

@@ -1,25 +1,35 @@
-import { lazy, Suspense, useEffect, useRef, type ReactNode } from 'react';
-import { ClerkProvider, Show, SignIn, SignUp, useClerk } from '@clerk/react';
-import { publishableKeyFromHost } from '@clerk/react/internal';
-import { shadcn } from '@clerk/themes';
-import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
-import { Redirect, Route, Router as WouterRouter, Switch, useLocation } from 'wouter';
-import { ErrorBoundary } from '@/components/error-boundary';
-import { ClerkLoader } from '@/components/ClerkLoader';
-import { Toaster } from '@/components/ui/toaster';
-import { TooltipProvider } from '@/components/ui/tooltip';
-import { Brand, WorkspaceShell } from '@/components/workspace';
-import LandingPage from '@/pages/landing';
-import NotFound from '@/pages/not-found';
-import OverviewPage from '@/pages/overview';
+import { lazy, Suspense, useEffect, useRef, type ReactNode } from "react";
+import { ClerkProvider, Show, SignIn, SignUp, useClerk } from "@clerk/react";
+import { publishableKeyFromHost } from "@clerk/react/internal";
+import { shadcn } from "@clerk/themes";
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQueryClient,
+} from "@tanstack/react-query";
+import {
+  Redirect,
+  Route,
+  Router as WouterRouter,
+  Switch,
+  useLocation,
+} from "wouter";
+import { ErrorBoundary } from "@/components/error-boundary";
+import { ClerkLoader } from "@/components/ClerkLoader";
+import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { Brand, WorkspaceShell } from "@/components/workspace";
+import LandingPage from "@/pages/landing";
+import NotFound from "@/pages/not-found";
+import OverviewPage from "@/pages/overview";
 
 // All competition views are secondary routes — load on demand.
-const CompetitionsPage = lazy(() => import('@/pages/competitions'));
-const CompetitionDetailPage = lazy(() => import('@/pages/competition-detail'));
-const IntelPage = lazy(() => import('@/pages/intel'));
-const PlannerPage = lazy(() => import('@/pages/planner'));
-const WorkflowPage = lazy(() => import('@/pages/workflow'));
-const SettingsPage = lazy(() => import('@/pages/settings'));
+const CompetitionsPage = lazy(() => import("@/pages/competitions"));
+const CompetitionDetailPage = lazy(() => import("@/pages/competition-detail"));
+const IntelPage = lazy(() => import("@/pages/intel"));
+const PlannerPage = lazy(() => import("@/pages/planner"));
+const WorkflowPage = lazy(() => import("@/pages/workflow"));
+const SettingsPage = lazy(() => import("@/pages/settings"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -35,85 +45,89 @@ const clerkPubKey = publishableKeyFromHost(
   import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
 );
 
-const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
+const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 // Determine if we should use the Clerk proxy.
 // The proxy only works when:
 // 1. The backend has CLERK_SECRET_KEY configured (production Clerk instance)
 // 2. The request goes through the proxy middleware (NODE_ENV=production on backend)
-// 
+//
 // For development Clerk instances (pk_test_*), we should NOT use the proxy
 // and instead load Clerk directly from frontend-api.clerk.dev.
-// 
+//
 // Explicit control via VITE_CLERK_PROXY_URL:
 // - If set, use it (allows explicit override for Preview/Production)
 // - If not set and key is pk_test_*, don't use proxy
 // - If not set and key is pk_live_*, use proxy in production builds
-const isDevClerkKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY?.startsWith('pk_test_');
+const isDevClerkKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY?.startsWith(
+  "pk_test_",
+);
 const clerkProxyUrl =
   import.meta.env.VITE_CLERK_PROXY_URL ??
   (import.meta.env.PROD && !isDevClerkKey
-    ? new URL('/api/__clerk', window.location.origin).toString()
+    ? new URL("/api/__clerk", window.location.origin).toString()
     : undefined);
 
 function stripBase(path: string): string {
   return basePath && path.startsWith(basePath)
-    ? path.slice(basePath.length) || '/'
+    ? path.slice(basePath.length) || "/"
     : path;
 }
 
 function validateClerkKey() {
   if (!clerkPubKey) {
-    throw new Error('Missing VITE_CLERK_PUBLISHABLE_KEY in .env file');
+    throw new Error("Missing VITE_CLERK_PUBLISHABLE_KEY in .env file");
   }
 }
 
 const clerkAppearance = {
   theme: shadcn,
-  cssLayerName: 'clerk',
+  cssLayerName: "clerk",
   options: {
-    logoPlacement: 'inside' as const,
-    logoLinkUrl: basePath || '/',
+    logoPlacement: "inside" as const,
+    logoLinkUrl: basePath || "/",
     logoImageUrl: `${window.location.origin}${basePath}/logo.svg`,
   },
   variables: {
-    colorPrimary: '#49c998',
-    colorForeground: '#dce4e3',
-    colorMutedForeground: '#91a09d',
-    colorDanger: '#e16d64',
-    colorBackground: '#191d24',
-    colorInput: '#1c222a',
-    colorInputForeground: '#e1e8e7',
-    colorNeutral: '#39414a',
-    fontFamily: 'Manrope, sans-serif',
-    borderRadius: '0.45rem',
+    colorPrimary: "#49c998",
+    colorForeground: "#dce4e3",
+    colorMutedForeground: "#91a09d",
+    colorDanger: "#e16d64",
+    colorBackground: "#191d24",
+    colorInput: "#1c222a",
+    colorInputForeground: "#e1e8e7",
+    colorNeutral: "#39414a",
+    fontFamily: "Manrope, sans-serif",
+    borderRadius: "0.45rem",
   },
   elements: {
-    rootBox: 'relative z-10 w-full max-w-[440px] mx-auto flex justify-center',
-    cardBox: 'bg-[#191d24] rounded-xl w-[440px] max-w-full overflow-hidden border border-[#333b44]',
-    card: '!shadow-none !border-0 !bg-transparent !rounded-none',
-    footer: '!shadow-none !border-0 !bg-transparent !rounded-none',
-    headerTitle: 'text-[#e2e9e8] font-semibold tracking-tight',
-    headerSubtitle: 'text-[#9ca8a6]',
-    socialButtonsBlockButtonText: 'text-[#dce4e3]',
-    formFieldLabel: 'text-[#bbc6c3]',
-    footerActionLink: 'text-[#52d2a1] hover:text-[#7ae1ba]',
-    footerActionText: 'text-[#9ca8a6]',
-    dividerText: 'text-[#889692]',
-    identityPreviewEditButton: 'text-[#55d3a2]',
-    formFieldSuccessText: 'text-[#72d6ae]',
-    alertText: 'text-[#e2e9e8]',
-    logoBox: 'mb-2',
-    logoImage: 'max-h-8',
-    socialButtonsBlockButton: 'border border-[#39414a] bg-[#1d232b] hover:bg-[#242c35]',
-    formButtonPrimary: 'bg-[#49c998] text-[#101a17] hover:bg-[#69d9ad]',
-    formFieldInput: 'bg-[#1c222a] border-[#39414a] text-[#e1e8e7]',
-    footerAction: 'border-t border-[#323a43]',
-    dividerLine: 'bg-[#39414a]',
-    alert: 'bg-[#2a2022] border-[#593537]',
-    otpCodeFieldInput: 'bg-[#1c222a] border-[#39414a] text-[#e1e8e7]',
-    formFieldRow: 'gap-1.5',
-    main: 'gap-5',
+    rootBox: "relative z-10 w-full max-w-[440px] mx-auto flex justify-center",
+    cardBox:
+      "bg-[#191d24] rounded-xl w-[440px] max-w-full overflow-hidden border border-[#333b44]",
+    card: "!shadow-none !border-0 !bg-transparent !rounded-none",
+    footer: "!shadow-none !border-0 !bg-transparent !rounded-none",
+    headerTitle: "text-[#e2e9e8] font-semibold tracking-tight",
+    headerSubtitle: "text-[#9ca8a6]",
+    socialButtonsBlockButtonText: "text-[#dce4e3]",
+    formFieldLabel: "text-[#bbc6c3]",
+    footerActionLink: "text-[#52d2a1] hover:text-[#7ae1ba]",
+    footerActionText: "text-[#9ca8a6]",
+    dividerText: "text-[#889692]",
+    identityPreviewEditButton: "text-[#55d3a2]",
+    formFieldSuccessText: "text-[#72d6ae]",
+    alertText: "text-[#e2e9e8]",
+    logoBox: "mb-2",
+    logoImage: "max-h-8",
+    socialButtonsBlockButton:
+      "border border-[#39414a] bg-[#1d232b] hover:bg-[#242c35]",
+    formButtonPrimary: "bg-[#49c998] text-[#101a17] hover:bg-[#69d9ad]",
+    formFieldInput: "bg-[#1c222a] border-[#39414a] text-[#e1e8e7]",
+    footerAction: "border-t border-[#323a43]",
+    dividerLine: "bg-[#39414a]",
+    alert: "bg-[#2a2022] border-[#593537]",
+    otpCodeFieldInput: "bg-[#1c222a] border-[#39414a] text-[#e1e8e7]",
+    formFieldRow: "gap-1.5",
+    main: "gap-5",
   },
 };
 
@@ -169,10 +183,16 @@ function SignInPage() {
     <div className="auth-page">
       <div className="auth-orbit auth-orbit-one" />
       <div className="auth-orbit auth-orbit-two" />
-      <div className="auth-brand"><Brand /></div>
+      <div className="auth-brand">
+        <Brand />
+      </div>
       <div className="auth-copy">
         <span className="eyebrow">PRIVATE HACKATHON WORKSPACE</span>
-        <h1>Back to the<br /><em>build window.</em></h1>
+        <h1>
+          Back to the
+          <br />
+          <em>build window.</em>
+        </h1>
         <p>Your deadlines, constraints, and verified work stay in one place.</p>
       </div>
       <SignIn
@@ -180,7 +200,10 @@ function SignInPage() {
         path={`${basePath}/sign-in`}
         signUpUrl={`${basePath}/sign-up`}
       />
-      <div className="auth-footer"><span>HACKATHONOS / ACCESS CONTROL</span><span>PRIVATE BY DESIGN</span></div>
+      <div className="auth-footer">
+        <span>HACKATHONOS / ACCESS CONTROL</span>
+        <span>PRIVATE BY DESIGN</span>
+      </div>
     </div>
   );
 }
@@ -190,18 +213,30 @@ function SignUpPage() {
     <div className="auth-page">
       <div className="auth-orbit auth-orbit-one" />
       <div className="auth-orbit auth-orbit-two" />
-      <div className="auth-brand"><Brand /></div>
+      <div className="auth-brand">
+        <Brand />
+      </div>
       <div className="auth-copy">
         <span className="eyebrow">A WORKSPACE OF YOUR OWN</span>
-        <h1>Make room<br />for <em>the work.</em></h1>
-        <p>Capture a real competition. Keep its requirements and plan close at hand.</p>
+        <h1>
+          Make room
+          <br />
+          for <em>the work.</em>
+        </h1>
+        <p>
+          Capture a real competition. Keep its requirements and plan close at
+          hand.
+        </p>
       </div>
       <SignUp
         routing="path"
         path={`${basePath}/sign-up`}
         signInUrl={`${basePath}/sign-in`}
       />
-      <div className="auth-footer"><span>HACKATHONOS / CREATE ACCESS</span><span>PRIVATE BY DESIGN</span></div>
+      <div className="auth-footer">
+        <span>HACKATHONOS / CREATE ACCESS</span>
+        <span>PRIVATE BY DESIGN</span>
+      </div>
     </div>
   );
 }
@@ -228,7 +263,8 @@ function ClerkProviderWithRoutes() {
   validateClerkKey();
 
   // Allow test to override timeout via window global
-  const testTimeoutMs = typeof window !== 'undefined' && (window as any).__CLERK_TEST_TIMEOUT_MS__;
+  const testTimeoutMs =
+    typeof window !== "undefined" && (window as any).__CLERK_TEST_TIMEOUT_MS__;
 
   return (
     <ClerkLoader
@@ -240,14 +276,15 @@ function ClerkProviderWithRoutes() {
       localization={{
         signIn: {
           start: {
-            title: 'Welcome back',
-            subtitle: 'Sign in to return to your private workspace.',
+            title: "Welcome back",
+            subtitle: "Sign in to return to your private workspace.",
           },
         },
         signUp: {
           start: {
-            title: 'Create your workspace',
-            subtitle: 'One account for your personal competition command center.',
+            title: "Create your workspace",
+            subtitle:
+              "One account for your personal competition command center.",
           },
         },
       }}
@@ -263,12 +300,66 @@ function ClerkProviderWithRoutes() {
               <Route path="/" component={HomeRedirect} />
               <Route path="/sign-in/*?" component={SignInPage} />
               <Route path="/sign-up/*?" component={SignUpPage} />
-              <Route path="/competitions" component={() => <ProtectedPage><Suspense fallback={<RouteFallback />}><CompetitionsPage /></Suspense></ProtectedPage>} />
-              <Route path="/competitions/:id/intel" component={() => <ProtectedPage><Suspense fallback={<RouteFallback />}><IntelPage /></Suspense></ProtectedPage>} />
-              <Route path="/competitions/:id/workflow" component={() => <ProtectedPage><Suspense fallback={<RouteFallback />}><WorkflowPage /></Suspense></ProtectedPage>} />
-              <Route path="/competitions/:id/planner" component={() => <ProtectedPage><Suspense fallback={<RouteFallback />}><PlannerPage /></Suspense></ProtectedPage>} />
-              <Route path="/competitions/:id" component={() => <ProtectedPage><Suspense fallback={<RouteFallback />}><CompetitionDetailPage /></Suspense></ProtectedPage>} />
-              <Route path="/settings" component={() => <ProtectedPage><Suspense fallback={<RouteFallback />}><SettingsPage /></Suspense></ProtectedPage>} />
+              <Route
+                path="/competitions"
+                component={() => (
+                  <ProtectedPage>
+                    <Suspense fallback={<RouteFallback />}>
+                      <CompetitionsPage />
+                    </Suspense>
+                  </ProtectedPage>
+                )}
+              />
+              <Route
+                path="/competitions/:id/intel"
+                component={() => (
+                  <ProtectedPage>
+                    <Suspense fallback={<RouteFallback />}>
+                      <IntelPage />
+                    </Suspense>
+                  </ProtectedPage>
+                )}
+              />
+              <Route
+                path="/competitions/:id/workflow"
+                component={() => (
+                  <ProtectedPage>
+                    <Suspense fallback={<RouteFallback />}>
+                      <WorkflowPage />
+                    </Suspense>
+                  </ProtectedPage>
+                )}
+              />
+              <Route
+                path="/competitions/:id/planner"
+                component={() => (
+                  <ProtectedPage>
+                    <Suspense fallback={<RouteFallback />}>
+                      <PlannerPage />
+                    </Suspense>
+                  </ProtectedPage>
+                )}
+              />
+              <Route
+                path="/competitions/:id"
+                component={() => (
+                  <ProtectedPage>
+                    <Suspense fallback={<RouteFallback />}>
+                      <CompetitionDetailPage />
+                    </Suspense>
+                  </ProtectedPage>
+                )}
+              />
+              <Route
+                path="/settings"
+                component={() => (
+                  <ProtectedPage>
+                    <Suspense fallback={<RouteFallback />}>
+                      <SettingsPage />
+                    </Suspense>
+                  </ProtectedPage>
+                )}
+              />
               <Route component={NotFound} />
             </Switch>
           </RoutedErrorBoundary>

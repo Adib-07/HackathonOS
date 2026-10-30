@@ -137,7 +137,8 @@ const mediumTemplates: TaskTemplate[] = [
     ],
     expectedArtifact: "Confirmed competition constraints",
     verificationMethod: "Compare recorded details with the official source.",
-    riskIfSkipped: "An overlooked rule can invalidate an otherwise strong entry.",
+    riskIfSkipped:
+      "An overlooked rule can invalidate an otherwise strong entry.",
     mandatory: false,
   },
   {
@@ -238,7 +239,8 @@ const mediumTemplates: TaskTemplate[] = [
       "The demo has a repeatable beginning, payoff, and finish.",
     ],
     expectedArtifact: "Verified deployment and demo outline",
-    verificationMethod: "Open the published URL and rehearse from a clean start.",
+    verificationMethod:
+      "Open the published URL and rehearse from a clean start.",
     riskIfSkipped: "A local-only success may fail during judging.",
     mandatory: false,
   },
@@ -341,7 +343,8 @@ const fullTemplates: TaskTemplate[] = [
       "At least one major risk has a mitigation or validation step.",
     ],
     expectedArtifact: "Chosen idea and risk note",
-    verificationMethod: "Review the idea against judging fit, effort, and evidence.",
+    verificationMethod:
+      "Review the idea against judging fit, effort, and evidence.",
     riskIfSkipped: "The team may commit to an untested assumption.",
     mandatory: false,
   },
@@ -361,7 +364,8 @@ const fullTemplates: TaskTemplate[] = [
       "High-risk technical dependencies have a fallback.",
     ],
     expectedArtifact: "Product and architecture specification",
-    verificationMethod: "Review the specification against available time and skills.",
+    verificationMethod:
+      "Review the specification against available time and skills.",
     riskIfSkipped: "Technical decisions may arrive too late to recover.",
     mandatory: false,
   },
@@ -381,7 +385,8 @@ const fullTemplates: TaskTemplate[] = [
       "The main output is backed by real application behavior.",
     ],
     expectedArtifact: "Working product",
-    verificationMethod: "Run the product and complete the primary user journey.",
+    verificationMethod:
+      "Run the product and complete the primary user journey.",
     riskIfSkipped: "There may be nothing reliable to demonstrate.",
     mandatory: false,
   },
@@ -401,7 +406,8 @@ const fullTemplates: TaskTemplate[] = [
       "Failures and limitations remain visible until fixed.",
     ],
     expectedArtifact: "Executed verification results",
-    verificationMethod: "Run the application and the available test/check commands.",
+    verificationMethod:
+      "Run the application and the available test/check commands.",
     riskIfSkipped: "A visible failure may interrupt judging.",
     mandatory: false,
   },
@@ -422,7 +428,8 @@ const fullTemplates: TaskTemplate[] = [
     ],
     expectedArtifact: "Security review notes",
     verificationMethod: "Attempt unauthorized access and inspect risky flows.",
-    riskIfSkipped: "Private data or the demo may be exposed to preventable failures.",
+    riskIfSkipped:
+      "Private data or the demo may be exposed to preventable failures.",
     mandatory: false,
   },
   {
@@ -442,7 +449,8 @@ const fullTemplates: TaskTemplate[] = [
     ],
     expectedArtifact: "Verified production URL",
     verificationMethod: "Open the published URL and complete the core journey.",
-    riskIfSkipped: "Local success may not translate to a working judge-facing app.",
+    riskIfSkipped:
+      "Local success may not translate to a working judge-facing app.",
     mandatory: false,
   },
   {
@@ -467,7 +475,10 @@ const fullTemplates: TaskTemplate[] = [
   },
 ];
 
-function taskTemplates(availableMinutes: number, complexity: number): TaskTemplate[] {
+function taskTemplates(
+  availableMinutes: number,
+  complexity: number,
+): TaskTemplate[] {
   let selected: TaskTemplate[];
 
   if (availableMinutes < 3) {
@@ -530,7 +541,8 @@ function taskTemplates(availableMinutes: number, complexity: number): TaskTempla
     phase: "submission",
     priority: "critical",
     weight: availableMinutes <= 30 ? 10 : 5,
-    dependencies: selected.length > 0 ? [selected[selected.length - 1]!.taskKey] : [],
+    dependencies:
+      selected.length > 0 ? [selected[selected.length - 1]!.taskKey] : [],
     owner: null,
     status: "todo",
     acceptanceCriteria: [
@@ -541,7 +553,8 @@ function taskTemplates(availableMinutes: number, complexity: number): TaskTempla
     expectedArtifact: "Completed submission checklist",
     verificationMethod:
       "Compare against official rules and inspect the final submission state.",
-    riskIfSkipped: "A complete product may still have an incomplete submission.",
+    riskIfSkipped:
+      "A complete product may still have an incomplete submission.",
     mandatory: true,
   };
 
@@ -558,12 +571,16 @@ function taskTemplates(availableMinutes: number, complexity: number): TaskTempla
   return [...complexityAdjusted, submissionAudit];
 }
 
-function allocateMinutes(templates: TaskTemplate[], totalMinutes: number): number[] {
+function allocateMinutes(
+  templates: TaskTemplate[],
+  totalMinutes: number,
+): number[] {
   const totalWeight = templates.reduce((sum, task) => sum + task.weight, 0);
   const allocations = templates.map((task) =>
     Math.floor((totalMinutes * task.weight) / totalWeight),
   );
-  let remaining = totalMinutes - allocations.reduce((sum, value) => sum + value, 0);
+  let remaining =
+    totalMinutes - allocations.reduce((sum, value) => sum + value, 0);
 
   for (let i = 0; remaining > 0; i = (i + 1) % allocations.length) {
     allocations[i] = allocations[i]! + 1;
@@ -622,18 +639,20 @@ export function createPlanDraft({
 
   const tasks = templatesWithDeliverables.map(
     (template, index): ScheduledTask => {
-    const duration = allocations[index]!;
-    const plannedStartAt = new Date(nextStart);
-    const plannedEndAt = new Date(plannedStartAt.getTime() + duration * 60_000);
-    nextStart = plannedEndAt;
+      const duration = allocations[index]!;
+      const plannedStartAt = new Date(nextStart);
+      const plannedEndAt = new Date(
+        plannedStartAt.getTime() + duration * 60_000,
+      );
+      nextStart = plannedEndAt;
 
-    return {
-      ...template,
-      status: previousStatusByKey.get(template.taskKey) ?? template.status,
-      estimatedMinutes: duration,
-      plannedStartAt,
-      plannedEndAt,
-    };
+      return {
+        ...template,
+        status: previousStatusByKey.get(template.taskKey) ?? template.status,
+        estimatedMinutes: duration,
+        plannedStartAt,
+        plannedEndAt,
+      };
     },
   );
 
@@ -679,7 +698,11 @@ export function createPlanDraft({
   }
 
   return {
-    status: infeasible ? "infeasible" : warnings.length > 0 ? "at_risk" : "feasible",
+    status: infeasible
+      ? "infeasible"
+      : warnings.length > 0
+        ? "at_risk"
+        : "feasible",
     warnings,
     bufferMinutes,
     tasks,

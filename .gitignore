@@ -68,3 +68,4 @@ playwright-report/
 
 # Generated at build time
 api/bundle.mjs
+.vercel

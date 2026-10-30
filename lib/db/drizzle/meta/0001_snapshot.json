@@ -311,12 +311,8 @@
           "name": "workflow_evidence_competition_id_competitions_id_fk",
           "tableFrom": "workflow_evidence",
           "tableTo": "competitions",
-          "columnsFrom": [
-            "competition_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["competition_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -324,12 +320,8 @@
           "name": "workflow_evidence_task_id_workflow_tasks_id_fk",
           "tableFrom": "workflow_evidence",
           "tableTo": "workflow_tasks",
-          "columnsFrom": [
-            "task_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["task_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -457,12 +449,8 @@
           "name": "workflow_plans_competition_id_competitions_id_fk",
           "tableFrom": "workflow_plans",
           "tableTo": "competitions",
-          "columnsFrom": [
-            "competition_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["competition_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -640,12 +628,8 @@
           "name": "workflow_tasks_competition_id_competitions_id_fk",
           "tableFrom": "workflow_tasks",
           "tableTo": "competitions",
-          "columnsFrom": [
-            "competition_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["competition_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -653,12 +637,8 @@
           "name": "workflow_tasks_plan_id_workflow_plans_id_fk",
           "tableFrom": "workflow_tasks",
           "tableTo": "workflow_plans",
-          "columnsFrom": [
-            "plan_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["plan_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }

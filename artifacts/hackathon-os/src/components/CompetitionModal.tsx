@@ -1,4 +1,12 @@
-import { useCallback, useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type FormEvent,
+  type KeyboardEvent,
+} from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   getListCompetitionsQueryKey,
@@ -41,7 +49,13 @@ type Step = 1 | 2 | 3;
 
 const STEP_FIELDS: Record<Step, (keyof CompetitionFormState)[]> = {
   1: ["name", "organizer", "deadline", "competitionType"],
-  2: ["officialUrl", "rulesUrl", "teamSize", "currentTrack", "problemStatement"],
+  2: [
+    "officialUrl",
+    "rulesUrl",
+    "teamSize",
+    "currentTrack",
+    "problemStatement",
+  ],
   3: [], // deliverables and skills are separate state
 };
 
@@ -51,7 +65,11 @@ const STEP_LABELS: Record<Step, string> = {
   3: "Team",
 };
 
-export function CompetitionModal({ open, onClose, onCreated }: CompetitionModalProps) {
+export function CompetitionModal({
+  open,
+  onClose,
+  onCreated,
+}: CompetitionModalProps) {
   const queryClient = useQueryClient();
   const createCompetition = useCreateCompetition();
   const [form, setForm] = useState<CompetitionFormState>(initialFormState);
@@ -88,32 +106,46 @@ export function CompetitionModal({ open, onClose, onCreated }: CompetitionModalP
     );
   }, [form, deliverablesText, skillsText]);
 
-  const updateField = useCallback(<K extends keyof CompetitionFormState>(
-    field: K,
-    value: CompetitionFormState[K],
-  ) => {
-    setForm((current) => {
-      const next = { ...current, [field]: value };
-      if (touched[field]) {
-        const nextErrors = validateCompetitionForm(next, deliverablesText, skillsText);
-        setErrors((prev) => ({
-          ...prev,
-          [field]: nextErrors[field] || "",
-        }));
-      }
-      return next;
-    });
-    isDirty.current = true;
-  }, [deliverablesText, skillsText, touched]);
+  const updateField = useCallback(
+    <K extends keyof CompetitionFormState>(
+      field: K,
+      value: CompetitionFormState[K],
+    ) => {
+      setForm((current) => {
+        const next = { ...current, [field]: value };
+        if (touched[field]) {
+          const nextErrors = validateCompetitionForm(
+            next,
+            deliverablesText,
+            skillsText,
+          );
+          setErrors((prev) => ({
+            ...prev,
+            [field]: nextErrors[field] || "",
+          }));
+        }
+        return next;
+      });
+      isDirty.current = true;
+    },
+    [deliverablesText, skillsText, touched],
+  );
 
-  const handleBlur = useCallback((field: keyof CompetitionFormState) => {
-    setTouched((prev) => ({ ...prev, [field]: true }));
-    const currentErrors = validateCompetitionForm(form, deliverablesText, skillsText);
-    setErrors((prev) => ({
-      ...prev,
-      [field]: currentErrors[field] || "",
-    }));
-  }, [form, deliverablesText, skillsText]);
+  const handleBlur = useCallback(
+    (field: keyof CompetitionFormState) => {
+      setTouched((prev) => ({ ...prev, [field]: true }));
+      const currentErrors = validateCompetitionForm(
+        form,
+        deliverablesText,
+        skillsText,
+      );
+      setErrors((prev) => ({
+        ...prev,
+        [field]: currentErrors[field] || "",
+      }));
+    },
+    [form, deliverablesText, skillsText],
+  );
 
   const resetForm = useCallback(() => {
     setForm(initialCompetitionFormState);
@@ -134,23 +166,33 @@ export function CompetitionModal({ open, onClose, onCreated }: CompetitionModalP
   }, [createCompetition.isPending, isSubmitting, resetForm, onClose]);
 
   // Validate current step
-  const validateStep = useCallback((stepToValidate: Step) => {
-    const fieldsToValidate = STEP_FIELDS[stepToValidate];
-    const validationErrors = validateCompetitionForm(form, deliverablesText, skillsText);
-    const stepErrors: Record<string, string> = {};
-    fieldsToValidate.forEach((field) => {
-      if (validationErrors[field]) {
-        stepErrors[field] = validationErrors[field];
-      }
-    });
-    return stepErrors;
-  }, [form, deliverablesText, skillsText]);
+  const validateStep = useCallback(
+    (stepToValidate: Step) => {
+      const fieldsToValidate = STEP_FIELDS[stepToValidate];
+      const validationErrors = validateCompetitionForm(
+        form,
+        deliverablesText,
+        skillsText,
+      );
+      const stepErrors: Record<string, string> = {};
+      fieldsToValidate.forEach((field) => {
+        if (validationErrors[field]) {
+          stepErrors[field] = validationErrors[field];
+        }
+      });
+      return stepErrors;
+    },
+    [form, deliverablesText, skillsText],
+  );
 
   // Check if current step has errors
-  const hasStepErrors = useCallback((stepToCheck: Step) => {
-    const stepErrors = validateStep(stepToCheck);
-    return Object.keys(stepErrors).length > 0;
-  }, [validateStep]);
+  const hasStepErrors = useCallback(
+    (stepToCheck: Step) => {
+      const stepErrors = validateStep(stepToCheck);
+      return Object.keys(stepErrors).length > 0;
+    },
+    [validateStep],
+  );
 
   // Check if step 1 required fields are valid (for "Create now" action)
   const canCreateFromStep1 = useCallback(() => {
@@ -162,7 +204,9 @@ export function CompetitionModal({ open, onClose, onCreated }: CompetitionModalP
     setStep(newStep);
     // Focus first input in new step
     setTimeout(() => {
-      const firstInput = document.querySelector('[data-testid^="input-"], [data-testid^="select-"]') as HTMLElement;
+      const firstInput = document.querySelector(
+        '[data-testid^="input-"], [data-testid^="select-"]',
+      ) as HTMLElement;
       firstInput?.focus();
     }, 0);
   }, []);
@@ -174,7 +218,9 @@ export function CompetitionModal({ open, onClose, onCreated }: CompetitionModalP
       setErrors((prev) => ({ ...prev, ...stepErrors }));
       setTouched((prev) => {
         const next = { ...prev };
-        STEP_FIELDS[step].forEach((field) => { next[field] = true; });
+        STEP_FIELDS[step].forEach((field) => {
+          next[field] = true;
+        });
         return next;
       });
       return;
@@ -187,97 +233,117 @@ export function CompetitionModal({ open, onClose, onCreated }: CompetitionModalP
     goToStep((step - 1) as Step);
   }, [step, goToStep]);
 
-  const handleSubmit = useCallback(async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleSubmit = useCallback(
+    async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
 
-    if (createCompetition.isPending || isSubmitting) return;
+      if (createCompetition.isPending || isSubmitting) return;
 
-    // Validate all steps
-    const allErrors = validateCompetitionForm(form, deliverablesText, skillsText);
-    if (Object.keys(allErrors).length > 0) {
-      setErrors(allErrors);
-      setTouched({
-        name: true,
-        deadline: true,
-        officialUrl: true,
-        rulesUrl: true,
-        teamSize: true,
-        problemStatement: true,
-      });
-      // Go to first step with error
-      const firstErrorStep = ([1, 2, 3] as Step[]).find((s) => {
-        const stepErrors = validateStep(s);
-        return Object.keys(stepErrors).length > 0;
-      });
-      if (firstErrorStep) goToStep(firstErrorStep);
-      return;
-    }
+      // Validate all steps
+      const allErrors = validateCompetitionForm(
+        form,
+        deliverablesText,
+        skillsText,
+      );
+      if (Object.keys(allErrors).length > 0) {
+        setErrors(allErrors);
+        setTouched({
+          name: true,
+          deadline: true,
+          officialUrl: true,
+          rulesUrl: true,
+          teamSize: true,
+          problemStatement: true,
+        });
+        // Go to first step with error
+        const firstErrorStep = ([1, 2, 3] as Step[]).find((s) => {
+          const stepErrors = validateStep(s);
+          return Object.keys(stepErrors).length > 0;
+        });
+        if (firstErrorStep) goToStep(firstErrorStep);
+        return;
+      }
 
-    setIsSubmitting(true);
-    setSubmitAttempted(true);
+      setIsSubmitting(true);
+      setSubmitAttempted(true);
 
-    const payload: CompetitionInput = {
-      name: form.name.trim(),
-      organizer: form.organizer.trim() || undefined,
-      competitionType: form.competitionType,
-      deadline: new Date(form.deadline).toISOString(),
-      teamSize: Number(form.teamSize) || 1,
-      trackMode: form.trackMode,
-      currentTrack: form.currentTrack.trim() || undefined,
-      problemStatement: form.problemStatement.trim() || undefined,
-      officialUrl: form.officialUrl.trim() || undefined,
-      rulesUrl: form.rulesUrl.trim() || undefined,
-      mandatoryDeliverables: deliverablesText
-        .split("\n")
-        .map((item) => item.trim())
-        .filter(Boolean),
-      teamSkills: skillsText
-        .split(",")
-        .map((item) => item.trim())
-        .filter(Boolean),
-      ideaComplexity: 3,
-      status: form.status,
-    };
+      const payload: CompetitionInput = {
+        name: form.name.trim(),
+        organizer: form.organizer.trim() || undefined,
+        competitionType: form.competitionType,
+        deadline: new Date(form.deadline).toISOString(),
+        teamSize: Number(form.teamSize) || 1,
+        trackMode: form.trackMode,
+        currentTrack: form.currentTrack.trim() || undefined,
+        problemStatement: form.problemStatement.trim() || undefined,
+        officialUrl: form.officialUrl.trim() || undefined,
+        rulesUrl: form.rulesUrl.trim() || undefined,
+        mandatoryDeliverables: deliverablesText
+          .split("\n")
+          .map((item) => item.trim())
+          .filter(Boolean),
+        teamSkills: skillsText
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean),
+        ideaComplexity: 3,
+        status: form.status,
+      };
 
-    try {
-      const competition = await createCompetition.mutateAsync({ data: payload });
-      await queryClient.invalidateQueries({ queryKey: getListCompetitionsQueryKey() });
-      await queryClient.invalidateQueries({ queryKey: getGetOverviewQueryKey() });
-      toast({ title: "Workspace created", description: competition.name });
-      resetForm();
-      if (onCreated) onCreated(competition);
-      onClose();
-    } catch {
-      toast({ title: "Creation failed", description: "Could not create workspace. Please try again.", variant: "destructive" });
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [
-    createCompetition,
-    form,
-    deliverablesText,
-    skillsText,
-    queryClient,
-    resetForm,
-    onCreated,
-    onClose,
-    validateStep,
-    goToStep,
-  ]);
+      try {
+        const competition = await createCompetition.mutateAsync({
+          data: payload,
+        });
+        await queryClient.invalidateQueries({
+          queryKey: getListCompetitionsQueryKey(),
+        });
+        await queryClient.invalidateQueries({
+          queryKey: getGetOverviewQueryKey(),
+        });
+        toast({ title: "Workspace created", description: competition.name });
+        resetForm();
+        if (onCreated) onCreated(competition);
+        onClose();
+      } catch {
+        toast({
+          title: "Creation failed",
+          description: "Could not create workspace. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [
+      createCompetition,
+      form,
+      deliverablesText,
+      skillsText,
+      queryClient,
+      resetForm,
+      onCreated,
+      onClose,
+      validateStep,
+      goToStep,
+    ],
+  );
 
   // Handle Enter key - submit current step or go to next
-  const handleKeyDown = useCallback((event: KeyboardEvent<HTMLFormElement>) => {
-    if (event.key !== "Enter") return;
-    // Don't submit on Enter in textarea
-    if (event.target instanceof HTMLTextAreaElement) return;
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLFormElement>) => {
+      if (event.key !== "Enter") return;
+      // Don't submit on Enter in textarea
+      if (event.target instanceof HTMLTextAreaElement) return;
 
-    event.preventDefault();
-    if (step === 3) {
-      handleSubmit(event as FormEvent<HTMLFormElement>);
-    } else {
-      handleNext();
-    }
-  }, [step, handleNext, handleSubmit]);
+      event.preventDefault();
+      if (step === 3) {
+        handleSubmit(event as FormEvent<HTMLFormElement>);
+      } else {
+        handleNext();
+      }
+    },
+    [step, handleNext, handleSubmit],
+  );
 
   // Handle Escape - already handled by Dialog, but we can add custom logic here if needed
   useEffect(() => {
@@ -294,7 +360,11 @@ export function CompetitionModal({ open, onClose, onCreated }: CompetitionModalP
 
   // Stepper header
   const renderStepper = () => (
-    <div className="wizard-stepper" role="tablist" aria-label="Competition creation steps">
+    <div
+      className="wizard-stepper"
+      role="tablist"
+      aria-label="Competition creation steps"
+    >
       {([1, 2, 3] as Step[]).map((s) => (
         <button
           key={s}
@@ -378,7 +448,10 @@ export function CompetitionModal({ open, onClose, onCreated }: CompetitionModalP
           />
         </FormField>
 
-        <FormField label="Event format" hint="Format dictates team coordination style.">
+        <FormField
+          label="Event format"
+          hint="Format dictates team coordination style."
+        >
           <select
             value={form.competitionType}
             onChange={(e) =>
@@ -450,7 +523,9 @@ export function CompetitionModal({ open, onClose, onCreated }: CompetitionModalP
             min="1"
             max="100"
             value={form.teamSize}
-            onChange={(e) => updateField("teamSize", parseInt(e.target.value, 10) || 1)}
+            onChange={(e) =>
+              updateField("teamSize", parseInt(e.target.value, 10) || 1)
+            }
             onBlur={() => handleBlur("teamSize")}
             data-testid="input-competition-team-size"
             aria-invalid={!!errors.teamSize}
@@ -458,7 +533,10 @@ export function CompetitionModal({ open, onClose, onCreated }: CompetitionModalP
           />
         </FormField>
 
-        <FormField label="Target track" hint="Selected prize category or challenge track.">
+        <FormField
+          label="Target track"
+          hint="Selected prize category or challenge track."
+        >
           <input
             value={form.currentTrack}
             onChange={(e) => updateField("currentTrack", e.target.value)}
@@ -557,7 +635,11 @@ export function CompetitionModal({ open, onClose, onCreated }: CompetitionModalP
             type="button"
             variant={currentStepHasErrors ? "secondary" : "primary"}
             onClick={handleNext}
-            disabled={createCompetition.isPending || isSubmitting || currentStepHasErrors}
+            disabled={
+              createCompetition.isPending ||
+              isSubmitting ||
+              currentStepHasErrors
+            }
             data-testid="button-wizard-next"
           >
             Next <ArrowRight size={14} />
@@ -632,12 +714,20 @@ export function CompetitionModal({ open, onClose, onCreated }: CompetitionModalP
           </div>
         )}
 
-        {submitAttempted && !createCompetition.isError && Object.keys(errors).length === 0 && !createCompetition.isPending && !isSubmitting && (
-          <div className="form-note" role="status" data-testid="status-create-pending">
-            <span className="spinner" aria-hidden="true" />
-            Sending the workspace to the server…
-          </div>
-        )}
+        {submitAttempted &&
+          !createCompetition.isError &&
+          Object.keys(errors).length === 0 &&
+          !createCompetition.isPending &&
+          !isSubmitting && (
+            <div
+              className="form-note"
+              role="status"
+              data-testid="status-create-pending"
+            >
+              <span className="spinner" aria-hidden="true" />
+              Sending the workspace to the server…
+            </div>
+          )}
       </form>
     </Dialog>
   );

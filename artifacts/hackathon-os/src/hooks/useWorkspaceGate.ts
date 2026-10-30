@@ -1,7 +1,7 @@
-import { useMemo } from 'react';
-import { useListCompetitions } from '@workspace/api-client-react';
-import { useGetOverview } from '@workspace/api-client-react';
-import { WORKSPACE_GATES, type WorkspaceGateId } from '@/lib/workflow';
+import { useMemo } from "react";
+import { useListCompetitions } from "@workspace/api-client-react";
+import { useGetOverview } from "@workspace/api-client-react";
+import { WORKSPACE_GATES, type WorkspaceGateId } from "@/lib/workflow";
 
 export interface WorkspaceGateState {
   hasCompetitions: boolean;
@@ -22,13 +22,15 @@ export function useWorkspaceGate(): WorkspaceGateState {
   const overviewQuery = useGetOverview();
 
   const competitions = useMemo(
-    () => (competitionsQuery.data ?? []).map((c) => ({ id: c.id, name: c.name })),
+    () =>
+      (competitionsQuery.data ?? []).map((c) => ({ id: c.id, name: c.name })),
     [competitionsQuery.data],
   );
 
   const competitionCount = competitions.length;
   const hasCompetitions = competitionCount > 0;
-  const selectedCompetitionId = overviewQuery.data?.currentCompetition?.id ?? null;
+  const selectedCompetitionId =
+    overviewQuery.data?.currentCompetition?.id ?? null;
 
   const isLocked = useMemo(
     () => (gateId: WorkspaceGateId) => {
@@ -70,7 +72,13 @@ export function useWorkspaceGate(): WorkspaceGateState {
  * Hook for a specific gate - returns locked state and unlock info for that gate
  */
 export function useGate(gateId: WorkspaceGateId) {
-  const { isLocked, getUnlockReason, getUnlockAction, hasCompetitions, selectedCompetitionId } = useWorkspaceGate();
+  const {
+    isLocked,
+    getUnlockReason,
+    getUnlockAction,
+    hasCompetitions,
+    selectedCompetitionId,
+  } = useWorkspaceGate();
 
   return {
     isLocked: isLocked(gateId),

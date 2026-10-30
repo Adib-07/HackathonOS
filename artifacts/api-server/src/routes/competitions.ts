@@ -1,9 +1,4 @@
-import {
-  and,
-  desc,
-  eq,
-  inArray,
-} from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { Router, type IRouter } from "express";
 import {
   CreateCompetitionBody,
@@ -110,11 +105,7 @@ function serializePlan(
   return GetPlanResponse.parse({
     ...serializePlanSummary(plan, tasks),
     tasks: tasks.map((task) =>
-      serializeTask(
-        task,
-        plan.id,
-        verificationByTaskKey.get(task.taskKey)!,
-      ),
+      serializeTask(task, plan.id, verificationByTaskKey.get(task.taskKey)!),
     ),
   });
 }
@@ -233,15 +224,10 @@ router.get("/overview", async (_req, res): Promise<void> => {
       openTaskCount: currentTasks.filter(
         (task) => task.status !== "done" && task.status !== "deferred",
       ).length,
-      completedTaskCount: currentTasks.filter(
-        (task) => task.status === "done",
-      ).length,
+      completedTaskCount: currentTasks.filter((task) => task.status === "done")
+        .length,
       nextAction: nextAction
-        ? serializeTask(
-            nextAction,
-            nextAction.planId,
-            nextActionVerification!,
-          )
+        ? serializeTask(nextAction, nextAction.planId, nextActionVerification!)
         : null,
       quality: {
         applicationBuild: "not_run",
@@ -275,7 +261,8 @@ router.post("/competitions", async (req, res): Promise<void> => {
       { errors: parsed.error.issues.map((issue) => issue.message) },
       "Invalid competition input",
     );
-    const errorMessage = parsed.error.issues[0]?.message || "Invalid competition details.";
+    const errorMessage =
+      parsed.error.issues[0]?.message || "Invalid competition details.";
     res.status(400).json({ error: errorMessage });
     return;
   }
@@ -481,7 +468,8 @@ router.post(
     );
     if (minutesUntilDeadline < 1) {
       res.status(400).json({
-        error: "The competition deadline has passed. Update it before planning.",
+        error:
+          "The competition deadline has passed. Update it before planning.",
       });
       return;
     }
@@ -490,10 +478,7 @@ router.post(
       parsed.data.remainingHours === undefined
         ? minutesUntilDeadline
         : Math.floor(parsed.data.remainingHours * 60);
-    const availableMinutes = Math.min(
-      requestedMinutes,
-      minutesUntilDeadline,
-    );
+    const availableMinutes = Math.min(requestedMinutes, minutesUntilDeadline);
 
     const result = await db.transaction(async (tx) => {
       const [latestPlan] = await tx
@@ -635,12 +620,7 @@ router.patch(
     const [latestPlan] = await db
       .select()
       .from(workflowPlansTable)
-      .where(
-        eq(
-          workflowPlansTable.competitionId,
-          params.data.competitionId,
-        ),
-      )
+      .where(eq(workflowPlansTable.competitionId, params.data.competitionId))
       .orderBy(desc(workflowPlansTable.version))
       .limit(1);
 
@@ -659,10 +639,7 @@ router.patch(
       .where(
         and(
           eq(workflowTasksTable.id, params.data.taskId),
-          eq(
-            workflowTasksTable.competitionId,
-            params.data.competitionId,
-          ),
+          eq(workflowTasksTable.competitionId, params.data.competitionId),
           eq(workflowTasksTable.planId, latestPlan.id),
           eq(competitionsTable.ownerId, res.locals.userId as string),
         ),

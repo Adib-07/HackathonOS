@@ -1,3 +1,4 @@
+import "../../../scripts/test-guard.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { CreateCompetitionBody } from "../../../lib/api-zod/src/generated/api.ts";

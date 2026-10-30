@@ -133,9 +133,7 @@ export default function IntelPage() {
         eyebrow="RESEARCH & IDEA INTELLIGENCE"
         title="Find the right problem, then choose an idea worth building"
         detail="Every step below is grounded in this competition's stored record and the sources you actually opened. Anything inferred is labelled as an inference."
-        action={
-          <StatusPill value={competition.status} />
-        }
+        action={<StatusPill value={competition.status} />}
       />
 
       <nav className="intel-steps" aria-label="Intelligence workflow">
@@ -159,9 +157,7 @@ export default function IntelPage() {
         ))}
       </nav>
 
-      {step === "analysis" && (
-        <AnalysisStep competitionId={competitionId} />
-      )}
+      {step === "analysis" && <AnalysisStep competitionId={competitionId} />}
       {step === "research" && <ResearchStep competitionId={competitionId} />}
       {step === "gaps" && <GapsStep competitionId={competitionId} />}
       {step === "ideas" && <IdeasStep competitionId={competitionId} />}
@@ -171,9 +167,7 @@ export default function IntelPage() {
 }
 
 function ClaimBadge({ kind }: { kind: string }) {
-  const claimKind = (kind in CLAIM_KIND_LABELS
-    ? kind
-    : "UNKNOWN") as ClaimKind;
+  const claimKind = (kind in CLAIM_KIND_LABELS ? kind : "UNKNOWN") as ClaimKind;
   return (
     <span
       className={`claim-badge claim-badge-${claimKind.toLowerCase()}`}
@@ -260,7 +254,11 @@ function AnalysisStep({ competitionId }: { competitionId: string }) {
               </Panel>
 
               {createAnalysis.data?.note && (
-                <div className="intel-note" role="status" data-testid="intel-analysis-note">
+                <div
+                  className="intel-note"
+                  role="status"
+                  data-testid="intel-analysis-note"
+                >
                   <CircleHelp size={14} />
                   <span>{createAnalysis.data.note}</span>
                 </div>
@@ -315,17 +313,23 @@ function AnalysisStep({ competitionId }: { competitionId: string }) {
                   grouped.map(([category, items]) => (
                     <section className="intel-requirement-group" key={category}>
                       <h3>
-                        {REQUIREMENT_CATEGORY_LABELS[category as RequirementCategory] ??
-                          category}
+                        {REQUIREMENT_CATEGORY_LABELS[
+                          category as RequirementCategory
+                        ] ?? category}
                       </h3>
                       <ul className="intel-requirement-list">
                         {items.map((requirement) => (
-                          <li className="intel-requirement" key={requirement.id}>
+                          <li
+                            className="intel-requirement"
+                            key={requirement.id}
+                          >
                             {editing === requirement.id ? (
                               <div className="intel-requirement-edit">
                                 <input
                                   value={draft}
-                                  onChange={(event) => setDraft(event.target.value)}
+                                  onChange={(event) =>
+                                    setDraft(event.target.value)
+                                  }
                                   aria-label="Requirement text"
                                   data-testid={`input-requirement-${requirement.id}`}
                                 />
@@ -338,7 +342,8 @@ function AnalysisStep({ competitionId }: { competitionId: string }) {
                                       data: { text: draft, reviewed: true },
                                     });
                                     await client.invalidateQueries({
-                                      queryKey: getGetAnalysisQueryKey(competitionId),
+                                      queryKey:
+                                        getGetAnalysisQueryKey(competitionId),
                                     });
                                     setEditing(null);
                                   }}
@@ -361,7 +366,9 @@ function AnalysisStep({ competitionId }: { competitionId: string }) {
                                 </span>
                                 <ClaimBadge kind={requirement.claimKind} />
                                 {requirement.reviewed && (
-                                  <span className="intel-reviewed">Reviewed</span>
+                                  <span className="intel-reviewed">
+                                    Reviewed
+                                  </span>
                                 )}
                                 <button
                                   type="button"
@@ -502,8 +509,7 @@ function ResearchStep({ competitionId }: { competitionId: string }) {
                 <span>
                   {outcome.ok ? <Check size={11} /> : <Ban size={11} />}
                 </span>
-                {RESEARCH_PROVIDER_LABELS[outcome.provider] ??
-                  outcome.provider}
+                {RESEARCH_PROVIDER_LABELS[outcome.provider] ?? outcome.provider}
                 <small>
                   {outcome.ok
                     ? `${outcome.count} result${outcome.count === 1 ? "" : "s"}`
@@ -613,8 +619,7 @@ function ResearchStep({ competitionId }: { competitionId: string }) {
                   <p className="intel-finding-summary">{finding.summary}</p>
                   <div className="intel-finding-meta">
                     <span>
-                      Retrieved{" "}
-                      {new Date(finding.retrievedAt).toLocaleString()}
+                      Retrieved {new Date(finding.retrievedAt).toLocaleString()}
                     </span>
                     {finding.sourceUrl && (
                       <a
@@ -762,13 +767,13 @@ function GapsStep({ competitionId }: { competitionId: string }) {
                 )}
                 {gap.existingApproaches && (
                   <p className="intel-gap-field">
-                    <strong>Existing approaches</strong> {gap.existingApproaches}
+                    <strong>Existing approaches</strong>{" "}
+                    {gap.existingApproaches}
                   </p>
                 )}
                 {gap.insufficiency && (
                   <p className="intel-gap-field">
-                    <strong>Why they may fall short</strong>{" "}
-                    {gap.insufficiency}
+                    <strong>Why they may fall short</strong> {gap.insufficiency}
                   </p>
                 )}
                 {gap.opportunity && (
@@ -848,7 +853,11 @@ function IdeasStep({ competitionId }: { competitionId: string }) {
           {createIdeas.isPending ? "Generating…" : "Generate ideas"}
         </Button>
         {notConfigured && (
-          <div className="intel-note" role="status" data-testid="intel-ideas-not-configured">
+          <div
+            className="intel-note"
+            role="status"
+            data-testid="intel-ideas-not-configured"
+          >
             <CircleHelp size={14} />
             <span>
               No AI provider is configured, so ideas cannot be generated for
@@ -947,7 +956,9 @@ function IdeasStep({ competitionId }: { competitionId: string }) {
                         </div>
                         <div>
                           <dt>Architecture</dt>
-                          <dd>{idea.architectureSuggestion || "Not recorded"}</dd>
+                          <dd>
+                            {idea.architectureSuggestion || "Not recorded"}
+                          </dd>
                         </div>
                         <div>
                           <dt>Data and integrations</dt>
@@ -1046,7 +1057,9 @@ function IdeasStep({ competitionId }: { competitionId: string }) {
                           </span>
                           <input
                             value={rationale}
-                            onChange={(event) => setRationale(event.target.value)}
+                            onChange={(event) =>
+                              setRationale(event.target.value)
+                            }
                             placeholder="The reasoning your team will remember"
                             data-testid={`input-decision-rationale-${idea.id}`}
                           />
@@ -1175,8 +1188,8 @@ function BriefStep({ competitionId }: { competitionId: string }) {
                   <div className="intel-brief-missing">
                     <CircleHelp size={13} />
                     <span>
-                      Not filled: {brief.missingSections.join(", ")}. Add
-                      these before you start building.
+                      Not filled: {brief.missingSections.join(", ")}. Add these
+                      before you start building.
                     </span>
                   </div>
                 )}
@@ -1184,7 +1197,9 @@ function BriefStep({ competitionId }: { competitionId: string }) {
                   {BUILD_BRIEF_SECTIONS.map((section) => {
                     const value = content[section.key];
                     const items = Array.isArray(value)
-                      ? value.filter((item): item is string => typeof item === "string")
+                      ? value.filter(
+                          (item): item is string => typeof item === "string",
+                        )
                       : [];
                     const text = typeof value === "string" ? value : "";
                     if (!text && items.length === 0) return null;

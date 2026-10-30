@@ -31,8 +31,8 @@ Closes #[issue number] or links to issue.
 
 ## Screenshots (if UI changes)
 
-| Before | After |
-|--------|-------|
+| Before         | After         |
+| -------------- | ------------- |
 | ![before](url) | ![after](url) |
 
 ## Checklist

@@ -42,6 +42,7 @@ If you have a hypothesis (e.g., "looks like the CSP blocks Clerk telemetry").
 ## Related Code
 
 File paths or line numbers if known:
+
 - `artifacts/hackathon-os/src/...`
 - `artifacts/api-server/src/...`
 

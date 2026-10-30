@@ -93,5 +93,6 @@ export const VERIFICATION_STATE_EXPLANATIONS: Record<
   in_progress: "The work is under way but not finished.",
   blocked: "The work cannot continue until a blocker is resolved.",
   done: "The work is complete, but no evidence proves it yet.",
-  verified: "The work is complete and the required checks have passing evidence.",
+  verified:
+    "The work is complete and the required checks have passing evidence.",
 };

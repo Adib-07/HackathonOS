@@ -2,10 +2,10 @@
 
 ## Supported Versions
 
-| Version | Supported |
-|---------|-----------|
-| `main` branch (latest) | ✅ |
-| Older deployments | ❌ |
+| Version                | Supported |
+| ---------------------- | --------- |
+| `main` branch (latest) | ✅        |
+| Older deployments      | ❌        |
 
 Only the latest deployment on `main` receives security updates.
 
@@ -38,14 +38,15 @@ Alternatively, email **security@adib.dev** (PGP key available on request).
 
 ## Response Expectations
 
-| Severity | Acknowledgement | Fix Target |
-|----------|-----------------|------------|
-| Critical (RCE, auth bypass, data exfiltration) | ≤ 24 hours | ≤ 7 days |
-| High (XSS, SQLi, privilege escalation) | ≤ 48 hours | ≤ 14 days |
-| Medium (info disclosure, DoS) | ≤ 72 hours | ≤ 30 days |
-| Low (minor CSP, header misconfig) | ≤ 7 days | Next release |
+| Severity                                       | Acknowledgement | Fix Target   |
+| ---------------------------------------------- | --------------- | ------------ |
+| Critical (RCE, auth bypass, data exfiltration) | ≤ 24 hours      | ≤ 7 days     |
+| High (XSS, SQLi, privilege escalation)         | ≤ 48 hours      | ≤ 14 days    |
+| Medium (info disclosure, DoS)                  | ≤ 72 hours      | ≤ 30 days    |
+| Low (minor CSP, header misconfig)              | ≤ 7 days        | Next release |
 
 We will:
+
 1. Acknowledge receipt within the SLA above
 2. Validate the report
 3. Develop and test a fix
@@ -101,6 +102,7 @@ We will:
 ### Evidence Secret Scanning
 
 The API rejects evidence submissions containing patterns matching:
+
 - Stripe keys (`sk_live_`, `sk_test_`, `pk_live_`, `pk_test_`)
 - AWS keys (`AKIA...`)
 - GitHub tokens (`ghp_`, `gho_`, `ghu_`, `ghs_`, `ghr_`)
@@ -114,22 +116,22 @@ This is a **defense-in-depth** measure; secrets should never reach the API.
 
 ## Security Architecture Summary
 
-| Layer | Controls |
-|-------|----------|
-| **Auth** | Clerk session cookies, `requireAuthenticatedUser` middleware |
-| **Authorization** | Every query joins `competitions.owner_id = current_user_id` |
-| **Transport** | HTTPS enforced by Vercel; HSTS via Vercel |
-| **CORS** | Explicit allow-list via `ALLOWED_ORIGINS` env var; credentials only for allowed origins |
-| **Headers** | Helmet: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: camera=(), microphone=(), geolocation=()` |
-| **CSP** | `default-src 'self'`, allow Clerk, Cloudflare Challenges, Google Fonts, Clerk images/telemetry |
-| **Input Validation** | Zod `safeParse` on all request bodies/params/queries |
-| **Body Size Limits** | `express.json({ limit: BODY_SIZE_LIMIT })` default 1MB, configurable |
-| **Error Handling** | Centralized error handler; no stack traces or internal details in production |
-| **SQL Safety** | Drizzle ORM parameterized queries only |
-| **Rate Limiting** | `express-rate-limit` per IP/user; in-process window limiters for research (8/min) and AI (12/min); plan generation (5/min), write ops (30/min) |
-| **Secret Scanning** | Evidence submission blocks credential-like strings |
-| **Dependency Security** | `pnpm-workspace.yaml` `minimumReleaseAge: 1440` (1-day delay on new npm versions); overrides for known vulnerabilities |
-| **Secret Detection** | `gitleaks` in CI; `.gitleaks.toml` with allowlist for test fixtures |
+| Layer                   | Controls                                                                                                                                                                               |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Auth**                | Clerk session cookies, `requireAuthenticatedUser` middleware                                                                                                                           |
+| **Authorization**       | Every query joins `competitions.owner_id = current_user_id`                                                                                                                            |
+| **Transport**           | HTTPS enforced by Vercel; HSTS via Vercel                                                                                                                                              |
+| **CORS**                | Explicit allow-list via `ALLOWED_ORIGINS` env var; credentials only for allowed origins                                                                                                |
+| **Headers**             | Helmet: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: camera=(), microphone=(), geolocation=()` |
+| **CSP**                 | `default-src 'self'`, allow Clerk, Cloudflare Challenges, Google Fonts, Clerk images/telemetry                                                                                         |
+| **Input Validation**    | Zod `safeParse` on all request bodies/params/queries                                                                                                                                   |
+| **Body Size Limits**    | `express.json({ limit: BODY_SIZE_LIMIT })` default 1MB, configurable                                                                                                                   |
+| **Error Handling**      | Centralized error handler; no stack traces or internal details in production                                                                                                           |
+| **SQL Safety**          | Drizzle ORM parameterized queries only                                                                                                                                                 |
+| **Rate Limiting**       | `express-rate-limit` per IP/user; in-process window limiters for research (8/min) and AI (12/min); plan generation (5/min), write ops (30/min)                                         |
+| **Secret Scanning**     | Evidence submission blocks credential-like strings                                                                                                                                     |
+| **Dependency Security** | `pnpm-workspace.yaml` `minimumReleaseAge: 1440` (1-day delay on new npm versions); overrides for known vulnerabilities                                                                 |
+| **Secret Detection**    | `gitleaks` in CI; `.gitleaks.toml` with allowlist for test fixtures                                                                                                                    |
 
 ---
 

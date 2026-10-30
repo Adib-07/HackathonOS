@@ -31,7 +31,7 @@ minimumReleaseAgeExclude:
   # Exclude @replit scoped packages from the minimum release age check.
   # These are published by Replit and trusted — the supply-chain attack vector
   # this setting guards against does not apply to our own packages.
-  - '@replit/*'
+  - "@replit/*"
   - stripe-replit-sync
 
 packages:
@@ -41,15 +41,15 @@ packages:
   - scripts
 
 catalog:
-  '@replit/vite-plugin-cartographer': ^0.5.21
-  '@replit/vite-plugin-dev-banner': ^0.1.1
-  '@replit/vite-plugin-runtime-error-modal': ^0.0.6
-  '@tailwindcss/vite': ^4.1.14
-  '@tanstack/react-query': ^5.90.21
-  '@types/node': ^25.3.3
-  '@types/react': ^19.2.0
-  '@types/react-dom': ^19.2.0
-  '@vitejs/plugin-react': ^5.0.4
+  "@replit/vite-plugin-cartographer": ^0.5.21
+  "@replit/vite-plugin-dev-banner": ^0.1.1
+  "@replit/vite-plugin-runtime-error-modal": ^0.0.6
+  "@tailwindcss/vite": ^4.1.14
+  "@tanstack/react-query": ^5.90.21
+  "@types/node": ^25.3.3
+  "@types/react": ^19.2.0
+  "@types/react-dom": ^19.2.0
+  "@vitejs/plugin-react": ^5.0.4
   class-variance-authority: ^0.7.1
   clsx: ^2.1.1
   drizzle-orm: ^0.45.2
@@ -67,8 +67,8 @@ catalog:
 autoInstallPeers: false
 
 onlyBuiltDependencies:
-  - '@clerk/shared'
-  - '@swc/core'
+  - "@clerk/shared"
+  - "@swc/core"
   - esbuild
   - msw
   - unrs-resolver
@@ -88,7 +88,7 @@ overrides:
   # Security fix for vite vulnerabilities (GHSA-587h-7wmj-h5pm, GHSA-698v-4r3x-3vcv, GHSA-r825-w8mm-5pxw)
   vite: 7.3.7
   # Security fix for qs vulnerability (GHSA-6pq8-jhm2-2vcw) - DoS via qs.stringify
-  qs: '>=6.16.1'
+  qs: ">=6.16.1"
   # replit uses linux-x64 only, we can exclude all other platforms
   # "esbuild>@esbuild/darwin-arm64": "-"
   "esbuild>@esbuild/darwin-x64": "-"
@@ -110,11 +110,11 @@ overrides:
   "esbuild>@esbuild/win32-arm64": "-"
   "esbuild>@esbuild/win32-ia32": "-"
   "esbuild>@esbuild/win32-x64": "-"
-  "esbuild>@esbuild/aix-ppc64": '-'
-  "esbuild>@esbuild/android-arm": '-'
-  "esbuild>@esbuild/android-arm64": '-'
-  "esbuild>@esbuild/android-x64": '-'
-  "esbuild>@esbuild/openharmony-arm64": '-'
+  "esbuild>@esbuild/aix-ppc64": "-"
+  "esbuild>@esbuild/android-arm": "-"
+  "esbuild>@esbuild/android-arm64": "-"
+  "esbuild>@esbuild/android-x64": "-"
+  "esbuild>@esbuild/openharmony-arm64": "-"
   "lightningcss>lightningcss-android-arm64": "-"
   # "lightningcss>lightningcss-darwin-arm64": "-"
   "lightningcss>lightningcss-darwin-x64": "-"
@@ -173,8 +173,8 @@ overrides:
   "@esbuild-kit/esm-loader": "npm:tsx@^4.21.0"
   esbuild: "0.28.2"
   # orval pins js-yaml to an exact version older than the CVE fix (>=4.3.2)
-  js-yaml: '4.3.2'
+  js-yaml: "4.3.2"
 
 allowBuilds:
-  '@clerk/shared': true
+  "@clerk/shared": true
   esbuild: true

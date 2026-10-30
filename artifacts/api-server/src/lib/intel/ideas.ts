@@ -6,10 +6,7 @@
  * the totals are reproducible from the inputs. Scores are a structured
  * opinion to help a team compare options, never a prediction of a win.
  */
-import {
-  normaliseClaimKind,
-  type ClaimKind,
-} from "./claims.ts";
+import { normaliseClaimKind, type ClaimKind } from "./claims.ts";
 
 /** The dimensions a team can score an idea on. */
 export const IDEA_DIMENSIONS = [
@@ -50,12 +47,13 @@ export const IDEA_DIMENSION_HINTS: Record<IdeaDimension, string> = {
     "How clearly this differs from the approaches research already found.",
   TECHNICAL_FEASIBILITY:
     "How likely the team is to build it with the skills and time available.",
-  DEMONSTRABILITY:
-    "How convincingly the result can be shown in a short demo.",
+  DEMONSTRABILITY: "How convincingly the result can be shown in a short demo.",
   IMPLEMENTATION_TIME:
     "How much of the remaining time the idea consumes. Higher is better.",
-  RELIABILITY_RISK: "How likely the idea is to break or misbehave. Higher is better.",
-  DATA_AVAILABILITY: "How easily the needed data can be obtained. Higher is better.",
+  RELIABILITY_RISK:
+    "How likely the idea is to break or misbehave. Higher is better.",
+  DATA_AVAILABILITY:
+    "How easily the needed data can be obtained. Higher is better.",
   POTENTIAL_IMPACT: "How much difference the idea could make if it worked.",
 };
 
@@ -156,10 +154,15 @@ export function normaliseWeights(
     // An unusable weight falls back to the default for that dimension rather
     // than dropping the dimension from the rubric entirely.
     cleaned[dimension] =
-      Number.isFinite(value) && value > 0 ? value : DEFAULT_IDEA_WEIGHTS[dimension];
+      Number.isFinite(value) && value > 0
+        ? value
+        : DEFAULT_IDEA_WEIGHTS[dimension];
   }
 
-  const total = IDEA_DIMENSIONS.reduce((sum, dimension) => sum + cleaned[dimension], 0);
+  const total = IDEA_DIMENSIONS.reduce(
+    (sum, dimension) => sum + cleaned[dimension],
+    0,
+  );
   if (total <= 0) return { ...DEFAULT_IDEA_WEIGHTS };
 
   const normalised = {} as Record<IdeaDimension, number>;
@@ -203,7 +206,8 @@ export function computeWeightedTotal(
   if (weightUsed <= 0) return 0;
 
   const mean = weighted / weightUsed;
-  const scaled = ((mean - IDEA_SCORE_MIN) / (IDEA_SCORE_MAX - IDEA_SCORE_MIN)) * 100;
+  const scaled =
+    ((mean - IDEA_SCORE_MIN) / (IDEA_SCORE_MAX - IDEA_SCORE_MIN)) * 100;
   return Math.round(scaled * 10) / 10;
 }
 
@@ -229,13 +233,17 @@ export function computeSensitivity(
     // Only this dimension moves. Everything else keeps its current score.
     const bestTotal = computeWeightedTotal(
       scores.map((item) =>
-        item.dimension === score.dimension ? { ...item, score: IDEA_SCORE_MAX } : item,
+        item.dimension === score.dimension
+          ? { ...item, score: IDEA_SCORE_MAX }
+          : item,
       ),
       weights,
     );
     const worstTotal = computeWeightedTotal(
       scores.map((item) =>
-        item.dimension === score.dimension ? { ...item, score: IDEA_SCORE_MIN } : item,
+        item.dimension === score.dimension
+          ? { ...item, score: IDEA_SCORE_MIN }
+          : item,
       ),
       weights,
     );
@@ -286,7 +294,9 @@ export function evaluateIdea(
     strongestDimensions: ranked.strongest,
     weakestDimensions: ranked.weakest,
     uncertainDimensions: scores
-      .filter((score) => score.confidence === "LOW" || score.uncertainties.length > 0)
+      .filter(
+        (score) => score.confidence === "LOW" || score.uncertainties.length > 0,
+      )
       .map((score) => score.dimension),
   };
 }
@@ -317,9 +327,7 @@ export interface IdeaComparison {
   leastDivisiveDimension: IdeaDimension | null;
 }
 
-export function compareIdeas(
-  ideas: IdeaComparisonInput[],
-): IdeaComparison {
+export function compareIdeas(ideas: IdeaComparisonInput[]): IdeaComparison {
   const ranked = [...ideas]
     .sort((a, b) => b.evaluation.total - a.evaluation.total)
     .map((idea) => ({
@@ -340,7 +348,9 @@ export function compareIdeas(
   const spreads: Array<{ dimension: IdeaDimension; spread: number }> = [];
   for (const dimension of IDEA_DIMENSIONS) {
     const values = ranked
-      .map((entry) => entry.evaluation.scores.find((s) => s.dimension === dimension))
+      .map((entry) =>
+        entry.evaluation.scores.find((s) => s.dimension === dimension),
+      )
       .filter((score): score is DimensionScore => Boolean(score))
       .map((score) => clampScore(score.score));
 
@@ -366,9 +376,7 @@ export function compareIdeas(
  * Unparseable scores are dropped rather than defaulted, so a malformed
  * response cannot inflate an idea's total with invented numbers.
  */
-export function parseModelScores(
-  raw: unknown,
-): DimensionScore[] {
+export function parseModelScores(raw: unknown): DimensionScore[] {
   if (!Array.isArray(raw)) return [];
 
   const scores: DimensionScore[] = [];
@@ -392,10 +400,14 @@ export function parseModelScores(
           ? record.rationale.trim()
           : "No rationale was provided for this score.",
       evidenceRefs: Array.isArray(record.evidenceRefs)
-        ? record.evidenceRefs.filter((ref): ref is string => typeof ref === "string")
+        ? record.evidenceRefs.filter(
+            (ref): ref is string => typeof ref === "string",
+          )
         : [],
       uncertainties: Array.isArray(record.uncertainties)
-        ? record.uncertainties.filter((item): item is string => typeof item === "string")
+        ? record.uncertainties.filter(
+            (item): item is string => typeof item === "string",
+          )
         : [],
       confidence:
         confidence === "LOW" || confidence === "HIGH" ? confidence : "MEDIUM",
@@ -420,7 +432,10 @@ export function parseModelIdeas(raw: unknown): IdeaCandidate[] {
 
     const stringList = (value: unknown): string[] =>
       Array.isArray(value)
-        ? value.filter((item): item is string => typeof item === "string" && item.trim() !== "")
+        ? value.filter(
+            (item): item is string =>
+              typeof item === "string" && item.trim() !== "",
+          )
         : [];
 
     ideas.push({
@@ -429,7 +444,9 @@ export function parseModelIdeas(raw: unknown): IdeaCandidate[] {
       targetUser:
         typeof record.targetUser === "string" ? record.targetUser.trim() : "",
       problemSolved:
-        typeof record.problemSolved === "string" ? record.problemSolved.trim() : "",
+        typeof record.problemSolved === "string"
+          ? record.problemSolved.trim()
+          : "",
       proposedSolution:
         typeof record.proposedSolution === "string"
           ? record.proposedSolution.trim()
@@ -453,16 +470,21 @@ export function parseModelIdeas(raw: unknown): IdeaCandidate[] {
           ? record.dataAndIntegrations.trim()
           : "",
       feasibilityNote:
-        typeof record.feasibilityNote === "string" ? record.feasibilityNote.trim() : "",
+        typeof record.feasibilityNote === "string"
+          ? record.feasibilityNote.trim()
+          : "",
       risks: stringList(record.risks),
       demoStrategy:
-        typeof record.demoStrategy === "string" ? record.demoStrategy.trim() : "",
+        typeof record.demoStrategy === "string"
+          ? record.demoStrategy.trim()
+          : "",
       supportingEvidence: stringList(record.supportingEvidence),
       unverifiedAssumptions: stringList(record.unverifiedAssumptions),
       // A generated idea is an inference until the team backs it with sources.
-      claimKind: normaliseClaimKind(record.claimKind) === "VERIFIED_FACT"
-        ? "INFERENCE"
-        : normaliseClaimKind(record.claimKind),
+      claimKind:
+        normaliseClaimKind(record.claimKind) === "VERIFIED_FACT"
+          ? "INFERENCE"
+          : normaliseClaimKind(record.claimKind),
     });
   }
 

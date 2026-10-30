@@ -99,7 +99,9 @@ export async function searchWikipedia(
     }
 
     const body = (await response.json()) as {
-      query?: { search?: Array<{ title?: string; snippet?: string; pageid?: number }> };
+      query?: {
+        search?: Array<{ title?: string; snippet?: string; pageid?: number }>;
+      };
     };
 
     const results = (body.query?.search ?? [])
@@ -297,7 +299,8 @@ export async function runResearchSearch(
   query: string,
   options: ResearchSearchOptions = {},
 ): Promise<ResearchSearchResult> {
-  const providers = options.providers ?? (["wikipedia", "arxiv", "github"] as const);
+  const providers =
+    options.providers ?? (["wikipedia", "arxiv", "github"] as const);
   const limit = options.limit ?? 5;
   const timeoutMs = options.timeoutMs ?? 15_000;
 

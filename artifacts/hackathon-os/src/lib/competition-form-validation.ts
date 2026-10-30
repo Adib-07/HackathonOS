@@ -83,14 +83,16 @@ export function validateCompetitionForm(
   if (form.teamSize !== undefined && form.teamSize !== null) {
     const size = Number(form.teamSize);
     if (isNaN(size) || size < 1 || !Number.isInteger(size)) {
-      errors.teamSize = "Team size must be a whole number of at least 1 person.";
+      errors.teamSize =
+        "Team size must be a whole number of at least 1 person.";
     } else if (size > 100) {
       errors.teamSize = "Team size must be 100 or less.";
     }
   }
 
   if (form.problemStatement && form.problemStatement.length > 5000) {
-    errors.problemStatement = "Problem statement must be 5000 characters or less.";
+    errors.problemStatement =
+      "Problem statement must be 5000 characters or less.";
   }
 
   return errors;

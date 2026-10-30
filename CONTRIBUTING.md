@@ -24,6 +24,7 @@ pnpm install --frozen-lockfile
 ### Environment Files
 
 **Root `.env`** (API server):
+
 ```bash
 DATABASE_URL=postgresql://user:pass@localhost:5432/hackathonos
 CLERK_SECRET_KEY=sk_test_...
@@ -33,6 +34,7 @@ NODE_ENV=development
 ```
 
 **Frontend `artifacts/hackathon-os/.env`**:
+
 ```bash
 VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
 BASE_PATH=/
@@ -49,12 +51,14 @@ pnpm run migrate   # or pnpm run push for dev-only schema sync
 ### Run Dev Servers
 
 **Terminal 1 — API**:
+
 ```bash
 cd artifacts/api-server
 PORT=8080 DATABASE_URL=... CLERK_SECRET_KEY=... CLERK_PUBLISHABLE_KEY=... pnpm run dev
 ```
 
 **Terminal 2 — Frontend**:
+
 ```bash
 cd artifacts/hackathon-os
 PORT=19678 BASE_PATH=/ API_PROXY_ORIGIN=http://127.0.0.1:8080 pnpm run dev
@@ -68,14 +72,14 @@ Open `http://localhost:19678`.
 
 ### Branches
 
-| Type | Prefix | Example |
-|------|--------|---------|
-| Feature | `feat/` | `feat/add-retrospective-phases` |
-| Fix | `fix/` | `fix/csp-script-src` |
-| Docs | `docs/` | `docs/update-api-reference` |
-| Refactor | `refactor/` | `refactor/planner-task-sorting` |
-| Test | `test/` | `test/add-evidence-component-tests` |
-| Chore | `chore/` | `chore/upgrade-vite` |
+| Type     | Prefix      | Example                             |
+| -------- | ----------- | ----------------------------------- |
+| Feature  | `feat/`     | `feat/add-retrospective-phases`     |
+| Fix      | `fix/`      | `fix/csp-script-src`                |
+| Docs     | `docs/`     | `docs/update-api-reference`         |
+| Refactor | `refactor/` | `refactor/planner-task-sorting`     |
+| Test     | `test/`     | `test/add-evidence-component-tests` |
+| Chore    | `chore/`    | `chore/upgrade-vite`                |
 
 ### Commits (Conventional Commits)
 
@@ -92,6 +96,7 @@ Open `http://localhost:19678`.
 **Scopes**: `api`, `fe`, `db`, `intel`, `workflow`, `auth`, `deploy`, `docs`
 
 **Examples**:
+
 ```
 feat(workflow): add retrospective unlock when deadline passes
 
@@ -127,6 +132,7 @@ Before opening a PR, ensure:
 ### CI Pipeline (when GitHub Actions exist)
 
 The following will run automatically on PR:
+
 1. `pnpm install --frozen-lockfile`
 2. `pnpm run typecheck`
 3. `pnpm test`
@@ -149,6 +155,7 @@ The following will run automatically on PR:
 ## How to Add a Lifecycle Stage
 
 1. **Update `PlanTaskPhase`** in `artifacts/hackathon-os/src/lib/workflow.ts`:
+
    ```typescript
    export type PlanTaskPhase =
      | "intake"
@@ -157,6 +164,7 @@ The following will run automatically on PR:
    ```
 
 2. **Add phase label** in `PHASE_LABELS` (same file):
+
    ```typescript
    export const PHASE_LABELS: Record<PlanTaskPhase, string> = {
      // ...
@@ -165,6 +173,7 @@ The following will run automatically on PR:
    ```
 
 3. **Add stage definition** in `LIFECYCLE_STAGES`:
+
    ```typescript
    export const LIFECYCLE_STAGES: StageDefinition[] = [
      // ... existing
@@ -179,6 +188,7 @@ The following will run automatically on PR:
    ```
 
 4. **Update `StageId` union** if new stage:
+
    ```typescript
    export type StageId = "intake" | "research" | ... | "my_stage";
    ```
@@ -190,7 +200,7 @@ The following will run automatically on PR:
    - Verify unlock/lock behavior
    - Verify phase-to-stage mapping
 
-6. **Update documentation**: `README.md` Workflow table, `docs/workflow.md`.
+7. **Update documentation**: `README.md` Workflow table, `docs/workflow.md`.
 
 ---
 
@@ -208,6 +218,7 @@ The following will run automatically on PR:
    - Return `400` on validation error, `404` on not found, `401` on auth
 
 3. **Register router** in `artifacts/api-server/src/routes/index.ts`:
+
    ```typescript
    import myResourceRouter from "./my-resource";
    router.use(requireAuthenticatedUser, myResourceRouter);
@@ -219,6 +230,7 @@ The following will run automatically on PR:
    - Run `pnpm --filter @workspace/db run generate && pnpm --filter @workspace/db run migrate`
 
 5. **Regenerate API client** (if using Orval):
+
    ```bash
    cd lib/api-spec
    pnpm run generate  # or whichever script Orval uses

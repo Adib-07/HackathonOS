@@ -126,7 +126,7 @@ export default function OverviewPage() {
             competition
               ? remaining?.isPast
                 ? "Overdue"
-                : remaining?.label ?? "—"
+                : (remaining?.label ?? "—")
               : "—"
           }
           icon={<Clock3 size={16} />}
@@ -154,7 +154,9 @@ export default function OverviewPage() {
           label="Blocked"
           value={blockedTasks.length}
           icon={<Ban size={16} />}
-          note={blockedTasks.length > 0 ? "Needs a decision" : "Nothing blocked"}
+          note={
+            blockedTasks.length > 0 ? "Needs a decision" : "Nothing blocked"
+          }
         />
       </div>
 
@@ -180,7 +182,10 @@ export default function OverviewPage() {
             </Button>
           </Panel>
 
-          <div className="locked-features" aria-label="Locked features requiring a competition">
+          <div
+            className="locked-features"
+            aria-label="Locked features requiring a competition"
+          >
             <Panel className="locked-feature">
               <div className="locked-feature-icon">
                 <Lock size={20} />
@@ -190,7 +195,10 @@ export default function OverviewPage() {
                   <h3>Workflow</h3>
                   <Badge variant="default">Locked</Badge>
                 </div>
-                <p>Lifecycle stages, task progress, and stage unlocks require a competition workspace.</p>
+                <p>
+                  Lifecycle stages, task progress, and stage unlocks require a
+                  competition workspace.
+                </p>
               </div>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -205,7 +213,9 @@ export default function OverviewPage() {
                 <TooltipContent side="top" align="center">
                   <div className="tooltip-content">
                     <AlertCircle size={12} />
-                    <span>Create a competition workspace to unlock Workflow</span>
+                    <span>
+                      Create a competition workspace to unlock Workflow
+                    </span>
                   </div>
                 </TooltipContent>
               </Tooltip>
@@ -220,7 +230,10 @@ export default function OverviewPage() {
                   <h3>Planner</h3>
                   <Badge variant="default">Locked</Badge>
                 </div>
-                <p>Generate and manage execution plans tied to a competition deadline.</p>
+                <p>
+                  Generate and manage execution plans tied to a competition
+                  deadline.
+                </p>
               </div>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -235,7 +248,9 @@ export default function OverviewPage() {
                 <TooltipContent side="top" align="center">
                   <div className="tooltip-content">
                     <AlertCircle size={12} />
-                    <span>Create a competition workspace to unlock Planner</span>
+                    <span>
+                      Create a competition workspace to unlock Planner
+                    </span>
                   </div>
                 </TooltipContent>
               </Tooltip>
@@ -250,7 +265,10 @@ export default function OverviewPage() {
                   <h3>Intelligence</h3>
                   <Badge variant="default">Locked</Badge>
                 </div>
-                <p>Research, idea exploration, and evidence gathering require a competition context.</p>
+                <p>
+                  Research, idea exploration, and evidence gathering require a
+                  competition context.
+                </p>
               </div>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -265,7 +283,9 @@ export default function OverviewPage() {
                 <TooltipContent side="top" align="center">
                   <div className="tooltip-content">
                     <AlertCircle size={12} />
-                    <span>Create a competition workspace to unlock Intelligence</span>
+                    <span>
+                      Create a competition workspace to unlock Intelligence
+                    </span>
                   </div>
                 </TooltipContent>
               </Tooltip>
@@ -357,7 +377,9 @@ export default function OverviewPage() {
             {plan ? (
               <>
                 <div className="plan-version-row">
-                  <strong>Version {String(plan.version).padStart(2, "0")}</strong>
+                  <strong>
+                    Version {String(plan.version).padStart(2, "0")}
+                  </strong>
                   <span className="mono">
                     {new Date(plan.generatedAt).toLocaleDateString()}
                   </span>
@@ -419,11 +441,17 @@ export default function OverviewPage() {
       )}
 
       {competition && (
-        <section className="overview-section" aria-labelledby="overview-requirements">
+        <section
+          className="overview-section"
+          aria-labelledby="overview-requirements"
+        >
           <div className="section-heading" style={{ marginBottom: "14px" }}>
             <div>
               <span className="eyebrow">BEFORE SUBMISSION</span>
-              <h2 id="overview-requirements" style={{ fontSize: "16px", fontWeight: 600 }}>
+              <h2
+                id="overview-requirements"
+                style={{ fontSize: "16px", fontWeight: 600 }}
+              >
                 Required deliverables
               </h2>
             </div>
@@ -471,7 +499,10 @@ export default function OverviewPage() {
           <div className="section-heading" style={{ marginBottom: "14px" }}>
             <div>
               <span className="eyebrow">PERSISTED COMPETITIONS</span>
-              <h2 id="overview-saved" style={{ fontSize: "16px", fontWeight: 600 }}>
+              <h2
+                id="overview-saved"
+                style={{ fontSize: "16px", fontWeight: 600 }}
+              >
                 Saved Workspaces ({competitions.length})
               </h2>
             </div>
@@ -483,7 +514,8 @@ export default function OverviewPage() {
           <div className="competition-list">
             <div className="list-heading">
               <span>
-                WORKSPACE <span className="list-count">{competitions.length}</span>
+                WORKSPACE{" "}
+                <span className="list-count">{competitions.length}</span>
               </span>
               <span>DEADLINE</span>
               <span>STATUS</span>
@@ -539,7 +571,9 @@ export default function OverviewPage() {
               <div className="next-action-label">
                 <span
                   className={
-                    next.status === "blocked" ? "priority-dot priority-dot-blocked" : "priority-dot"
+                    next.status === "blocked"
+                      ? "priority-dot priority-dot-blocked"
+                      : "priority-dot"
                   }
                 />{" "}
                 {next.phase.replaceAll("_", " ")} · {next.estimatedMinutes} min
@@ -553,9 +587,13 @@ export default function OverviewPage() {
                     <Check size={12} /> DONE WHEN
                   </span>
                   <ul>
-                    {next.acceptanceCriteria.slice(0, 2).map((criterion, index) => (
-                      <li key={`${next.id}-criterion-${index}`}>{criterion}</li>
-                    ))}
+                    {next.acceptanceCriteria
+                      .slice(0, 2)
+                      .map((criterion, index) => (
+                        <li key={`${next.id}-criterion-${index}`}>
+                          {criterion}
+                        </li>
+                      ))}
                   </ul>
                 </div>
               )}
@@ -632,13 +670,21 @@ export default function OverviewPage() {
       </div>
 
       {blockedTasks.length > 0 && (
-        <div className="blocked-banner" role="status" data-testid="banner-blocked-tasks">
+        <div
+          className="blocked-banner"
+          role="status"
+          data-testid="banner-blocked-tasks"
+        >
           <Ban size={15} />
           <span>
-            {blockedTasks.length} saved task{blockedTasks.length === 1 ? " is" : "s are"}{" "}
-            blocked. Resolve the blocker before treating the plan as on track.
+            {blockedTasks.length} saved task
+            {blockedTasks.length === 1 ? " is" : "s are"} blocked. Resolve the
+            blocker before treating the plan as on track.
           </span>
-          <Link href={`/competitions/${competition?.id}/planner`} className="text-link">
+          <Link
+            href={`/competitions/${competition?.id}/planner`}
+            className="text-link"
+          >
             Review <ArrowRight size={13} />
           </Link>
         </div>

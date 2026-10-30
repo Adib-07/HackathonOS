@@ -1,17 +1,17 @@
-import '@testing-library/jest-dom';
-import { vi } from 'vitest';
+import "@testing-library/jest-dom";
+import { vi } from "vitest";
 
 // Mock Clerk
-vi.mock('@clerk/react', async (importOriginal) => {
+vi.mock("@clerk/react", async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
     useUser: () => ({
       user: {
-        id: 'user_test',
-        fullName: 'Test User',
-        primaryEmailAddress: { emailAddress: 'test@example.com' },
-        firstName: 'Test',
+        id: "user_test",
+        fullName: "Test User",
+        primaryEmailAddress: { emailAddress: "test@example.com" },
+        firstName: "Test",
       },
       isLoaded: true,
       isSignedIn: true,
@@ -26,14 +26,16 @@ vi.mock('@clerk/react', async (importOriginal) => {
 });
 
 // Mock wouter
-vi.mock('wouter', async (importOriginal) => {
+vi.mock("wouter", async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
     Link: ({ href, children }: { href: string; children: React.ReactNode }) => (
-      <a href={href} data-testid={`link-${href}`}>{children}</a>
+      <a href={href} data-testid={`link-${href}`}>
+        {children}
+      </a>
     ),
-    useLocation: () => ['/', () => {}],
+    useLocation: () => ["/", () => {}],
     useRoute: () => [{}],
     Switch: ({ children }: { children: React.ReactNode }) => <>{children}</>,
     Route: ({ children }: { children: React.ReactNode }) => <>{children}</>,
@@ -42,7 +44,7 @@ vi.mock('wouter', async (importOriginal) => {
 });
 
 // Mock TanStack Query
-vi.mock('@tanstack/react-query', async (importOriginal) => {
+vi.mock("@tanstack/react-query", async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
@@ -51,8 +53,14 @@ vi.mock('@tanstack/react-query', async (importOriginal) => {
       getQueryData: vi.fn(),
       setQueryData: vi.fn(),
     })),
-    QueryClientProvider: ({ children }: { children: React.ReactNode }) => children,
-    useQuery: vi.fn(() => ({ data: undefined, isLoading: false, isError: false, refetch: vi.fn() })),
+    QueryClientProvider: ({ children }: { children: React.ReactNode }) =>
+      children,
+    useQuery: vi.fn(() => ({
+      data: undefined,
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+    })),
     useMutation: vi.fn(() => ({
       mutate: vi.fn(),
       isPending: false,
@@ -66,7 +74,7 @@ vi.mock('@tanstack/react-query', async (importOriginal) => {
 });
 
 // Mock API client
-vi.mock('@workspace/api-client-react', async (importOriginal) => {
+vi.mock("@workspace/api-client-react", async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
@@ -76,13 +84,13 @@ vi.mock('@workspace/api-client-react', async (importOriginal) => {
         competitionCount: 0,
         openTaskCount: 0,
         quality: {
-          applicationBuild: 'not_run',
-          automatedTests: 'not_run',
-          browserVerification: 'not_run',
-          securityReview: 'not_run',
-          deployment: 'not_run',
-          demoReadiness: 'not_run',
-          submissionReadiness: 'not_run',
+          applicationBuild: "not_run",
+          automatedTests: "not_run",
+          browserVerification: "not_run",
+          securityReview: "not_run",
+          deployment: "not_run",
+          demoReadiness: "not_run",
+          submissionReadiness: "not_run",
         },
       },
       isLoading: false,
@@ -114,7 +122,7 @@ vi.mock('@workspace/api-client-react', async (importOriginal) => {
       refetch: vi.fn(),
     }),
     useHealthCheck: () => ({
-      data: { status: 'ok' },
+      data: { status: "ok" },
       isLoading: false,
       isError: false,
       refetch: vi.fn(),
@@ -125,33 +133,59 @@ vi.mock('@workspace/api-client-react', async (importOriginal) => {
       isError: false,
       isSuccess: false,
     }),
-    getListCompetitionsQueryKey: () => ['competitions'],
-    getGetOverviewQueryKey: () => ['overview'],
-    getGetPlanQueryKey: () => ['plan'],
+    getListCompetitionsQueryKey: () => ["competitions"],
+    getGetOverviewQueryKey: () => ["overview"],
+    getGetPlanQueryKey: () => ["plan"],
   };
 });
 
 // Mock workflow lib - use actual implementation
-vi.mock('@/lib/workflow', async (importOriginal) => {
+vi.mock("@/lib/workflow", async (importOriginal) => {
   const actual = await importOriginal();
   return actual;
 });
 
 // Mock components - use actual for workspace components
-vi.mock('@/components/workspace', async (importOriginal) => {
+vi.mock("@/components/workspace", async (importOriginal) => {
   const actual = await importOriginal();
   return actual;
 });
 
 // Mock lucide-react icons
-vi.mock('lucide-react', async (importOriginal) => {
+vi.mock("lucide-react", async (importOriginal) => {
   const actual = await importOriginal();
   const icons = [
-    'Activity', 'ArrowLeft', 'ArrowRight', 'BadgeCheck', 'Ban', 'CalendarClock',
-    'Check', 'ChevronDown', 'ChevronRight', 'CircleDashed', 'CircleDot', 'CircleHelp',
-    'Clock3', 'FileCheck2', 'Flag', 'FolderKanban', 'Gauge', 'Info', 'LayoutDashboard',
-    'ListChecks', 'ListTodo', 'Lock', 'LockKeyhole', 'LogOut', 'Menu', 'Plus',
-    'RefreshCw', 'ShieldCheck', 'Sparkles', 'TerminalSquare', 'X',
+    "Activity",
+    "ArrowLeft",
+    "ArrowRight",
+    "BadgeCheck",
+    "Ban",
+    "CalendarClock",
+    "Check",
+    "ChevronDown",
+    "ChevronRight",
+    "CircleDashed",
+    "CircleDot",
+    "CircleHelp",
+    "Clock3",
+    "FileCheck2",
+    "Flag",
+    "FolderKanban",
+    "Gauge",
+    "Info",
+    "LayoutDashboard",
+    "ListChecks",
+    "ListTodo",
+    "Lock",
+    "LockKeyhole",
+    "LogOut",
+    "Menu",
+    "Plus",
+    "RefreshCw",
+    "ShieldCheck",
+    "Sparkles",
+    "TerminalSquare",
+    "X",
   ];
   const mockComponents: Record<string, React.ComponentType<any>> = {};
   for (const icon of icons) {
@@ -163,10 +197,10 @@ vi.mock('lucide-react', async (importOriginal) => {
 });
 
 // Mock environment
-vi.mock('@/lib/client-env', () => ({
+vi.mock("@/lib/client-env", () => ({
   clientEnv: {
-    VITE_CLERK_PUBLISHABLE_KEY: 'pk_test_mock',
-    VITE_CLERK_PROXY_URL: '/api/__clerk',
+    VITE_CLERK_PUBLISHABLE_KEY: "pk_test_mock",
+    VITE_CLERK_PROXY_URL: "/api/__clerk",
   },
 }));
 

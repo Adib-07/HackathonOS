@@ -40,9 +40,9 @@ jobs:
       DATABASE_URL_TEST: postgresql://test:test@localhost:5432/hackathon_os_test
       # CI guard - tests must refuse to run if this is not set
       CI: "true"
-      # Clerk test keys (not production)
-      CLERK_SECRET_KEY: sk_test_fake_ci_only_key_do_not_use
-      CLERK_PUBLISHABLE_KEY: pk_test_fake_ci_only_key_do_not_use
+      # Clerk test keys (valid format for Clerk SDK validation)
+      CLERK_SECRET_KEY: sk_test_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+      CLERK_PUBLISHABLE_KEY: pk_test_Y2xlcmsuY2kuYWNjb3VudHMuZGV2JA
       # AI provider not configured in CI - tests handle this gracefully
       OPENAI_API_KEY: sk-fake-ci-only-key-do-not-use
       # CORS allow-list for testing
@@ -66,8 +66,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24'
-          cache: 'pnpm'
+          node-version: "24"
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -98,7 +98,7 @@ jobs:
           GITLEAKS_CONFIG: .gitleaks.toml
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # Optional: Run security audit separately for visibility
+  # Security audit job - separate for visibility
   security-audit:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -124,8 +124,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24'
-          cache: 'pnpm'
+          node-version: "24"
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

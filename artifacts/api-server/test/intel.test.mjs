@@ -1,3 +1,4 @@
+import "../../../scripts/test-guard.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
@@ -53,7 +54,8 @@ function makeBrief(overrides = {}) {
     mandatoryDeliverables: ["Working demo", "Repository"],
     currentTrack: "Civic Tech",
     trackMode: "choose",
-    problemStatement: "Communities cannot adopt solar because the process is opaque.",
+    problemStatement:
+      "Communities cannot adopt solar because the process is opaque.",
     officialUrl: "https://example.com/event",
     rulesUrl: "https://example.com/rules",
     ideaComplexity: 3,
@@ -121,14 +123,17 @@ test("deterministic extraction reads the stored record", () => {
   assert.equal(core[0].source, "COMPETITION_BRIEF");
 
   const deliverables = byCategory.get("MANDATORY_DELIVERABLES");
-  assert.deepEqual(
-    deliverables.map((item) => item.text).sort(),
-    ["Repository", "Working demo"],
-  );
+  assert.deepEqual(deliverables.map((item) => item.text).sort(), [
+    "Repository",
+    "Working demo",
+  ]);
   assert.ok(deliverables.every((item) => item.claimKind === "VERIFIED_FACT"));
 
   assert.deepEqual(
-    byCategory.get("TEAM_SKILLS").map((item) => item.text).sort(),
+    byCategory
+      .get("TEAM_SKILLS")
+      .map((item) => item.text)
+      .sort(),
     ["PostgreSQL", "TypeScript"],
   );
 });
@@ -146,10 +151,14 @@ test("missing fields are identified rather than invented", () => {
   assert.ok(result.missingFields.includes("Team skills"));
   assert.ok(result.missingFields.includes("Mandatory deliverables"));
   assert.ok(result.missingFields.includes("Judging criteria"));
-  assert.ok(result.missingFields.includes("Exclusions and prohibited approaches"));
+  assert.ok(
+    result.missingFields.includes("Exclusions and prohibited approaches"),
+  );
 
   // Nothing was invented to fill the gaps.
-  const core = result.requirements.find((item) => item.category === "CORE_PROBLEM");
+  const core = result.requirements.find(
+    (item) => item.category === "CORE_PROBLEM",
+  );
   assert.equal(core, undefined);
 });
 
@@ -223,11 +232,15 @@ test("a model can never promote its own output to a verified fact", () => {
 test("model requirements that repeat a verified one are dropped", () => {
   const deterministic = extractDeterministicRequirements(makeBrief());
   const merged = mergeAiRequirements(deterministic.requirements, [
-    { category: "CORE_PROBLEM", text: "Communities cannot adopt solar because the process is opaque." },
+    {
+      category: "CORE_PROBLEM",
+      text: "Communities cannot adopt solar because the process is opaque.",
+    },
     { category: "PAIN_POINTS", text: "Paperwork is confusing." },
   ]);
   assert.equal(
-    merged.filter((item) => item.text.startsWith("Communities cannot adopt")).length,
+    merged.filter((item) => item.text.startsWith("Communities cannot adopt"))
+      .length,
     1,
   );
   assert.equal(merged.length, deterministic.requirements.length + 1);
@@ -281,9 +294,7 @@ test("weights are normalised to sum to one", () => {
 });
 
 test("all-zero weights fall back to the defaults", () => {
-  const zeroed = Object.fromEntries(
-    IDEA_DIMENSIONS.map((d) => [d, 0]),
-  );
+  const zeroed = Object.fromEntries(IDEA_DIMENSIONS.map((d) => [d, 0]));
   const weights = normaliseWeights(zeroed);
   assert.deepEqual(weights, DEFAULT_IDEA_WEIGHTS);
 });
@@ -307,7 +318,10 @@ test("scores are clamped to the allowed range", () => {
 });
 
 test("a uniform 3 scores 50 out of 100", () => {
-  const total = computeWeightedTotal(Object.values(scores()), normaliseWeights());
+  const total = computeWeightedTotal(
+    Object.values(scores()),
+    normaliseWeights(),
+  );
   assert.equal(total, 50);
 });
 
@@ -318,8 +332,14 @@ test("a uniform 5 scores 100 and a uniform 1 scores 0", () => {
     best[dimension] = { ...scores()[dimension], score: 5 };
     worst[dimension] = { ...scores()[dimension], score: 1 };
   }
-  assert.equal(computeWeightedTotal(Object.values(best), normaliseWeights()), 100);
-  assert.equal(computeWeightedTotal(Object.values(worst), normaliseWeights()), 0);
+  assert.equal(
+    computeWeightedTotal(Object.values(best), normaliseWeights()),
+    100,
+  );
+  assert.equal(
+    computeWeightedTotal(Object.values(worst), normaliseWeights()),
+    0,
+  );
 });
 
 test("a higher weighted dimension moves the total more", () => {
@@ -337,7 +357,10 @@ test("a higher weighted dimension moves the total more", () => {
     Object.values(highOnRelevance),
     weights,
   );
-  const impactTotal = computeWeightedTotal(Object.values(highOnImpact), weights);
+  const impactTotal = computeWeightedTotal(
+    Object.values(highOnImpact),
+    weights,
+  );
   assert.ok(
     relevanceTotal > impactTotal,
     "a heavier dimension should dominate the total",
@@ -355,9 +378,7 @@ test("sensitivity widens when a heavy dimension is weak", () => {
   // A weak heavy dimension drags the total down further.
   assert.ok(wideRange.min < tightRange.min);
   // And the possible range around it is wider.
-  assert.ok(
-    wideRange.max - wideRange.min > tightRange.max - tightRange.min,
-  );
+  assert.ok(wideRange.max - wideRange.min > tightRange.max - tightRange.min);
 });
 
 test("sensitivity only moves the dimension being tested", () => {
@@ -375,9 +396,7 @@ test("sensitivity only moves the dimension being tested", () => {
   // The ceiling is the total with the weak dimension at its best.
   const recovered = computeWeightedTotal(
     scoresList.map((item) =>
-      item.dimension === "PROBLEM_RELEVANCE"
-        ? { ...item, score: 5 }
-        : item,
+      item.dimension === "PROBLEM_RELEVANCE" ? { ...item, score: 5 } : item,
     ),
     normaliseWeights(),
   );
@@ -414,12 +433,26 @@ test("comparison ranks by total and finds the divisive dimension", () => {
   const ideaA = {
     ideaId: "a",
     name: "Idea A",
-    evaluation: evaluateIdea("a", Object.values(scores({ PROBLEM_RELEVANCE: { ...scores().PROBLEM_RELEVANCE, score: 5 } }))),
+    evaluation: evaluateIdea(
+      "a",
+      Object.values(
+        scores({
+          PROBLEM_RELEVANCE: { ...scores().PROBLEM_RELEVANCE, score: 5 },
+        }),
+      ),
+    ),
   };
   const ideaB = {
     ideaId: "b",
     name: "Idea B",
-    evaluation: evaluateIdea("b", Object.values(scores({ PROBLEM_RELEVANCE: { ...scores().PROBLEM_RELEVANCE, score: 1 } }))),
+    evaluation: evaluateIdea(
+      "b",
+      Object.values(
+        scores({
+          PROBLEM_RELEVANCE: { ...scores().PROBLEM_RELEVANCE, score: 1 },
+        }),
+      ),
+    ),
   };
 
   const comparison = compareIdeas([ideaB, ideaA]);
@@ -463,17 +496,32 @@ test("model ideas are parsed and can never claim to be verified facts", () => {
 
 test("near-duplicate ideas are collapsed", () => {
   const deduped = dedupeIdeas([
-    { name: "Solar Dashboard", pitch: "Shows solar adoption progress for households." },
-    { name: "Solar Dashboard", pitch: "Shows solar adoption progress for households." },
-    { name: "Water Flow Monitor", pitch: "Tracks municipal water flow across a city." },
+    {
+      name: "Solar Dashboard",
+      pitch: "Shows solar adoption progress for households.",
+    },
+    {
+      name: "Solar Dashboard",
+      pitch: "Shows solar adoption progress for households.",
+    },
+    {
+      name: "Water Flow Monitor",
+      pitch: "Tracks municipal water flow across a city.",
+    },
   ]);
   assert.equal(deduped.length, 2);
 });
 
 test("genuinely different ideas are kept", () => {
   const deduped = dedupeIdeas([
-    { name: "Solar Dashboard", pitch: "Shows solar adoption progress for households." },
-    { name: "Water Flow Monitor", pitch: "Tracks municipal water flow across a city." },
+    {
+      name: "Solar Dashboard",
+      pitch: "Shows solar adoption progress for households.",
+    },
+    {
+      name: "Water Flow Monitor",
+      pitch: "Tracks municipal water flow across a city.",
+    },
   ]);
   assert.equal(deduped.length, 2);
 });
@@ -507,29 +555,38 @@ test("gaps built from findings are never stronger than their evidence", () => {
   });
   assert.equal(analysis.gaps.length, 1);
   assert.equal(analysis.gaps[0].claimKind, "SOURCE_SUPPORTED");
-  assert.match(analysis.evidenceGaps.join(" "), /no claim is made about which competitors exist/i);
+  assert.match(
+    analysis.evidenceGaps.join(" "),
+    /no claim is made about which competitors exist/i,
+  );
 });
 
 test("a model gap with no supporting finding is a hypothesis", () => {
-  const merged = mergeAiGaps([], [
-    {
-      need: "Nobody tracks this",
-      claimKind: "VERIFIED_FACT",
-      supportingFindingIds: [],
-    },
-  ]);
+  const merged = mergeAiGaps(
+    [],
+    [
+      {
+        need: "Nobody tracks this",
+        claimKind: "VERIFIED_FACT",
+        supportingFindingIds: [],
+      },
+    ],
+  );
   assert.equal(merged.length, 1);
   assert.equal(merged[0].claimKind, "HYPOTHESIS");
 });
 
 test("a model gap with a supporting finding is at best source-supported", () => {
-  const merged = mergeAiGaps([], [
-    {
-      need: "Some gap",
-      claimKind: "VERIFIED_FACT",
-      supportingFindingIds: ["f1"],
-    },
-  ]);
+  const merged = mergeAiGaps(
+    [],
+    [
+      {
+        need: "Some gap",
+        claimKind: "VERIFIED_FACT",
+        supportingFindingIds: ["f1"],
+      },
+    ],
+  );
   assert.equal(merged[0].claimKind, "SOURCE_SUPPORTED");
 });
 
@@ -559,9 +616,7 @@ test("a build brief from an idea alone reports the missing sections", () => {
 });
 
 test("a complete build brief reports no missing sections", () => {
-  const idea = parseModelIdeas([
-    { name: "A", pitch: "B" },
-  ])[0];
+  const idea = parseModelIdeas([{ name: "A", pitch: "B" }])[0];
   const { brief, missingSections } = parseModelBuildBrief(
     {
       problemStatement: "p",

@@ -32,7 +32,11 @@ import {
   StatusPill,
 } from "@/components/workspace";
 import { CompetitionModal } from "@/components/CompetitionModal";
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   buildStageSummaries,
   computeRemaining,
@@ -90,10 +94,7 @@ export default function WorkflowPage() {
   );
   const progress = useMemo(() => summarisePlan(stageTasks), [stageTasks]);
   const remaining = useMemo(
-    () =>
-      competition
-        ? computeRemaining(competition.deadline)
-        : null,
+    () => (competition ? computeRemaining(competition.deadline) : null),
     [competition],
   );
 
@@ -103,7 +104,9 @@ export default function WorkflowPage() {
     (stage) => stage.state === "active" || stage.state === "complete",
   );
   const scheduledStages = stages.filter((stage) => stage.state === "scheduled");
-  const upcomingStages = stages.filter((stage) => stage.state === "not_started");
+  const upcomingStages = stages.filter(
+    (stage) => stage.state === "not_started",
+  );
 
   if (competitionQuery.isLoading || versionsQuery.isLoading) {
     return <LoadingBlock label="Loading workflow" />;
@@ -170,7 +173,11 @@ export default function WorkflowPage() {
                 }
                 data-testid="workflow-time-remaining"
               >
-                {remaining ? (remaining.isPast ? "Overdue" : remaining.label) : "—"}
+                {remaining
+                  ? remaining.isPast
+                    ? "Overdue"
+                    : remaining.label
+                  : "—"}
               </strong>
               <small>
                 {remaining
@@ -182,8 +189,13 @@ export default function WorkflowPage() {
             </div>
             <div className="workflow-stat">
               <span className="workflow-stat-label">PLAN PROGRESS</span>
-              <strong className="workflow-stat-value" data-testid="workflow-progress">
-                {progress.total === 0 ? "No plan" : `${progress.done}/${progress.total}`}
+              <strong
+                className="workflow-stat-value"
+                data-testid="workflow-progress"
+              >
+                {progress.total === 0
+                  ? "No plan"
+                  : `${progress.done}/${progress.total}`}
               </strong>
               <small>
                 {progress.total === 0
@@ -193,7 +205,10 @@ export default function WorkflowPage() {
             </div>
             <div className="workflow-stat">
               <span className="workflow-stat-label">OPEN TASK ESTIMATE</span>
-              <strong className="workflow-stat-value" data-testid="workflow-effort">
+              <strong
+                className="workflow-stat-value"
+                data-testid="workflow-effort"
+              >
                 {formatDuration(progress.remainingMinutes)}
               </strong>
               <small>
@@ -216,7 +231,9 @@ export default function WorkflowPage() {
               </strong>
               <small>
                 {blockedStages.length > 0
-                  ? blockedStages.map((stage) => stage.definition.label).join(", ")
+                  ? blockedStages
+                      .map((stage) => stage.definition.label)
+                      .join(", ")
                   : "Nothing is blocked"}
               </small>
             </div>
@@ -254,7 +271,10 @@ export default function WorkflowPage() {
       ) : (
         <>
           {activeStages.length > 0 ? (
-            <section className="workflow-section" aria-labelledby="workflow-active-heading">
+            <section
+              className="workflow-section"
+              aria-labelledby="workflow-active-heading"
+            >
               <div className="workflow-section-head">
                 <h2 id="workflow-active-heading">In progress and complete</h2>
                 <span>{activeStages.length} stages</span>
@@ -269,17 +289,26 @@ export default function WorkflowPage() {
           )}
 
           {verifiedStages.length > 0 && (
-            <section className="workflow-section" aria-labelledby="workflow-verified-heading">
+            <section
+              className="workflow-section"
+              aria-labelledby="workflow-verified-heading"
+            >
               <div className="workflow-section-head">
                 <h2 id="workflow-verified-heading">Verified</h2>
                 <span>{verifiedStages.length} stages</span>
               </div>
-              <StageList stages={verifiedStages} competitionId={competitionId} />
+              <StageList
+                stages={verifiedStages}
+                competitionId={competitionId}
+              />
             </section>
           )}
 
           {blockedStages.length > 0 && (
-            <section className="workflow-section" aria-labelledby="workflow-blocked-heading">
+            <section
+              className="workflow-section"
+              aria-labelledby="workflow-blocked-heading"
+            >
               <div className="workflow-section-head">
                 <h2 id="workflow-blocked-heading">Blocked</h2>
                 <span>{blockedStages.length} stages</span>
@@ -289,22 +318,34 @@ export default function WorkflowPage() {
           )}
 
           {scheduledStages.length > 0 && (
-            <section className="workflow-section" aria-labelledby="workflow-scheduled-heading">
+            <section
+              className="workflow-section"
+              aria-labelledby="workflow-scheduled-heading"
+            >
               <div className="workflow-section-head">
                 <h2 id="workflow-scheduled-heading">Scheduled</h2>
                 <span>{scheduledStages.length} stages</span>
               </div>
-              <StageList stages={scheduledStages} competitionId={competitionId} />
+              <StageList
+                stages={scheduledStages}
+                competitionId={competitionId}
+              />
             </section>
           )}
 
           {upcomingStages.length > 0 && (
-            <section className="workflow-section" aria-labelledby="workflow-upcoming-heading">
+            <section
+              className="workflow-section"
+              aria-labelledby="workflow-upcoming-heading"
+            >
               <div className="workflow-section-head">
                 <h2 id="workflow-upcoming-heading">Not started</h2>
                 <span>{upcomingStages.length} stages</span>
               </div>
-              <StageList stages={upcomingStages} competitionId={competitionId} />
+              <StageList
+                stages={upcomingStages}
+                competitionId={competitionId}
+              />
             </section>
           )}
         </>
@@ -332,7 +373,11 @@ function StageList({
   return (
     <div className="stage-list">
       {stages.map((stage) => (
-        <StageRow stage={stage} competitionId={competitionId} key={stage.definition.id} />
+        <StageRow
+          stage={stage}
+          competitionId={competitionId}
+          key={stage.definition.id}
+        />
       ))}
     </div>
   );
@@ -359,7 +404,10 @@ function StageRow({
           <Lock size={14} />
           <span className="stage-lock-tooltip">
             <Info size={10} />
-            <span className="tooltip-text">Unlocks when a plan includes {definition.label.toLowerCase()} tasks</span>
+            <span className="tooltip-text">
+              Unlocks when a plan includes {definition.label.toLowerCase()}{" "}
+              tasks
+            </span>
           </span>
         </span>
         <div className="stage-row-main">
@@ -388,7 +436,9 @@ function StageRow({
           <Lock size={14} />
           <span className="stage-lock-tooltip">
             <Info size={10} />
-            <span className="tooltip-text">Unlocks when Submission is complete or the deadline has passed</span>
+            <span className="tooltip-text">
+              Unlocks when Submission is complete or the deadline has passed
+            </span>
           </span>
         </span>
         <div className="stage-row-main">
@@ -434,7 +484,8 @@ function StageRow({
         {stage.total > 0 && (
           <div className="stage-meta">
             <span>
-              {stage.done} of {stage.total} task{stage.total === 1 ? "" : "s"} done
+              {stage.done} of {stage.total} task{stage.total === 1 ? "" : "s"}{" "}
+              done
             </span>
             {stage.verified > 0 && (
               <span className="stage-meta-verified">
@@ -442,7 +493,8 @@ function StageRow({
               </span>
             )}
             <span>
-              <Clock3 size={12} /> {formatDuration(stage.estimatedMinutes)} estimated
+              <Clock3 size={12} /> {formatDuration(stage.estimatedMinutes)}{" "}
+              estimated
             </span>
             {stage.blocked > 0 && (
               <span className="stage-meta-blocked">
@@ -497,7 +549,7 @@ function WorkflowEmptyState() {
           detail="Create a competition workspace to unlock the workflow lifecycle. All stages — from Intake & Scope through Retrospective — require an active competition."
           action={
             <Button
-              onClick={() => window.location.href = '/overview'}
+              onClick={() => (window.location.href = "/overview")}
               data-testid="button-create-workflow-workspace"
             >
               <Plus size={15} /> Create workspace

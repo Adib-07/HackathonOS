@@ -83,9 +83,7 @@ function addRequirement(
  * Nothing is inferred here. A field the record does not contain produces a
  * missing-field entry, never a guess.
  */
-export function extractDeterministicRequirements(
-  brief: CompetitionBrief,
-): {
+export function extractDeterministicRequirements(brief: CompetitionBrief): {
   requirements: ExtractedRequirement[];
   missingFields: string[];
   unansweredQuestions: string[];
@@ -290,9 +288,11 @@ export function mergeAiRequirements(
 }
 
 /** Group requirements by category for display. */
-export function groupRequirements(
-  requirements: ExtractedRequirement[],
-): Array<{ category: RequirementCategory; label: string; items: ExtractedRequirement[] }> {
+export function groupRequirements(requirements: ExtractedRequirement[]): Array<{
+  category: RequirementCategory;
+  label: string;
+  items: ExtractedRequirement[];
+}> {
   const groups = new Map<RequirementCategory, ExtractedRequirement[]>();
   for (const requirement of requirements) {
     const list = groups.get(requirement.category) ?? [];

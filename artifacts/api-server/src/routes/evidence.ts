@@ -49,7 +49,11 @@ function containsSecret(value: string | null | undefined): boolean {
  * Returns undefined for tasks owned by somebody else, so the API answers 404
  * rather than revealing that another owner's task exists.
  */
-async function findOwnedTask(competitionId: string, taskId: string, ownerId: string) {
+async function findOwnedTask(
+  competitionId: string,
+  taskId: string,
+  ownerId: string,
+) {
   const [row] = await db
     .select({ task: workflowTasksTable })
     .from(workflowTasksTable)
@@ -100,9 +104,7 @@ router.get(
     const records = await db
       .select()
       .from(workflowEvidenceTable)
-      .where(
-        eq(workflowEvidenceTable.competitionId, params.data.competitionId),
-      )
+      .where(eq(workflowEvidenceTable.competitionId, params.data.competitionId))
       .orderBy(desc(workflowEvidenceTable.observedAt));
 
     res.json(ListEvidenceResponse.parse(records));
@@ -160,7 +162,9 @@ router.post(
 
     // Evidence cannot be observed in the future.
     if (observedAt.getTime() > Date.now() + 60_000) {
-      res.status(400).json({ error: "Observation time cannot be in the future." });
+      res
+        .status(400)
+        .json({ error: "Observation time cannot be in the future." });
       return;
     }
 
@@ -211,10 +215,7 @@ router.delete(
       .where(
         and(
           eq(workflowEvidenceTable.id, params.data.evidenceId),
-          eq(
-            workflowEvidenceTable.competitionId,
-            params.data.competitionId,
-          ),
+          eq(workflowEvidenceTable.competitionId, params.data.competitionId),
           eq(competitionsTable.ownerId, ownerId),
         ),
       )
