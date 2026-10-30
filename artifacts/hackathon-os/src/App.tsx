@@ -22,14 +22,17 @@ import { Brand, WorkspaceShell } from "@/components/workspace";
 import LandingPage from "@/pages/landing";
 import NotFound from "@/pages/not-found";
 import OverviewPage from "@/pages/overview";
+import { retryLazy } from "@/lib/retry-lazy";
 
-// All competition views are secondary routes — load on demand.
-const CompetitionsPage = lazy(() => import("@/pages/competitions"));
-const CompetitionDetailPage = lazy(() => import("@/pages/competition-detail"));
-const IntelPage = lazy(() => import("@/pages/intel"));
-const PlannerPage = lazy(() => import("@/pages/planner"));
-const WorkflowPage = lazy(() => import("@/pages/workflow"));
-const SettingsPage = lazy(() => import("@/pages/settings"));
+// All competition views are secondary routes — load on demand with retry.
+const CompetitionsPage = lazy(retryLazy(() => import("@/pages/competitions")));
+const CompetitionDetailPage = lazy(
+  retryLazy(() => import("@/pages/competition-detail")),
+);
+const IntelPage = lazy(retryLazy(() => import("@/pages/intel")));
+const PlannerPage = lazy(retryLazy(() => import("@/pages/planner")));
+const WorkflowPage = lazy(retryLazy(() => import("@/pages/workflow")));
+const SettingsPage = lazy(retryLazy(() => import("@/pages/settings")));
 
 const queryClient = new QueryClient({
   defaultOptions: {
