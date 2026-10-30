@@ -288,9 +288,7 @@ export function mergeAiRequirements(
 }
 
 /** Group requirements by category for display. */
-export function groupRequirements(
-  requirements: ExtractedRequirement[],
-): Array<{
+export function groupRequirements(requirements: ExtractedRequirement[]): Array<{
   category: RequirementCategory;
   label: string;
   items: ExtractedRequirement[];
