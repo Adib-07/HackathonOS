@@ -11,6 +11,9 @@ regexes = [
   # Clerk test keys (sk_test_*, pk_test_) - used in CI workflow only
   '''sk_test_[a-zA-Z0-9]{24,}''',
   '''pk_test_[a-zA-Z0-9]{24,}''',
+  # Historical test fixtures in git history - test files only
+  '''sk_live_fake[-_]?test[-_]?key[-_]?do[-_]?not[-_]?use''',
+  '''API_KEY=['"][a-zA-Z0-9]{10,}['"]''',
   # Generic test/fake keys - only when explicitly prefixed
   '''test[-_]?key[a-zA-Z0-9]*''',
   '''fake[-_]?key[a-zA-Z0-9]*''',
@@ -33,4 +36,6 @@ paths = [
   '''docs/security-review\.md$''',
   # Vercel output directory - may contain deployment metadata
   '''\.vercel/output/.*$''',
+  # Test files with historical fake secrets in git history
+  '''artifacts/api-server/test/evidence-api\.test\.mjs$''',
 ]

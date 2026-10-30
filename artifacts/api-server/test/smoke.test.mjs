@@ -1,5 +1,4 @@
-import "../../scripts/test-guard.mjs";
-import "./test-guard.mjs";
+import "../../../scripts/test-guard.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createServer } from "node:http";

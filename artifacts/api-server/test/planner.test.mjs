@@ -1,4 +1,4 @@
-import "../../scripts/test-guard.mjs";
+import "../../../scripts/test-guard.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createPlanDraft } from "../src/lib/planner.ts";

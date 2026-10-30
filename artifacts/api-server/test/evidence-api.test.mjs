@@ -1,4 +1,4 @@
-import "../../scripts/test-guard.mjs";
+import "../../../scripts/test-guard.mjs";
 import assert from "node:assert/strict";
 import test, { before, after } from "node:test";
 import { createServer } from "node:http";
@@ -224,7 +224,7 @@ test("evidence that looks like a credential is rejected", async () => {
       userId: ownerA,
       body: {
         type: "TEST_RESULT",
-        summary: "Used key sk_live_fake_test_key_do_not_use to run it",
+        summary: "Used key sk_test_faketestkeydonotuse123456 to run it",
         result: "passed",
       },
     },
