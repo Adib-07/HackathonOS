@@ -10,10 +10,9 @@
  * The guard checks:
  * 1. CI=true environment variable is set
  * 2. DATABASE_URL contains "test" (to prevent accidental production DB access)
- * 3. NODE_ENV is "test" (unless TEST_ALLOW_PRODUCTION_ENV=true)
+ * 3. NODE_ENV is "test"
  *
- * Tests that intentionally run in production mode (e.g., to test security headers)
- * can set TEST_ALLOW_PRODUCTION_ENV=true to bypass the NODE_ENV check.
+ * No bypasses allowed. Tests must run in test mode.
  */
 
 if (process.env.CI !== "true") {
@@ -30,9 +29,9 @@ if (!process.env.DATABASE_URL?.includes("test")) {
   );
 }
 
-if (process.env.NODE_ENV !== "test" && process.env.TEST_ALLOW_PRODUCTION_ENV !== "true") {
+if (process.env.NODE_ENV !== "test") {
   throw new Error(
-    "Tests must run with NODE_ENV=test (or set TEST_ALLOW_PRODUCTION_ENV=true for production-mode tests). " +
+    "Tests must run with NODE_ENV=test. " +
     `Current NODE_ENV: ${process.env.NODE_ENV || "not set"}`
   );
 }
