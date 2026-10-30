@@ -36,7 +36,12 @@ function ClerkProviderInner({
   localization,
   routerPush,
   routerReplace,
-}: ClerkLoaderProps) {
+  onLoaded,
+  onLoadError,
+}: ClerkLoaderProps & {
+  onLoaded: () => void;
+  onLoadError: (error: Error) => void;
+}) {
   return (
     <ClerkProvider
       publishableKey={publishableKey}
@@ -48,12 +53,14 @@ function ClerkProviderInner({
       routerPush={routerPush}
       routerReplace={routerReplace}
     >
+      <ClerkLoadedTracker onLoaded={onLoaded} onLoadError={onLoadError} />
       {children}
     </ClerkProvider>
   );
 }
 
 // Internal component that uses Clerk's useAuth to track loaded state
+// MUST be rendered INSIDE ClerkProvider
 function ClerkLoadedTracker({
   onLoaded,
   onLoadError,
@@ -237,23 +244,19 @@ export function ClerkLoader({
   }
 
   return (
-    <>
-      <ClerkLoadedTracker
-        onLoaded={handleClerkLoaded}
-        onLoadError={handleClerkLoadError}
-      />
-      <ClerkProviderInner
-        publishableKey={publishableKey}
-        proxyUrl={proxyUrl}
-        appearance={appearance}
-        signInUrl={signInUrl}
-        signUpUrl={signUpUrl}
-        localization={localization}
-        routerPush={routerPush}
-        routerReplace={routerReplace}
-      >
-        {children}
-      </ClerkProviderInner>
-    </>
+    <ClerkProviderInner
+      publishableKey={publishableKey}
+      proxyUrl={proxyUrl}
+      appearance={appearance}
+      signInUrl={signInUrl}
+      signUpUrl={signUpUrl}
+      localization={localization}
+      routerPush={routerPush}
+      routerReplace={routerReplace}
+      onLoaded={handleClerkLoaded}
+      onLoadError={handleClerkLoadError}
+    >
+      {children}
+    </ClerkProviderInner>
   );
 }

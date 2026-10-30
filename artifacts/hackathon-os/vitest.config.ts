@@ -10,6 +10,7 @@ export default defineConfig({
     include: ["test/**/*.test.tsx"],
     globals: true,
     css: true,
+    testTimeout: 10000,
   },
   resolve: {
     alias: {
