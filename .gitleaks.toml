@@ -1,6 +1,9 @@
 # Gitleaks configuration for HackathonOS
 # Extends default rules and adds allowlist for test/fake keys
 
+[extend]
+useDefault = true
+
 [allowlist]
 description = "Allowlisted gitleaks patterns"
 # Allow test keys that are clearly marked as test/fake
@@ -21,12 +24,5 @@ paths = [
   '''test-results/.*''',
   '''\.gitleaks\.toml''',
   '''docs/security-review\.md''',
+  '''.vercel/.*''',
 ]
-
-# Use default rules from gitleaks
-[rule]
-# This extends the default gitleaks rules - gitleaks will use its built-in rules
-# and apply our allowlist on top
-id = "default-rules"
-description = "Use gitleaks default detection rules"
-useDefault = true

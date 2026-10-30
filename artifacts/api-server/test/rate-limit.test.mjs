@@ -1,3 +1,5 @@
+import "../../scripts/test-guard.mjs";
+import "./test-guard.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createWindowLimiter } from "../src/lib/intel/rate-limit.ts";

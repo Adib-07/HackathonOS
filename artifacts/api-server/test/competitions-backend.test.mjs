@@ -1,3 +1,4 @@
+import "../../scripts/test-guard.mjs";
 import assert from "node:assert/strict";
 import test, { before, after } from "node:test";
 import { createServer } from "node:http";

@@ -1,8 +1,9 @@
+import "../../../scripts/test-guard.mjs";
 import assert from "node:assert/strict";
 import test, { before, after } from "node:test";
 import { createServer } from "node:http";
-import app from "../dist/app.mjs";
 
+let app;
 let server;
 let baseUrl = "";
 
@@ -27,9 +28,15 @@ async function call(path, { method = "GET", body } = {}) {
 before(async () => {
   // Run in production mode to test security headers
   process.env.NODE_ENV = "production";
-  process.env.CLERK_SECRET_KEY = "sk_test_dummy";
-  process.env.CLERK_PUBLISHABLE_KEY = "pk_test_dummy";
-  process.env.DATABASE_URL = "postgresql://localhost:5432/hackathon_os";
+  process.env.TEST_ALLOW_PRODUCTION_ENV = "true";
+  // Use valid Clerk key formats (base64-encoded frontend API for pk_test_)
+  process.env.CLERK_SECRET_KEY = "sk_test_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+  process.env.CLERK_PUBLISHABLE_KEY = "pk_test_Y2xlcmsudGVzdC5hY2NvdW50cy5kZXYk";
+  process.env.DATABASE_URL = "postgresql://test:test@localhost:5432/hackathon_os_test";
+
+  // Dynamic import after env vars are set
+  const mod = await import("../dist/app.mjs");
+  app = mod.default;
 
   await new Promise((resolve) => {
     server = createServer(app);
