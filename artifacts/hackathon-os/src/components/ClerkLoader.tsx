@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { ClerkProvider, useClerk } from '@clerk/react';
+import { ClerkProvider } from '@clerk/react';
 
 interface ClerkLoaderProps {
   children: ReactNode;
@@ -72,7 +72,8 @@ export function ClerkLoader({
   useEffect(() => {
     const handleError = (event: ErrorEvent) => {
       if (event.filename?.includes('clerk') || event.message?.includes('clerk')) {
-        setError(new Error(`Clerk failed to load: ${event.message} (${event.filename})`));
+        const failingUrl = event.filename || (proxyUrl ? `${proxyUrl}/npm/@clerk/clerk-js@6/dist/clerk.browser.js` : 'unknown');
+        setError(new Error(`Clerk failed to load: ${event.message} (${failingUrl})`));
         setTimedOut(true);
       }
     };
@@ -81,7 +82,8 @@ export function ClerkLoader({
     const handleRejection = (event: PromiseRejectionEvent) => {
       const reason = event.reason;
       if (reason?.message?.includes('clerk') || String(reason).includes('clerk')) {
-        setError(new Error(`Clerk failed to load: ${reason?.message || reason}`));
+        const failingUrl = proxyUrl ? `${proxyUrl}/npm/@clerk/clerk-js@6/dist/clerk.browser.js` : 'unknown';
+        setError(new Error(`Clerk failed to load: ${reason?.message || reason} (${failingUrl})`));
         setTimedOut(true);
       }
     };
@@ -93,27 +95,27 @@ export function ClerkLoader({
       window.removeEventListener('error', handleError);
       window.removeEventListener('unhandledrejection', handleRejection);
     };
-  }, []);
+  }, [proxyUrl]);
 
   if (error) {
     return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-gray-50 p-6" data-testid="clerk-fallback">
+      <div className="min-h-screen w-full flex items-center justify-center bg-[#191d24] p-6" data-testid="clerk-fallback">
         <div className="max-w-lg w-full text-center">
-          <h1 className="text-xl font-semibold text-gray-900">
+          <h1 className="text-xl font-semibold text-[#dce4e3]">
             Authentication Service Unavailable
           </h1>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-2 text-sm text-[#91a09d]">
             {timedOut
               ? 'The authentication service took too long to load. This may be due to network issues or a configuration problem.'
               : 'The authentication service failed to load.'}
           </p>
-          <pre className="mt-4 overflow-x-auto rounded bg-gray-100 p-3 text-left text-xs text-gray-800">
+          <pre className="mt-4 overflow-x-auto rounded bg-[#1c222a] p-3 text-left text-xs text-[#91a09d]">
             {error.message}
           </pre>
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="mt-4 rounded bg-gray-900 px-4 py-2 text-sm text-white hover:bg-gray-700"
+            className="mt-4 rounded bg-[#49c998] px-4 py-2 text-sm text-[#101a17] hover:bg-[#69d9ad]"
           >
             Retry
           </button>

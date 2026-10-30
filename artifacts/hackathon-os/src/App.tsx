@@ -36,9 +36,23 @@ const clerkPubKey = publishableKeyFromHost(
 );
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+// Determine if we should use the Clerk proxy.
+// The proxy only works when:
+// 1. The backend has CLERK_SECRET_KEY configured (production Clerk instance)
+// 2. The request goes through the proxy middleware (NODE_ENV=production on backend)
+// 
+// For development Clerk instances (pk_test_*), we should NOT use the proxy
+// and instead load Clerk directly from frontend-api.clerk.dev.
+// 
+// Explicit control via VITE_CLERK_PROXY_URL:
+// - If set, use it (allows explicit override for Preview/Production)
+// - If not set and key is pk_test_*, don't use proxy
+// - If not set and key is pk_live_*, use proxy in production builds
+const isDevClerkKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY?.startsWith('pk_test_');
 const clerkProxyUrl =
   import.meta.env.VITE_CLERK_PROXY_URL ??
-  (import.meta.env.PROD
+  (import.meta.env.PROD && !isDevClerkKey
     ? new URL('/api/__clerk', window.location.origin).toString()
     : undefined);
 
